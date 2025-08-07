@@ -26,5 +26,8 @@
     "@swc/core",
     "@tailwindcss/oxide",
     "unrs-resolver"
-  ]
+  ],
+  "dependencies": {
+    "react-bootstrap": "^2.10.10"
+  }
 }
