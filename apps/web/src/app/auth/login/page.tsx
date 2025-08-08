@@ -97,3 +97,14 @@ const Home = () => {
 };
 
 export default Home;
+
+
+
+
+
+//Cái bash này để ông nhìn nhánh cho dễ du / ông mở lên sau, mở lại tui xem với tui ch kịp nhìn
+//ông thấy hong
+// ok
+// Giờ tui commit thử cái đoạn này 
+// Ủa
+// Ông mới clone về luôn hả / đr tui clone code lại luôn sợ cái fodler củ nó lõiok
