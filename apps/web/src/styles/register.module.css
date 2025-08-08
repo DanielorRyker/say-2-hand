@@ -1,0 +1,64 @@
+.card{
+  width: 900px;
+  height: 720px;
+  border-radius: 50px;
+  background: linear-gradient(to right, #BFDBFE, #A7F3D0);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.checkIcon{
+  width: 24px;
+  height: 24px;
+}
+
+.frame1 {
+  display: flex; 
+  gap: 10px; /* khoảng cách giữa icon và chữ */
+  color: #757575;
+}
+
+.gridContainer {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px 150px; 
+  
+}
+
+.custom-checkbox {
+  display: inline-block;
+  position: relative;
+  cursor: pointer;
+}
+
+.custom-checkbox input {
+  display: none; /* Ẩn checkbox mặc định */
+}
+
+.checkmark {
+  width: 24px;
+  height: 24px;
+  background-color: #f0f0f0; /* Màu khi chưa check */
+  border-radius: 6px; /* Bo tròn góc */
+  display: inline-block;
+  position: relative;
+  transition: background-color 0.2s ease;
+}
+
+/* Khi checkbox được check */
+.custom-checkbox input:checked + .checkmark {
+  background-color: #1976d2; /* Nền xanh */
+}
+
+.custom-checkbox input:checked + .checkmark::after {
+  content: "✔";
+  position: absolute;
+  color: white;
+  font-size: 16px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
