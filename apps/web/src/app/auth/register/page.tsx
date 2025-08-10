@@ -88,7 +88,7 @@ const Home =()=>{
                     <p>Bằng việc Đăng ký, bạn đã đọc và đồng ý với Điều khoản sử dụng và Chính sách bảo mật của Say2Hand</p>
                 </div>
 
-                <div>
+                <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
                     <button className={styleLogin['btnLogin']}   ><p style={{fontSize: '28px',fontWeight: 'bold',}}>Tạo tài khoản</p></button>
                 </div>
 

@@ -4,20 +4,38 @@
   background-image: url("/Background.png");
   background-size: cover;
   background-repeat: no-repeat;
-  height: 100vh;
+  height: auto;
   display: flex;
   justify-content: center;
   align-items: center;
+  min-height: 100vh;
 }
 
 .title {
   font-size: 48px;
   font-weight: bold;
   margin-bottom: 20px;
+   text-align: center;
 }
 
-.input {
-  width: 800px;
+/* Khi màn hình nhỏ hơn 768px (tablet/mobile) */
+@media (max-width: 768px) {
+  .title {
+    font-size: 48px; /* nhỏ lại */
+  }
+}
+
+/* Khi màn hình nhỏ hơn 480px (mobile nhỏ) */
+@media (max-width: 480px) {
+  .title {
+    font-size: 32px; /* nhỏ hơn nữa */
+  }
+}
+
+
+.input,
+.input_password {
+  width: 100%;       
   padding: 12px;
   border-radius: 27px;
   border: none;
@@ -29,31 +47,31 @@
 }
 
 .input_password {
-  width: 800px;
-  padding: 12px 50px 12px 12px;
-  border-radius: 27px;
-  border: none;
-  outline: none;
-  background-color: white;
-  font-size: 18px;
-  color: #757575;
-  font-weight: bold;
+  padding: 12px 50px 12px 12px; 
 }
 
+
 .gradientBorder {
-  display: inline-block;
+  display: block; 
   position: relative;
   padding: 1px;
   border-radius: 30px;
   background: linear-gradient(to right, #2DE099, #3B82F6);
+  width: 100%;        
+  max-width: 800px;   
 }
 
-.btnLogin {
-  width: 800px;
+ .btnLogin {
+  width: 100%;        
+  max-width: 800px;   
   height: 60px;
   border-radius: 30px;
   background: linear-gradient(to right, #2DE099, #3B82F6);
   cursor: pointer;
+  display: flex;       
+  align-items: center;
+  justify-content: center;
+
 }
 
 .line {
@@ -79,8 +97,9 @@
 }
 
 .card{
-  width: 900px;
-  height: 600px;
+  width: 90%;
+  max-width: 900px;
+  height: auto;
   border-radius: 50px;
   background: linear-gradient(to right, #BFDBFE, #A7F3D0);
   display: flex;
@@ -88,7 +107,11 @@
   justify-content: center;
   align-items: center;
   gap: 20px;
+  padding: 20px;
 }
+
+
+
 .eyeIcon{
   position: absolute;
   right: 15px;
@@ -102,7 +125,8 @@
 .cardline{
   display: flex;
   align-items: center;
-  width: 800px;
+  width: 100%; /* tự co theo .card */
+  max-width: 800px; /* giới hạn ở desktop */
   margin: 20px 0;
   
 }
@@ -111,3 +135,4 @@
   color: #757575;
   font-weight: bold;
 }
+

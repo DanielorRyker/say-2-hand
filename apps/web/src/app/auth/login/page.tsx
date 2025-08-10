@@ -50,7 +50,7 @@ const Home = () => {
           </p>
         </div>
 
-        <div>
+        <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
           <button className={styleLogin["btnLogin"]}>
             <p style={{ fontSize: "28px", fontWeight: "bold" }}>Đăng nhập</p>
           </button>
@@ -102,9 +102,4 @@ export default Home;
 
 
 
-//Cái bash này để ông nhìn nhánh cho dễ du / ông mở lên sau, mở lại tui xem với tui ch kịp nhìn
-//ông thấy hong
-// ok
-// Giờ tui commit thử cái đoạn này 
-// Ủa
-// Ông mới clone về luôn hả / đr tui clone code lại luôn sợ cái fodler củ nó lõiok
+
