@@ -1,8 +1,8 @@
 'use client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import styleLogin from '@/styles/login.module.css'
-import styleRegister from '@/styles/register.module.css'
+import styleLogin from '@/app/auth/login/login.module.css'
+import styleRegister from '@/app/auth/register/register.module.css'
 
 const Home =()=>{
 
@@ -89,7 +89,7 @@ const Home =()=>{
                 </div>
 
                 <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
-                    <button className={styleLogin['btnLogin']}   ><p style={{fontSize: '28px',fontWeight: 'bold',}}>Tạo tài khoản</p></button>
+                    <button className={styleLogin['btnLogin']}   ><p style={{fontSize: '28px',fontWeight: 'bold',marginTop:10}}>Tạo tài khoản</p></button>
                 </div>
 
                 <div className={styleLogin['cardline']}>
@@ -102,7 +102,7 @@ const Home =()=>{
 
                 <div style={{display:'flex',gap:10}}>
                     <button className={styleLogin['btnIcon']} >
-                            <img src="/image/login/IconGoogle.png" alt="Google" className={styleLogin['imgIcon']} />
+                            <img src="/image/login/IconGoogle.png" alt="Google" className={styleLogin['imgIcon']} />                  
                     </button>
                     <button className={styleLogin['btnIcon']} >
                             <img src="/image/login/IconFacebook.png" alt="Facebook" className={styleLogin['imgIcon']} />

@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import styleLogin from "@/styles/login.module.css";
+import styleLogin from "@/app/auth/login/login.module.css";
 
 const Home = () => {
   const router = useRouter();
@@ -50,9 +50,9 @@ const Home = () => {
           </p>
         </div>
 
-        <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
-          <button className={styleLogin["btnLogin"]}>
-            <p style={{ fontSize: "28px", fontWeight: "bold" }}>Đăng nhập</p>
+        <div style={{ width: "100%", display: "flex", justifyContent: "center" ,alignItems:"center"}}>
+          <button className={styleLogin["btnLogin"]} onClick={()=> handleBtn()}>
+            <p style={{ fontSize: "28px", fontWeight: "bold", marginTop:10}}>Đăng nhập</p>
           </button>
         </div>
 

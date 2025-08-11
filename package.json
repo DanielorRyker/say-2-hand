@@ -28,6 +28,7 @@
     "unrs-resolver"
   ],
   "dependencies": {
+    "bootstrap": "^5.3.7",
     "react-bootstrap": "^2.10.10"
   }
 }
