@@ -2,13 +2,45 @@
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import styleLogin from "@/app/auth/login/login.module.css";
+import axios from "axios";
+import { useState } from "react";
 
 const Home = () => {
   const router = useRouter();
 
-  const handleBtn = () => {
-    router.push("/");
+  const [form, setForm] = useState({ email: "", password_hash: "" });
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
+
+  const handleBtn = async () => {
+  try {
+    setLoading(true);
+
+    const res = await axios.post(
+      "http://localhost:8080/api/auth/login", // API NestJS
+      form,
+      { withCredentials: true } // nếu BE dùng cookie/session
+    );
+
+    console.log("Login success:", res.data);
+    // localStorage.setItem("token", res.data.access_token);
+    router.push("/");
+  } catch (err: any) {
+    if (err.response?.status === 401) {
+      // Lỗi đăng nhập sai
+      alert(err.response?.data?.message || "Email hoặc mật khẩu không đúng");
+    } else {
+      // Các lỗi khác mới log ra console
+      console.error(err);
+      alert("Có lỗi xảy ra, vui lòng thử lại");
+    }
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className={styleLogin["container"]}>
@@ -22,6 +54,9 @@ const Home = () => {
             type="text"
             placeholder="Email hoặc số điện thoại"
             className={styleLogin["input"]}
+            value={form.email}
+            name="email"
+            onChange={handleChange}
           />
         </div>
 
@@ -30,6 +65,9 @@ const Home = () => {
             type="password"
             placeholder="Mật khẩu"
             className={styleLogin["input_password"]}
+            value={form.password_hash}
+            name="password_hash"
+            onChange={handleChange}
           />
           <img
             src="/image/login/mdi_eye-off.png"
@@ -51,7 +89,7 @@ const Home = () => {
         </div>
 
         <div style={{ width: "100%", display: "flex", justifyContent: "center" ,alignItems:"center"}}>
-          <button className={styleLogin["btnLogin"]} onClick={()=> handleBtn()}>
+          <button className={styleLogin["btnLogin"]} onClick={()=> handleBtn()} disabled={loading}>
             <p style={{ fontSize: "28px", fontWeight: "bold", marginTop:10}}>Đăng nhập</p>
           </button>
         </div>
