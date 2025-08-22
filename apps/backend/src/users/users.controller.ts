@@ -40,13 +40,13 @@ export class UsersController {
     return { message: 'User inserted successfully', data: newUser };
   }
 
-  @Get('find/:id')
-  async findUser(@Param('id') id: string) {
-    const user = await this.usersService.findByUserId(id);
-    if (!user) {
-      return { message: 'User not found' };
-    }
-    return user;
-  }
+  // @Get('find/:id')
+  // async findUser(@Param('id') id: string) {
+  //   const user = await this.usersService.findByUserId(id);
+  //   if (!user) {
+  //     return { message: 'User not found' };
+  //   }
+  //   return user;
+  // }
 
 }

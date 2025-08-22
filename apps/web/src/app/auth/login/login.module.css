@@ -112,13 +112,22 @@
 
 
 
-.eyeIcon{
+.eyeIcon1{
   position: absolute;
   right: 15px;
   top: 50%;
   transform: translateY(-50%);
-  width: 24px;
+  width: 26px;
   height: 24px;
+  cursor: pointer;
+}
+.eyeIcon2{
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 30px;
   cursor: pointer;
 }
 

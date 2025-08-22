@@ -18,7 +18,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     return <main>{children}</main>;
   }
 
-  const noHeaderFooterRoutes = ["/auth/login", "/auth/register"];
+  const noHeaderFooterRoutes = ["/auth/login", "/auth/register","/auth/verification"];
   const hideHeaderFooter = noHeaderFooterRoutes.includes(pathname);
 
   return (

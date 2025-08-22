@@ -22,7 +22,7 @@ export class AuthService {
     if (!isValidPassword) {
       throw new UnauthorizedException('Wrong password');
     }
-    const payload = { sub: user.user_id, username: user.email };
+    const payload = { sub: user._id, username: user.email };
     return {
       access_token: await this.jwtService.signAsync(payload),
     };

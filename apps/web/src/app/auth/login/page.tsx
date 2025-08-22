@@ -8,6 +8,12 @@ import { useState } from "react";
 const Home = () => {
   const router = useRouter();
 
+    const checkIcons = {
+    on: "/image/register/VectorCheckOn.svg",
+    off: "/image/register/VectorCheckOff.svg",
+    };
+    const [showPassword, setShowPassword] = useState(false);
+
   const [form, setForm] = useState({ email: "", password_hash: "" });
   const [loading, setLoading] = useState(false);
 
@@ -16,6 +22,10 @@ const Home = () => {
   };
 
   const handleBtn = async () => {
+    if (!form.email || !form.password_hash) {
+    alert("Vui lòng nhập đầy đủ email và mật khẩu");
+    return;
+  }
   try {
     setLoading(true);
 
@@ -62,7 +72,7 @@ const Home = () => {
 
         <div className={styleLogin["gradientBorder"]}>
           <input
-            type="password"
+            type={showPassword ? "text" : "password"}
             placeholder="Mật khẩu"
             className={styleLogin["input_password"]}
             value={form.password_hash}
@@ -70,9 +80,10 @@ const Home = () => {
             onChange={handleChange}
           />
           <img
-            src="/image/login/mdi_eye-off.png"
+            src={showPassword ? "/image/login/mdi_eye_on.svg" : "/image/login/mdi_eye-off.svg"}
             alt="Toggle visibility"
-            className={styleLogin["eyeIcon"]}
+             className={showPassword ? styleLogin['eyeIcon2'] : styleLogin['eyeIcon1']}
+            onClick={() => setShowPassword(!showPassword)}
           />
         </div>
 

@@ -17,7 +17,7 @@ async function bootstrap() {
 
  // Bật CORS cho FE, dùng khi FE và BE khác port để tránh bị chặn
   app.enableCors({
-    origin: 'http://localhost:3000', // FE Next.js đang chạy
+    origin: 'http://localhost:3002', // FE Next.js đang chạy
     credentials: true,
   }); 
   // Gọi listen() trước để khởi động server

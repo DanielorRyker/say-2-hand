@@ -23,19 +23,23 @@ export class UsersService {
   };
 
   async create(createUserDto: CreateUserDto) {
-    const { user_id, username, email, password_hash } = createUserDto;
+    const {  full_name, email, password_hash } = createUserDto;
     const isExist = await this.isEmailExist(email);
     if (isExist) {
       throw new BadRequestException(`email da ton tai: ${email}`);
     }
     const hashPassword = await hashPasswordHelper(password_hash);
     const user = await this.userModel.create({
-      user_id,
-      username,
+      
+      full_name,
       email,
       password_hash: hashPassword,
       is_active: true,
       role: 'user',
+      //status:'inactive',
+      // email_verified : false,
+      // phone_verified:false
+    
     });
     return { _id: user._id };
   }
@@ -57,22 +61,22 @@ export class UsersService {
 
   async update(updateUserDto: UpdateUserDto) {
     return this.userModel.updateOne(
-      { user_id: updateUserDto.user_id },
+      { _id: updateUserDto._id },
       { ...updateUserDto },
     );
   }
 
-  async remove(user_id: string) {
-    return this.userModel.deleteOne({ user_id });
+  async remove(_id: string) {
+    return this.userModel.deleteOne({ _id });
   }
 
   async findByEmail(email: string) {
     return this.userModel.findOne({ email });
   }
 
-  async findByUserId(userId: string) {
-    return this.userModel.findOne({ user_id: userId }).exec();
-  }
+  // async findByUserId(userId: string) {
+  //   return this.userModel.findOne({ user_id: userId }).exec();
+  // }
 
   async insertTestUser(): Promise<User> {
     const user = new this.userModel({
