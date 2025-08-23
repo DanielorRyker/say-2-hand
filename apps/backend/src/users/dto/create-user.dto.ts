@@ -2,7 +2,7 @@ import { IsEmail, IsNotEmpty, IsOptional, IsNumber, IsString } from "class-valid
 
 export class CreateUserDto {
 
-   @IsOptional()
+  @IsOptional()
   @IsString()
   full_name?: string;
 

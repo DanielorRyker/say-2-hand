@@ -11,23 +11,37 @@ export class VerificationTokensService {
     @InjectModel(VerificationToken.name) private tokenModel: Model<TokenDocument>,
     ) {}
 
-  create(createVerificationTokenDto: CreateVerificationTokenDto) {
-    return 'This action adds a new verificationToken';
+ async create(createVerificationTokenDto: CreateVerificationTokenDto): Promise<VerificationToken> {
+    const createdToken = new this.tokenModel({
+      ...createVerificationTokenDto,
+      user_id: new Types.ObjectId(createVerificationTokenDto.user_id),
+      
+    });
+    return createdToken.save();
   }
 
-  findAll() {
+  async findAll() {
     this.tokenModel.find().exec();
   }
 
-  findOne(userId: string) {
-   return this.tokenModel.findOne({ user_id: new Types.ObjectId(userId) }).exec();
-  }
+ async findOne(userId: string) {
+  return this.tokenModel.findOne({ user_id: new Types.ObjectId(userId) }).exec();
+}
+
+ async findMany(userId: string) {
+  return this.tokenModel.find({ user_id: new Types.ObjectId(userId) }).exec();
+}
 
   update(id: number, updateVerificationTokenDto: UpdateVerificationTokenDto) {
     return `This action updates a #${id} verificationToken`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} verificationToken`;
+  async remove(user_id: string) {
+    const objectId = new Types.ObjectId(user_id);
+    await this.tokenModel.deleteMany({ user_id: objectId }).exec();
   }
+
+  
+
+  
 }

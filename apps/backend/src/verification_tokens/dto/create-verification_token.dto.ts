@@ -1,21 +1,22 @@
 import { Type } from "class-transformer";
-import { IsBoolean, IsDate, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { IsBoolean, IsDate, IsMongoId, IsNotEmpty, IsOptional, IsString } from "class-validator";
 
 export class CreateVerificationTokenDto {
     @IsNotEmpty()
-    @IsString()
-    user_id: String;
+  @IsMongoId()
+  user_id: string;
     
     @IsString()
     type: string;
     
+    @IsNotEmpty()
     @IsString()
     token_hash: string;
     
     @IsNotEmpty()
     @Type(() => Date) // giúp transform string -> Date
     @IsDate()
-    expires_at: Date;
+    expiresAt: Date;
     
     @IsBoolean()
     consumed?: boolean = false; 

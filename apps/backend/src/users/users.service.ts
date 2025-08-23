@@ -59,7 +59,7 @@ export class UsersService {
     return user;
   }
 
-  async update(updateUserDto: UpdateUserDto) {
+  async update(updateUserDto: UpdateUserDto, userId?: string, email_verified?: any, p0?: boolean, status?: string, p1?: string) {
     return this.userModel.updateOne(
       { _id: updateUserDto._id },
       { ...updateUserDto },
@@ -78,21 +78,18 @@ export class UsersService {
   //   return this.userModel.findOne({ user_id: userId }).exec();
   // }
 
-  async insertTestUser(): Promise<User> {
-    const user = new this.userModel({
-      user_id: 'U1003',
-      username: 'testuser3',
-      email: 'test2@example.com',
-      password_hash: 'hashed_password_here',
-      full_name: 'Nguyễn Văn A2',
-      avatar_url: 'https://example.com/avatar.png',
-      phone_number: '+84901234567',
-      address_text: '123 Đường ABC, Quận 1, TP. Hồ Chí Minh',
-      longitude: 106.700981,
-      reputation_score: 85,
-      is_active: true,
-      role: 'user',
-    });
-    return user.save();
+async findIdByEmail(email: string): Promise<string | null> {
+  const user = await this.userModel.findOne({ email }).exec();
+  return user ? (user._id as Types.ObjectId).toString() : null;
+}
+
+
+async inactiveAcount(email: string): Promise<boolean> {
+  const user = await this.userModel.findOne({ email }).exec();
+  if (!user) {
+    return false; // không tìm thấy user
   }
+  
+  return user.status === 'active';
+}
 }

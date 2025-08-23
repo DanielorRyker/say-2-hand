@@ -37,7 +37,21 @@ const Home = () => {
 
     console.log("Login success:", res.data);
     // localStorage.setItem("token", res.data.access_token);
-    router.push("/");
+
+    //kiểm tra xem đã được kích hoạt chưa
+    const isActive = await axios.get(
+      `http://localhost:8080/api/users/checkActive/${form.email}`,
+      { withCredentials: true }
+    );
+
+    if (isActive.data === true) {
+      router.push("/");
+    } else {
+      alert("Tài khoản chưa được kích hoạt");
+      localStorage.setItem('email', form.email);
+      router.push("/auth/verification");
+    }
+    
   } catch (err: any) {
     if (err.response?.status === 401) {
       // Lỗi đăng nhập sai

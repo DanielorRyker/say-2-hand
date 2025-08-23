@@ -1,9 +1,13 @@
 
-import { Body, Controller, Post, HttpCode, HttpStatus, Get } from '@nestjs/common';
+import { Body, Controller, Post, HttpCode, HttpStatus, Get, Param, Query } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { MailerService } from '@nestjs-modules/mailer';
 
+export class VerifyOtpDto {
+  email: string;
+  otp: string;
+}
 
 @Controller('auth')
 export class AuthController {
@@ -18,19 +22,41 @@ export class AuthController {
     return this.authService.signIn(createAuthDto.email,createAuthDto.password_hash);
   }
 
-  @Get('mail')
-  testMail( ) {
+  @Get('mail/')
+  async testMail(@Query('email') email: string) {
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    await this.authService.createHashOTP(otp,email)
+
     this.mailerService
       .sendMail({
-        to: 'studies.mail.2024@gmail.com', // list of receivers
+        
+        to: email, // list of receivers
         from: 'noreply@nestjs.com', // sender address
         subject: 'Say2hand', // Subject line
-        text: 'Đây là mã xác nhận của bạn: ', // plaintext body
-        html: '<b>Đây là mã xác nhận của bạn:</b>', // HTML body content
+        text: 'Đây là mã xác nhận của bạn: '+otp, // plaintext body
+        html: '<b>Đây là mã xác nhận của bạn:'+otp+'</b>', // HTML body content
       })
       .then(() => {})
       .catch(() => {});
+
+      
   
     return 'ok';
+  }
+
+   @Post('verify')
+  async verifyOtp(@Body() body: any) {
+    const email = body.email;
+    const otp = body.otp;
+
+    return this.authService.verifiAccount(otp, email);
+
+    // try {
+    //   await this.authService.verifiAccount(otp, email);
+    //   return { success: true, message: 'Xác thực thành công' };
+    // } catch (error: any) {
+    //   return { success: false, message: error.message };
+    // }
   }
 }

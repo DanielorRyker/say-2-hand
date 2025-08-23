@@ -65,11 +65,22 @@ const Home =()=>{
             form,
             { withCredentials: true } // nếu BE dùng cookie/session
             );
+
+            await axios.get(`http://localhost:8080/api/auth/mail`, {
+            params: { email: form.email },
+            });
+
             alert("Mã xác nhận đã được gửi tới email");
-            router.push("/auth/login");
-         } catch (error) {
-            console.error(error);
+            localStorage.setItem('email', form.email);
+            router.push("/auth/verification");
+         } catch (error: any) {
+            if (error.response?.status  === 400) {
+                 alert( "Email đã tồn tại");
+            }else {
+                console.error(error);
             alert("Có lỗi xảy ra, vui lòng thử lại");
+            }
+            
          }finally {
             setLoading(false);
         }

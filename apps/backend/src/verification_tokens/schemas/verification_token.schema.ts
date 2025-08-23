@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { IsNotEmpty } from 'class-validator';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export type TokenDocument = VerificationToken & Document;
 
@@ -10,8 +10,8 @@ export type TokenDocument = VerificationToken & Document;
 })
 export class VerificationToken {
 
-  @Prop({ type: String, required: true })
-  user_id: String;
+    @Prop({ type: Types.ObjectId, required: true, ref: 'User' })
+    user_id: Types.ObjectId;
 
   @Prop({ required: true, enum: ['phone', 'email'] }) // có thể thêm enum nếu chỉ có vài loại
   type: string;

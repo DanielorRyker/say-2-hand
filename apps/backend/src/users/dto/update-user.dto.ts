@@ -3,7 +3,7 @@ import { IsOptional, IsString, IsEmail, IsNumber, IsBoolean } from 'class-valida
 export class UpdateUserDto {
  @IsOptional()
    @IsString()
-   _id: string;
+   _id?: string;
  
   @IsOptional()
    @IsString()
@@ -11,11 +11,11 @@ export class UpdateUserDto {
  
   @IsOptional()
    @IsEmail()
-   email: string;
+   email?: string;
  
    @IsOptional()
    @IsString()
-   password_hash: string;
+   password_hash?: string;
  
   @IsOptional()
    @IsString()
@@ -30,16 +30,16 @@ export class UpdateUserDto {
    address_text?: string;
 
   @IsOptional()
-  @IsBoolean()
-  status: boolean;
+  @IsString()
+  status?: string;
    
   @IsOptional()
    @IsBoolean()
-  email_verified: boolean;
+  email_verified?: boolean;
    
   @IsOptional()
    @IsBoolean()
-  phone_verified: boolean;
+  phone_verified?: boolean;
 
-
+ 
 }

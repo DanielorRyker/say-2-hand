@@ -10,5 +10,6 @@ import { VerificationToken,TokenSchema } from './schemas/verification_token.sche
       ],
   controllers: [VerificationTokensController],
   providers: [VerificationTokensService],
+  exports: [VerificationTokensService],
 })
 export class VerificationTokensModule {}

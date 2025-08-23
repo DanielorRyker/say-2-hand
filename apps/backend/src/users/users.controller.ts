@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -34,11 +34,11 @@ export class UsersController {
   return  this.usersService.remove(id);
 }
 
-  @Get('test-insert')
-  async testInsert() {
-    const newUser = await this.usersService.insertTestUser();
-    return { message: 'User inserted successfully', data: newUser };
-  }
+ @Get('checkActive/:email')
+inactiveAcount(@Param('email') email: string) {
+  return this.usersService.inactiveAcount(email);
+}
+
 
   // @Get('find/:id')
   // async findUser(@Param('id') id: string) {

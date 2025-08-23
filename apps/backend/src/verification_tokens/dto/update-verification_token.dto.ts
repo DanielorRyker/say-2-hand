@@ -4,9 +4,7 @@ import { IsBoolean, IsDate, IsNotEmpty, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class UpdateVerificationTokenDto extends PartialType(CreateVerificationTokenDto) {
-    @IsNotEmpty()
-    @IsString()
-    user_id: String;
+
     
     @IsString()
     type: string;
@@ -17,7 +15,7 @@ export class UpdateVerificationTokenDto extends PartialType(CreateVerificationTo
     @IsNotEmpty()
     @Type(() => Date) 
     @IsDate()
-    expires_at: Date;
+    expiresAt: Date;
     
     @IsBoolean()
     consumed?: boolean = false; 

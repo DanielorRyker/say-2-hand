@@ -30,7 +30,7 @@ export class User {
   avatar_url?: string;
 
   @Prop({ type: String,default: 'inactive' })
-  status: boolean;
+  status: string;
 
   @Prop({ type: Boolean, default: false })
   email_verified: boolean;

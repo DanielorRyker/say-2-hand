@@ -8,13 +8,17 @@ export class VerificationTokensController {
   constructor(private readonly verificationTokensService: VerificationTokensService) {}
 
   @Post()
-  create(@Body() createVerificationTokenDto: CreateVerificationTokenDto) {
+  create(@Body()  createVerificationTokenDto: CreateVerificationTokenDto) {
     return this.verificationTokensService.create(createVerificationTokenDto);
   }
 
   @Get()
   findAll() {
     return this.verificationTokensService.findAll();
+  }
+  @Get('findMany/:id')
+  findMany(@Param('id') id: string) {
+    return this.verificationTokensService.findMany(id);
   }
 
   @Get(':id')
@@ -29,6 +33,6 @@ export class VerificationTokensController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.verificationTokensService.remove(+id);
+    return this.verificationTokensService.remove(id);
   }
 }
