@@ -16,7 +16,7 @@ const Home = () => {
 
     const [form, setForm] = useState({ email: "", otp: "" });
   
-  // const [loading, setLoading] = useState(false);
+  
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });

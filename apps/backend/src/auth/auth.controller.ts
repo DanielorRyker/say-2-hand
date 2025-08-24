@@ -52,11 +52,40 @@ export class AuthController {
 
     return this.authService.verifiAccount(otp, email);
 
-    // try {
-    //   await this.authService.verifiAccount(otp, email);
-    //   return { success: true, message: 'Xác thực thành công' };
-    // } catch (error: any) {
-    //   return { success: false, message: error.message };
-    // }
+  }
+ 
+  //Gửi mail để đổi mật khẩu
+  @Get('mailResetPassword/')
+  async sendMailResetPassword(@Query('email') email: string) {
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    //tạo OTP trên database
+    await this.authService.createHashOTPPassword(otp,email)
+
+    this.mailerService
+      .sendMail({
+        
+        to: email, // list of receivers
+        from: 'noreply@nestjs.com', // sender address
+        subject: 'Say2hand', // Subject line
+        text: 'Đây là mã đặt lại mật khẩu của bạn: '+otp, // plaintext body
+        html: '<b>Đây là mã đặt lại mật khẩu của bạn:'+otp+'</b>', // HTML body content
+      })
+      .then(() => {})
+      .catch(() => {});
+
+      
+  
+    return 'ok';
+  }
+
+   @Post('verifyResetPassword')
+  async verifyOtpResetPassword(@Body() body: any) {
+    const email = body.email;
+    const otp = body.otp;
+    const password = body.password;
+
+    return this.authService.verifiResetPassword(otp, email,password);
+
   }
 }

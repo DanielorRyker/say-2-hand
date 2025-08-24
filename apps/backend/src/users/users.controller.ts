@@ -39,6 +39,11 @@ inactiveAcount(@Param('email') email: string) {
   return this.usersService.inactiveAcount(email);
 }
 
+@Get('exist/:email')
+checkMailExists(@Param('email') email: string){
+return this.usersService.isEmailExist(email);
+}
+
 
   // @Get('find/:id')
   // async findUser(@Param('id') id: string) {

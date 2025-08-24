@@ -102,15 +102,16 @@ const Home = () => {
         </div>
 
         <div style={{ alignSelf: "flex-start", marginLeft: "50px" }}>
-          <p
+          <Link
+            href="/auth/forgotPassword/confirmEmail"
             style={{
               fontSize: "18px",
-              color: "#757575",
+              color: "#3B82F6",
               fontWeight: "bold",
             }}
           >
             Quên mật khẩu
-          </p>
+          </Link>
         </div>
 
         <div style={{ width: "100%", display: "flex", justifyContent: "center" ,alignItems:"center"}}>

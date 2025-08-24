@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { VerificationTokensModule } from './verification_tokens/verification_tokens.module';
+import { PasswordResetsModule } from './password_resets/password_resets.module';
 
 
 @Module({
@@ -43,6 +44,7 @@ import { VerificationTokensModule } from './verification_tokens/verification_tok
     UsersModule,
     AuthModule,
     VerificationTokensModule,
+    PasswordResetsModule,
 
   ],
   controllers: [AppController],

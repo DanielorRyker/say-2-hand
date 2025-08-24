@@ -15,9 +15,11 @@ const Home =()=>{
     };
      const [loading, setLoading] = useState(false);
 
+    // show password
     const [showPassword, setShowPassword] = useState(false);
     const [showRePassword, setShowRePassword] = useState(false);
 
+    //icon check
     const checkIcons = {
     on: "/image/register/VectorCheckOn.svg",
     off: "/image/register/VectorCheckOff.svg",
