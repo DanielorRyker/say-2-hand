@@ -45,13 +45,13 @@ return this.usersService.isEmailExist(email);
 }
 
 
-  // @Get('find/:id')
-  // async findUser(@Param('id') id: string) {
-  //   const user = await this.usersService.findByUserId(id);
-  //   if (!user) {
-  //     return { message: 'User not found' };
-  //   }
-  //   return user;
-  // }
+  @Get('find/:email')
+  async getUser(@Param('email') id: string) {
+    const user = await this.usersService.findByEmail(id);
+    if (!user) {
+      return { message: 'User not found' };
+    }
+    return user;
+  }
 
 }

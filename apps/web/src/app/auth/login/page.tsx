@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import styleLogin from "@/app/auth/login/login.module.css";
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const Home = () => {
   const router = useRouter();
@@ -45,6 +45,12 @@ const Home = () => {
     );
 
     if (isActive.data === true) {
+      //lưu user vào localStorage
+      const userRes = await axios.get(
+            `http://localhost:8080/api/users/find/${form.email}`
+          );
+      localStorage.setItem("user", JSON.stringify(userRes.data));
+
       router.push("/");
     } else {
       alert("Tài khoản chưa được kích hoạt");
