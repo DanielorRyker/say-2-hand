@@ -124,13 +124,13 @@ const Home = () => {
 
 
          
-          
-            {loading &&  <div className={styleVerification["bar"]}></div>}
+          <>
+             {loading &&  <div className={styleVerification["bar"]}></div>}
             {!loading && success && (
               <span className="text-green-600 font-medium h-10">Gửi lại mã thành công {countdown > 0 && `(${countdown})`}</span>
             )}
-          
-        
+          </>
+           
 
        
       </div>

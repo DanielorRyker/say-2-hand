@@ -26,19 +26,22 @@
 }
 
 .gradientBorder {
-  display: block; 
+  display: flex; 
   position: relative;
-  padding: 1px;
+  padding: 2px; 
   border-radius: 30px;
   background: linear-gradient(to right, #2DE099, #3B82F6);
   width: 100%;        
   max-width: 500;   
+  justify-content: center;
+  align-items: center;
+    
 }
 
 .input{
   width: 100%;       
   padding: 12px;
-  border-radius: 27px;
+  border-radius: 28px;
   border: none;
   outline: none;
   background-color: white;
@@ -46,6 +49,8 @@
   color: #757575;
   font-weight: bold;
   text-align: center;
+
+  
 }
 
 .btnReSend {

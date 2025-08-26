@@ -4,7 +4,7 @@ import NavDropdown from 'react-bootstrap/NavDropdown';
 import { Navbar, Container, Nav } from 'react-bootstrap'
 import "@/styles/globals.css";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import { Span } from 'next/dist/trace';
 
 const header=()=>{
@@ -47,6 +47,12 @@ const header=()=>{
     // Xóa toàn bộ localStorage
    
     router.push("/auth/register");
+  }
+  // Thông tin cá nhân
+  const handleProfile = () => {
+    // Xóa toàn bộ localStorage
+   
+    router.push("/profile/"+user?.full_name);
   }
 
   return (
@@ -114,7 +120,7 @@ const header=()=>{
       {/* Nếu có user thì hiện Cài đặt tài khoản + Đăng xuất */}
       {user && (
         <>
-          <NavDropdown.Item >Cài đặt tài khoản</NavDropdown.Item>
+          <NavDropdown.Item onClick={handleProfile} >Cài đặt tài khoản</NavDropdown.Item>
           <NavDropdown.Divider />
           <NavDropdown.Item onClick={handleLogout}>Đăng xuất</NavDropdown.Item>
         </>

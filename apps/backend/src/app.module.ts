@@ -10,6 +10,7 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
 import { VerificationTokensModule } from './verification_tokens/verification_tokens.module';
 import { PasswordResetsModule } from './password_resets/password_resets.module';
 import { PostsModule } from './posts/posts.module';
+import { UploadModule } from './upload/upload.module';
 
 
 @Module({
@@ -47,6 +48,7 @@ import { PostsModule } from './posts/posts.module';
     VerificationTokensModule,
     PasswordResetsModule,
     PostsModule,
+    UploadModule,
 
   ],
   controllers: [AppController],
