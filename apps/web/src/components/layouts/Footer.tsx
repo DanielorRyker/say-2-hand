@@ -1,7 +1,7 @@
 'use client'
 
 
-const footer=()=>{
+const Footer=()=>{
 return(
     
             <div style={{
@@ -18,4 +18,4 @@ return(
     
 )
 }
-export default footer;
+export default Footer;

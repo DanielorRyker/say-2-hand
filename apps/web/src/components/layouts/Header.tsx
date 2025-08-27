@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { use, useEffect, useState } from 'react';
 import { Span } from 'next/dist/trace';
 
-const header=()=>{
+const Header=()=>{
 
   const router = useRouter();
 
@@ -162,4 +162,4 @@ const header=()=>{
   );
 }
 
-export default header;
+export default Header;

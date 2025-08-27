@@ -24,7 +24,7 @@ export class CreateUserDto {
 
   @IsOptional()
   @IsString()
-  address_text?: string;
+  address?: string;
 
  
 }

@@ -125,3 +125,125 @@
   
 
 }
+
+.gradientBorderAvatar {
+  display: block; 
+  position: relative;
+  padding: 1px;
+  border-radius: 20;
+  background: linear-gradient(to right, #2DE099, #3B82F6);
+  width: 100%;
+  max-width: 200px;   
+  height: 200px;
+  margin-bottom: 25;
+}
+
+.cardChangeAvatar{
+  background: #E5E5E5;
+  width: 100%;
+  height: 100%;
+  border-radius: 20;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.changeAvatarImg{
+  width: 100px;
+  height: 100px;
+}
+
+.btnChangeAvatar{
+  height: 50px;
+  width: 200px;
+  background: linear-gradient(to right, #2DE099, #3B82F6);
+  border-radius: 20;
+  font-weight: bold;
+}
+
+.gradientBorderInfo {
+  display: block; 
+  position: relative;
+  padding: 1px;
+  border-radius: 20;
+  background: linear-gradient(to right, #2DE099, #3B82F6);
+  width: 100%;
+  max-width: 600px; 
+ 
+  margin-bottom: 25;
+}
+
+.changeInfoCar{
+   width: 100%; 
+   max-width: 600px;
+  /* width: 600px; */
+  height: 50px;
+  border-radius: 20;
+  background-color: #EEEEEE;
+  display: flex;
+  align-items: center;
+  padding-left: 10;
+}
+
+.inputInfo{
+  
+  width: 100%;
+  
+  height: 100%;
+  border-radius: 0 20 20 0;
+  padding-left: 10;
+}
+
+
+
+
+.infoLable{
+  font-weight: bold;
+  white-space:nowrap;
+}
+
+.textAreaDescriptionCar{
+  width: 500px;
+  height: 100px;
+  border-radius: 20;
+  background-color: #EEEEEE;
+  display: flex;
+  align-items: center;
+  padding-left: 10;
+  
+}
+
+.textAreaDescription{
+  
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 0 20 20 0;
+  resize: none;
+  
+  
+}
+
+.btnConfirm{
+  width: 100%;
+  max-width: 600px;
+
+  height: 50px;
+  border-radius: 20;
+  background: linear-gradient(to right, #2DE099, #3B82F6);
+  font-weight: bold;
+  font-size: 28;
+  
+}
+
+/* 📱 Mobile layout */
+@media (max-width: 600px) {
+  
+
+  .gradientBorderInfo {
+    width: 300;
+    
+  
+  }
+
+  
+}

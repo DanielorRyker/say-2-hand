@@ -25,10 +25,7 @@ export class UpdateUserDto {
    @IsString()
    avatar_url?: string;
  
-   @IsOptional()
-   @IsString()
-   address_text?: string;
-
+   
   @IsOptional()
   @IsString()
   status?: string;
@@ -41,5 +38,12 @@ export class UpdateUserDto {
    @IsBoolean()
   phone_verified?: boolean;
 
- 
+ @IsOptional()
+   @IsString()
+   address?: string;
+
+    @IsOptional()
+   @IsString()
+     description?: string;
+   
 }

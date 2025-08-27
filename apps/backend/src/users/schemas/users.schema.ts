@@ -39,10 +39,13 @@ export class User {
  phone_verified: boolean;
 
   @Prop({ type: String })
-  address_text?: string;
+  address?: string;
 
+  @Prop({ type: String })
+  description?: string;
 
-
+  @Prop({ type: String })
+  avatar?: string;
 
 }
 
