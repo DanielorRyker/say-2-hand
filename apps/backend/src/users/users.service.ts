@@ -59,7 +59,7 @@ export class UsersService {
     return user;
   }
 
-  async update(updateUserDto: UpdateUserDto, userId?: string, email_verified?: any, p0?: boolean, status?: string, p1?: string) {
+  async update(updateUserDto: UpdateUserDto, userId?: string, email_verified?: any, p0?: boolean, status?: string, p1?: string, avatar?: string) {
     return this.userModel.updateOne(
       { _id: updateUserDto._id },
       { ...updateUserDto },

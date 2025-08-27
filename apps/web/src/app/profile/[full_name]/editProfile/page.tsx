@@ -66,38 +66,118 @@ const Home =()=>{
     }
   };
 
+  // const handleUpload = async () => {
+  //   if (!file) return alert("Vui lòng chọn file!");
+
+  //   const formData = new FormData();
+  //   formData.append("file", file); // phải trùng với FileInterceptor('file')
+
+  //   try {
+  //     const res = await axios.post("http://localhost:8080/api/upload/avatar", formData, {
+  //       headers: { "Content-Type": "multipart/form-data" },
+  //     });
+  //     setUploadedUrl(res.data.url);
+  //     alert("Upload thành công!");
+  //   } catch (err) {
+  //     console.error("Upload failed:", err);
+  //   }
+  // };
   const handleUpload = async () => {
-    if (!file) return alert("Vui lòng chọn file!");
+  if (!file) return alert("Vui lòng chọn file!");
 
-    const formData = new FormData();
-    formData.append("file", file); // phải trùng với FileInterceptor('file')
+  const formData = new FormData();
+  formData.append("file", file); 
+  formData.append("userId", form._id); // thêm userId
 
-    try {
-      const res = await axios.post("http://localhost:8080/api/upload/avatar", formData, {
+  try {
+    const res = await axios.post(
+      "http://localhost:8080/api/upload/avatar",
+      formData,
+      {
         headers: { "Content-Type": "multipart/form-data" },
-      });
-      setUploadedUrl(res.data.url);
-    } catch (err) {
-      console.error("Upload failed:", err);
-    }
-  };
+      }
+    );
+    setUploadedUrl(res.data.url);
+    alert("Upload thành công!");
+      const userRes = await axios.get(
+            `http://localhost:8080/api/users/find/${form.email}`
+          );
+      localStorage.setItem("user", JSON.stringify(userRes.data));
+  } catch (err) {
+    console.error("Upload failed:", err);
+  }
+};
+
+ const handleBack =()=>{
+   router.push(`/profile/${form.full_name}`);
+ }
+
+ const handleFormSubmit = async () => {
+  
+   try {
+     const res = await axios.patch(
+       `http://localhost:8080/api/users/`,
+       form,
+       { withCredentials: true }
+     );
 
     
+      const userRes = await axios.get(
+            `http://localhost:8080/api/users/find/${form.email}`
+          );
+          localStorage.setItem("user", JSON.stringify(userRes.data));
+     alert("Cập nhật thành công!");
+      router.push(`/profile/${form.full_name}`);
+   } catch (err) {
+     console.error("Update failed:", err);
+   }
+ };
 
     return(
         <div className={styleUser['container']} >
             <div className={styleUser['gradientBorder']} >
                  <div className={styleUser['card']} style={{paddingTop:50}}>
 
-              <div className={styleUser['gradientBorderAvatar']}>
-                <div className={styleUser['cardChangeAvatar']}>
-                  <img src="/image/profile/camera.svg" alt=""  className={styleUser['changeAvatarImg']}/>
-                </div>
-              </div>
+              
+         
 
+              {preview ? (
+                <div>
+                  <input
+                      type="file"
+                      accept="image/*"
+                      id="upload-avatar"
+                      onChange={handleFileChange}
+                      style={{ display: "none" }}
+                    />
+                  <label htmlFor="upload-avatar">
+                      <img src={preview} alt="preview" className={styleUser['avatarImgNew']} />
+                  </label>
+                 
+                </div>
+              ) : (
+                <div className={styleUser['gradientBorderAvatar']}>
+                  <div className={styleUser['cardChangeAvatar']}>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      id="upload-avatar"
+                      onChange={handleFileChange}
+                      style={{ display: "none" }}
+                    />
+                    <label htmlFor="upload-avatar">
+                      <img
+                        src="/image/profile/camera.svg"
+                        alt="Upload avatar"
+                        className={styleUser['changeAvatarImg']}
+                      />
+                    </label>
+                  </div>
+                </div>
+              )}
 
               <div>
-                <button className={styleUser['btnChangeAvatar']} >Đổi ảnh đại diện</button>
+                <button className={styleUser['btnChangeAvatar']} onClick={handleUpload}>Đổi ảnh đại diện</button>
               </div>
 
               <div style={{padding:50}}>
@@ -154,7 +234,12 @@ const Home =()=>{
                   </div>
                 </div>
 
-                <button className={styleUser['btnConfirm']}>Xác nhận</button>
+                <button className={styleUser['btnConfirm']} onClick={handleFormSubmit}>Xác nhận</button>
+                <div className={styleUser['gradientBorderInfo']} style={{marginTop:20}}>
+                  <button className={styleUser['btnBack']} onClick={handleBack}>Quay lại</button>
+                </div>
+                
+
 
               </div>
               

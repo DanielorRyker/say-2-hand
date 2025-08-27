@@ -1,5 +1,5 @@
 
-import { Body, Controller, Post, HttpCode, HttpStatus, Get, Param, Query } from '@nestjs/common';
+import { Body, Controller, Post, Get, Query } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { MailerService } from '@nestjs-modules/mailer';
@@ -46,12 +46,15 @@ export class AuthController {
   }
 
    @Post('verify')
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
   async verifyOtp(@Body() body: any) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const email = body.email;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const otp = body.otp;
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return this.authService.verifiAccount(otp, email);
-
   }
  
   //Gửi mail để đổi mật khẩu
@@ -80,12 +83,16 @@ export class AuthController {
   }
 
    @Post('verifyResetPassword')
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
   async verifyOtpResetPassword(@Body() body: any) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const email = body.email;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const otp = body.otp;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const password = body.password;
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return this.authService.verifiResetPassword(otp, email,password);
-
   }
 }

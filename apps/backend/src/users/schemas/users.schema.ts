@@ -26,9 +26,6 @@ export class User {
   @Prop({ type: String, default: 'user' })
   role: string;
 
-  @Prop({ type: String })
-  avatar_url?: string;
-
   @Prop({ type: String,default: 'inactive' })
   status: string;
 

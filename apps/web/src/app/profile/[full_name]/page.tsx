@@ -21,6 +21,7 @@ const Home =()=>{
     phone_number:string;
     address: string;
     description:string;
+    avatar:string
   } | null>(null);
 
   useEffect(() => {
@@ -54,7 +55,13 @@ const Home =()=>{
                  <div className={styleUser['card']}>
 
                 <div className={styleUser['cardAvatarBackground']}>
-                    <img src="/image/header/carbon_user-avatar-filled-alt.svg" alt=""className={styleUser['avatarImg']} /> 
+                    {
+                        user?.avatar ? (
+                            <img src={`${process.env.NEXT_PUBLIC_URL_GCS}${user?.avatar}`}  alt="" className={styleUser['avatarImg']} />
+                        ) : (
+                            <img src="/image/header/carbon_user-avatar-filled-alt.svg" alt="" className={styleUser['avatarImg']} />
+                        )
+                    }
                 </div>
 
                 <div >
@@ -89,7 +96,7 @@ const Home =()=>{
                         </div>
 
                         <div className={styleUser['cardInfo']}>
-                            {user?.description ?  <p className={styleUser['']}>{user?.description}</p> :  <p className={styleUser['describe']}>Sáng sớm ngày 26/8, bão Kajiki (hay bão số 5) đã suy yếu thành áp thấp .</p>}
+                            {user?.description ?  <p className={styleUser['']}>{user?.description}</p> :  <p className={styleUser['describe']}></p>}
                         </div>
                     
 
