@@ -3,14 +3,11 @@ import { Document } from 'mongoose';
 
 export type UserDocument = User & Document;
 
-
-@Schema({ 
-  timestamps: true, 
-  collection: 'users' 
+@Schema({
+  timestamps: true,
+  collection: 'users',
 })
-
 export class User {
-  
   @Prop({ type: String })
   full_name?: string;
 
@@ -28,22 +25,17 @@ export class User {
 
   @Prop({ type: String })
   avatar_url?: string;
-
-  @Prop({ type: String,default: 'inactive' })
+  @Prop({ type: String, default: 'inactive' })
   status: string;
 
   @Prop({ type: Boolean, default: false })
   email_verified: boolean;
 
- @Prop({ type: Boolean, default: false })
- phone_verified: boolean;
+  @Prop({ type: Boolean, default: false })
+  phone_verified: boolean;
 
   @Prop({ type: String })
   address_text?: string;
-
-
-
-
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

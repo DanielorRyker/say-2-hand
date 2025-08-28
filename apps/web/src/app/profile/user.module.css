@@ -1,0 +1,270 @@
+.container {
+  background-size: cover;
+  background-repeat: no-repeat;
+  height: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #F4F4F4;
+
+  padding-Top:150px;
+  padding-bottom: 20px;
+}
+
+.gradientBorder {
+  display: block; 
+  position: relative;
+  padding: 1px;
+  border-radius: 30px;
+  background: linear-gradient(to right, #2DE099, #3B82F6);
+    width: 90%;
+  max-width: 900px;   
+}
+
+.card{
+  width: 100%;
+  /* max-width: 900px; */
+  height: auto;
+  border-radius: 30px;
+  background-color: #EEEEEE;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  
+  /* padding: 20px; */
+}
+
+.cardAvatarBackground{
+    width: 100%;
+    height: 20%;
+     background-image: url("/Background.png");
+     border-radius: 30px 30px 0 0;
+     display: flex;
+     justify-content: center;
+     align-items: center;
+}
+
+.avatarImg{
+    width: 200px;
+    height: 200px;
+    padding: 10px;
+    border-radius: 50%;
+}
+
+.title {
+  font-size: 40px;
+  font-weight: bold;
+  margin-bottom: 20px;
+   text-align: center;
+}
+
+.cardAllInfo{
+    display: flex;
+   flex-direction: column;
+   
+   /* align-items: center; */
+    
+}
+
+.describe{
+  overflow-wrap: break-word; /* cho text tự xuống dòng */
+  word-break: break-word;
+  max-width: 500px;
+}
+
+.cardInfo{
+    display: flex;
+    gap: 5px;
+    
+}
+
+.iconImg{
+  width: 24px;
+  height: 24px;
+}
+
+.btnProfile{
+  width: 400px;
+  height: 60px;
+  background: linear-gradient(to right, #2DE099, #3B82F6);
+  border-radius: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20;
+}
+.textBtn{
+  font-weight: bold;
+  margin-top: 12;
+  font-size: 18px;
+}
+
+
+.gradientBorderLogout {
+  display: block; 
+  position: relative;
+  padding: 1px;
+  border-radius: 10;
+  background: linear-gradient(to right, #2DE099, #3B82F6);
+  width: 100%;
+  max-width: 400px;   
+  height: 60px;
+  margin-bottom: 25;
+}
+
+.btnLogout{
+  width: 100%;
+  max-width: 400px;   
+  height: 58px;
+  background: #E5E5E5;
+  border-radius: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+
+}
+
+.gradientBorderAvatar {
+  display: block; 
+  position: relative;
+  padding: 1px;
+  border-radius: 20;
+  background: linear-gradient(to right, #2DE099, #3B82F6);
+  width: 100%;
+  max-width: 200px;   
+  height: 200px;
+  margin-bottom: 25;
+}
+
+.cardChangeAvatar{
+  background: #E5E5E5;
+  width: 100%;
+  height: 100%;
+  border-radius: 20;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.changeAvatarImg{
+  width: 100px;
+  height: 100px;
+}
+
+.btnChangeAvatar{
+  height: 50px;
+  width: 200px;
+  background: linear-gradient(to right, #2DE099, #3B82F6);
+  border-radius: 20;
+  font-weight: bold;
+}
+
+.gradientBorderInfo {
+  display: block; 
+  position: relative;
+  padding: 1px;
+  border-radius: 20;
+  background: linear-gradient(to right, #2DE099, #3B82F6);
+  width: 100%;
+  max-width: 600px; 
+ 
+  margin-bottom: 25;
+}
+
+.changeInfoCar{
+   width: 100%; 
+   max-width: 600px;
+  /* width: 600px; */
+  height: 50px;
+  border-radius: 20;
+  background-color: #EEEEEE;
+  display: flex;
+  align-items: center;
+  padding-left: 10;
+}
+
+.inputInfo{
+  
+  width: 100%;
+  
+  height: 100%;
+  border-radius: 0 20 20 0;
+  padding-left: 10;
+  
+}
+
+
+
+
+.infoLable{
+  font-weight: bold;
+  white-space:nowrap;
+}
+
+.textAreaDescriptionCar{
+  width: 500px;
+  height: 100px;
+  border-radius: 20;
+  background-color: #EEEEEE;
+  display: flex;
+  align-items: center;
+  padding-left: 10;
+  
+}
+
+.textAreaDescription{
+  
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 0 20 20 0;
+  resize: none;
+  
+  
+}
+
+.btnConfirm{
+  width: 100%;
+  max-width: 600px;
+
+  height: 50px;
+  border-radius: 20;
+  background: linear-gradient(to right, #2DE099, #3B82F6);
+  font-weight: bold;
+  font-size: 28;
+  
+}
+
+.avatarImgNew{
+  width: 200px;
+  height: 200px;
+  border-radius: 20;
+  margin-bottom: 25;
+}
+
+.btnBack{
+  width: 100%;
+  max-width: 600px;
+
+  height: 50px;
+  border-radius: 20;
+  background: #E5E5E5;
+  font-weight: bold;
+  font-size: 28;
+  
+}
+
+/* 📱 Mobile layout */
+@media (max-width: 600px) {
+  
+
+  .gradientBorderInfo {
+    width: 300;
+    
+  
+  }
+
+  
+}

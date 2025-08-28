@@ -6,6 +6,10 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { MailerModule } from '@nestjs-modules/mailer';
+<<<<<<< HEAD
+=======
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+>>>>>>> e3a9c8bc2d8a1b35902c7500e2b40edbfeef2cbb
 import { VerificationTokensModule } from './verification_tokens/verification_tokens.module';
 import { PasswordResetsModule } from './password_resets/password_resets.module';
 import { PostsModule } from './posts/posts.module';
