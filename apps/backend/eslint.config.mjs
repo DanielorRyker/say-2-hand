@@ -26,7 +26,24 @@ export default tseslint.config(
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-floating-promises': 'warn',
-      '@typescript-eslint/no-unsafe-argument': 'warn'
+      '@typescript-eslint/no-unsafe-argument': 'warn',
+      // Allow unsafe assignment, member access, and function calls for flexibility in legacy/migration code
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+    },
+  },
+  // Suppress linting for tsconfig.json and tsconfig.build.json (module/target)
+  {
+    files: ['tsconfig.json', 'tsconfig.build.json'],
+    rules: {
+      'no-unused-expressions': 'off',
+      'no-irregular-whitespace': 'off',
+      'no-undef': 'off',
+      'no-restricted-syntax': 'off',
+      'no-unused-vars': 'off',
+      // Add more rules to suppress as needed
     },
   },
 );

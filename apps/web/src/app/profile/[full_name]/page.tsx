@@ -1,12 +1,13 @@
 <<<<<<< HEAD
 "use client";
 import { useRouter } from "next/navigation";
-import styleUser from "@/styles/pages/profile/user.module.scss";
+import styleUser from "@/styles/pages/profile/user.module.css";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 
 const Home = () => {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
 
   const [user, setUser] = useState<{
 =======
@@ -44,12 +45,15 @@ const Home =()=>{
   } | null>(null);
 
   useEffect(() => {
+    setMounted(true);
     // chạy ở client sau khi render
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
   }, []);
+
+  if (!mounted) return null;
 
   //Đăng xuất
 <<<<<<< HEAD
