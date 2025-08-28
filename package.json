@@ -37,7 +37,11 @@
     "handlebars": "^4.7.8",
     "multer": "^2.0.2",
     "nodemailer": "^7.0.5",
-    "react-bootstrap": "^2.10.10",
-    "sass": "^1.91.0"
+<<<<<<< HEAD
+  "react-bootstrap": "^2.10.10",
+  "sass": "^1.91.0"
+=======
+    "react-bootstrap": "^2.10.10"
+>>>>>>> e3a9c8bc2d8a1b35902c7500e2b40edbfeef2cbb
   }
 }

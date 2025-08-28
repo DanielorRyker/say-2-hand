@@ -28,7 +28,6 @@ export class User {
 
   @Prop({ type: String })
   avatar_url?: string;
-
   @Prop({ type: String,default: 'inactive' })
   status: string;
 
@@ -40,9 +39,6 @@ export class User {
 
   @Prop({ type: String })
   address_text?: string;
-
-
-
 
 }
 
