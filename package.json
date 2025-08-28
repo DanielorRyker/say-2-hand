@@ -49,8 +49,8 @@
     "mongoose": "^8.18.0",
     "multer": "^2.0.2",
     "nodemailer": "^7.0.5",
-  "react-bootstrap": "^2.10.10",
-  "sass": "^1.91.0"
+    "react-bootstrap": "^2.10.10",
+    "sass": "^1.91.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "react-bootstrap": "^2.10.10",
@@ -58,6 +58,5 @@
     "rxjs": "^7.8.2",
     "sass": "^1.91.0",
     "typescript-eslint": "^8.41.0"
-
   }
 }
