@@ -1,0 +1,28 @@
+.flexRow {
+  display: flex;
+}
+.headerBtnText {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 10px;
+}
+
+.headerUserDropdown {
+  display: flex;
+  gap: 25px;
+  justify-content: center;
+  align-items: center;
+}
+
+.headerLocationDropdown {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
+
+.headerLocationText {
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 15px;
+}

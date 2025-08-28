@@ -1,0 +1,122 @@
+.inputFileCustom {
+  width: 300px;
+  height: 120px;
+  background: red;
+}
+
+.btnUploadCustom {
+  width: 300px;
+  height: 120px;
+  background: blue;
+}
+
+.imgUploadedCustom {
+  width: 120px;
+  height: 120px;
+}
+// Thêm các class để thay thế inline style từ page.tsx
+.flexCheckboxRow {
+  display: flex;
+  font-size: 16px;
+  gap: 10px;
+}
+
+.centeredButtonRow {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.btnTextLarge {
+  font-size: 28px;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.flexGap10 {
+  display: flex;
+  gap: 10px;
+}
+
+.flexRow {
+  display: flex;
+}
+
+.bold18 {
+  font-weight: bold;
+  font-size: 18px;
+}
+.card{
+  width: 90%;
+  max-width: 900px;
+ height: auto;
+  border-radius: 50px;
+  background: linear-gradient(to right, #BFDBFE, #A7F3D0);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+}
+
+.gridContainer {
+  display: grid;
+  grid-template-columns: 1fr 1fr; 
+  gap: 10px 20px; 
+  max-width: 800px;
+  margin: 0 auto; 
+}
+
+.frame1 {
+  display: flex;
+  align-items: center;
+  gap: 10px; 
+}
+
+.checkIcon {
+  margin-bottom: 10px;
+}
+
+/* Khi màn hình nhỏ hơn 600px thì xuống 1 cột */
+@media (max-width: 600px) {
+  .gridContainer {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+.custom-checkbox {
+  display: inline-block;
+  position: relative;
+  cursor: pointer;
+}
+
+.custom-checkbox input {
+  display: none; /* Ẩn checkbox mặc định */
+}
+
+.checkmark {
+  width: 24px;
+  height: 24px;
+  background-color: #f0f0f0; /* Màu khi chưa check */
+  border-radius: 6px; /* Bo tròn góc */
+  display: inline-block;
+  position: relative;
+  transition: background-color 0.2s ease;
+}
+
+/* Khi checkbox được check */
+.custom-checkbox input:checked + .checkmark {
+  background-color: #1976d2; /* Nền xanh */
+}
+
+.custom-checkbox input:checked + .checkmark::after {
+  content: "✔";
+  position: absolute;
+  color: white;
+  font-size: 16px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
