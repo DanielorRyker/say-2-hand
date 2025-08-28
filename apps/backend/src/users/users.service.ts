@@ -23,14 +23,13 @@ export class UsersService {
   };
 
   async create(createUserDto: CreateUserDto) {
-    const {  full_name, email, password_hash } = createUserDto;
+    const { full_name, email, password_hash } = createUserDto;
     const isExist = await this.isEmailExist(email);
     if (isExist) {
       throw new BadRequestException(`email da ton tai: ${email}`);
     }
     const hashPassword = await hashPasswordHelper(password_hash);
     const user = await this.userModel.create({
-      
       full_name,
       email,
       password_hash: hashPassword,
@@ -39,7 +38,6 @@ export class UsersService {
       //status:'inactive',
       // email_verified : false,
       // phone_verified:false
-    
     });
     return { _id: user._id };
   }
@@ -58,7 +56,6 @@ export class UsersService {
     }
     return user;
   }
-
 
   async update(updateUserDto: UpdateUserDto) {
     return this.userModel.updateOne(
@@ -79,18 +76,17 @@ export class UsersService {
   //   return this.userModel.findOne({ user_id: userId }).exec();
   // }
 
-async findIdByEmail(email: string): Promise<string | null> {
-  const user = await this.userModel.findOne({ email }).exec();
-  return user ? (user._id as Types.ObjectId).toString() : null;
-}
-
-
-async inactiveAcount(email: string): Promise<boolean> {
-  const user = await this.userModel.findOne({ email }).exec();
-  if (!user) {
-    return false; // không tìm thấy user
+  async findIdByEmail(email: string): Promise<string | null> {
+    const user = await this.userModel.findOne({ email }).exec();
+    return user ? (user._id as Types.ObjectId).toString() : null;
   }
-  
-  return user.status === 'active';
-}
+
+  async inactiveAcount(email: string): Promise<boolean> {
+    const user = await this.userModel.findOne({ email }).exec();
+    if (!user) {
+      return false; // không tìm thấy user
+    }
+
+    return user.status === 'active';
+  }
 }
