@@ -1,12 +1,15 @@
-<<<<<<< HEAD
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
-=======
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
->>>>>>> e3a9c8bc2d8a1b35902c7500e2b40edbfeef2cbb
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-
 
 @Controller('users')
 export class UsersController {
@@ -14,7 +17,6 @@ export class UsersController {
 
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
-    
     return this.usersService.create(createUserDto);
   }
 
@@ -29,25 +31,24 @@ export class UsersController {
   }
 
   @Patch()
-  update( @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update( updateUserDto);
+  update(@Body() updateUserDto: UpdateUserDto) {
+    return this.usersService.update(updateUserDto);
   }
 
- @Delete(':id')
-   remove(@Param('id') id: string) {
-  return  this.usersService.remove(id);
-}
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.usersService.remove(id);
+  }
 
- @Get('checkActive/:email')
-inactiveAcount(@Param('email') email: string) {
-  return this.usersService.inactiveAcount(email);
-}
+  @Get('checkActive/:email')
+  inactiveAcount(@Param('email') email: string) {
+    return this.usersService.inactiveAcount(email);
+  }
 
-@Get('exist/:email')
-checkMailExists(@Param('email') email: string){
-return this.usersService.isEmailExist(email);
-}
-
+  @Get('exist/:email')
+  checkMailExists(@Param('email') email: string) {
+    return this.usersService.isEmailExist(email);
+  }
 
   @Get('find/:email')
   async getUser(@Param('email') id: string) {
@@ -57,5 +58,4 @@ return this.usersService.isEmailExist(email);
     }
     return user;
   }
-
 }

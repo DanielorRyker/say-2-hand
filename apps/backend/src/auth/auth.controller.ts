@@ -1,4 +1,3 @@
-
 import { Body, Controller, Post, Get, Query } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
@@ -48,13 +47,13 @@ export class AuthController {
     }
   }
 
-
-   @Post('verify')
+  @Post('verify')
   async verifyOtp(@Body() body: any) {
     const email = body.email;
     const otp = body.otp;
 
     return this.authService.verifiAccount(otp, email);
+  }
 
   // Gửi mail để đổi mật khẩu
   @Get('mailResetPassword')
@@ -74,14 +73,12 @@ export class AuthController {
       return { message: 'Failed to send mail', error };
     }
   }
-   @Post('verifyResetPassword')
+  @Post('verifyResetPassword')
   async verifyOtpResetPassword(@Body() body: any) {
     const email = body.email;
     const otp = body.otp;
     const password = body.password;
 
-    return this.authService.verifiResetPassword(otp, email,password);
-
-
+    return this.authService.verifiResetPassword(otp, email, password);
   }
 }

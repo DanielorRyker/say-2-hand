@@ -1,29 +1,15 @@
 "use client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-<<<<<<< HEAD
 import styleLogin from "@/styles/pages/auth/login.module.scss";
 import axios from "axios";
 import { useState } from "react";
 import Image from "next/image";
-=======
-import styleLogin from "@/app/auth/login/login.module.css";
-import axios from "axios";
-import { useEffect, useState } from "react";
->>>>>>> e3a9c8bc2d8a1b35902c7500e2b40edbfeef2cbb
 
 const Home = () => {
   const router = useRouter();
 
-<<<<<<< HEAD
   const [showPassword, setShowPassword] = useState(false);
-=======
-    const checkIcons = {
-    on: "/image/register/VectorCheckOn.svg",
-    off: "/image/register/VectorCheckOff.svg",
-    };
-    const [showPassword, setShowPassword] = useState(false);
->>>>>>> e3a9c8bc2d8a1b35902c7500e2b40edbfeef2cbb
 
   const [form, setForm] = useState({ email: "", password_hash: "" });
   const [loading, setLoading] = useState(false);
@@ -34,7 +20,6 @@ const Home = () => {
 
   const handleBtn = async () => {
     if (!form.email || !form.password_hash) {
-<<<<<<< HEAD
       alert("Vui lòng nhập đầy đủ email và mật khẩu");
       return;
     }
@@ -82,56 +67,6 @@ const Home = () => {
       setLoading(false);
     }
   };
-=======
-    alert("Vui lòng nhập đầy đủ email và mật khẩu");
-    return;
-  }
-  try {
-    setLoading(true);
-
-    const res = await axios.post(
-      "http://localhost:8080/api/auth/login", // API NestJS
-      form,
-      { withCredentials: true } // nếu BE dùng cookie/session
-    );
-
-    console.log("Login success:", res.data);
-    // localStorage.setItem("token", res.data.access_token);
-
-    //kiểm tra xem đã được kích hoạt chưa
-    const isActive = await axios.get(
-      `http://localhost:8080/api/users/checkActive/${form.email}`,
-      { withCredentials: true }
-    );
-
-    if (isActive.data === true) {
-      //lưu user vào localStorage
-      const userRes = await axios.get(
-            `http://localhost:8080/api/users/find/${form.email}`
-          );
-      localStorage.setItem("user", JSON.stringify(userRes.data));
-
-      router.push("/");
-    } else {
-      alert("Tài khoản chưa được kích hoạt");
-      localStorage.setItem('email', form.email);
-      router.push("/auth/verification");
-    }
-    
-  } catch (err: any) {
-    if (err.response?.status === 401) {
-      // Lỗi đăng nhập sai
-      alert(err.response?.data?.message || "Email hoặc mật khẩu không đúng");
-    } else {
-      // Các lỗi khác mới log ra console
-      console.error(err);
-      alert("Có lỗi xảy ra, vui lòng thử lại");
-    }
-  } finally {
-    setLoading(false);
-  }
-};
->>>>>>> e3a9c8bc2d8a1b35902c7500e2b40edbfeef2cbb
 
   return (
     <div className={styleLogin["container"]}>
@@ -160,7 +95,6 @@ const Home = () => {
             name="password_hash"
             onChange={handleChange}
           />
-<<<<<<< HEAD
           <Image
             src={
               showPassword
@@ -173,37 +107,19 @@ const Home = () => {
             className={
               showPassword ? styleLogin["eyeIcon2"] : styleLogin["eyeIcon1"]
             }
-=======
-          <img
-            src={showPassword ? "/image/login/mdi_eye_on.svg" : "/image/login/mdi_eye-off.svg"}
-            alt="Toggle visibility"
-             className={showPassword ? styleLogin['eyeIcon2'] : styleLogin['eyeIcon1']}
->>>>>>> e3a9c8bc2d8a1b35902c7500e2b40edbfeef2cbb
             onClick={() => setShowPassword(!showPassword)}
           />
         </div>
 
-<<<<<<< HEAD
         <div className={styleLogin["forgotLink"]}>
           <Link
             href="/auth/forgotPassword/confirmEmail"
             className={styleLogin["forgotLinkText"]}
-=======
-        <div style={{ alignSelf: "flex-start", marginLeft: "50px" }}>
-          <Link
-            href="/auth/forgotPassword/confirmEmail"
-            style={{
-              fontSize: "18px",
-              color: "#3B82F6",
-              fontWeight: "bold",
-            }}
->>>>>>> e3a9c8bc2d8a1b35902c7500e2b40edbfeef2cbb
           >
             Quên mật khẩu
           </Link>
         </div>
 
-<<<<<<< HEAD
         <div className={styleLogin["centeredButtonRow"]}>
           <button
             className={styleLogin["btnLogin"]}
@@ -211,11 +127,6 @@ const Home = () => {
             disabled={loading}
           >
             <p className={styleLogin["btnTextLarge"]}>Đăng nhập</p>
-=======
-        <div style={{ width: "100%", display: "flex", justifyContent: "center" ,alignItems:"center"}}>
-          <button className={styleLogin["btnLogin"]} onClick={()=> handleBtn()} disabled={loading}>
-            <p style={{ fontSize: "28px", fontWeight: "bold", marginTop:10}}>Đăng nhập</p>
->>>>>>> e3a9c8bc2d8a1b35902c7500e2b40edbfeef2cbb
           </button>
         </div>
 
@@ -225,7 +136,6 @@ const Home = () => {
           <div className={styleLogin["line"]}></div>
         </div>
 
-<<<<<<< HEAD
         <div className={styleLogin["flexGap10"]}>
           <button
             className={styleLogin["btnIcon"]}
@@ -248,39 +158,14 @@ const Home = () => {
               alt="Facebook"
               width={32}
               height={32}
-=======
-        <div style={{ display: "flex", gap: 10 }}>
-          <button className={styleLogin["btnIcon"]}>
-            <img
-              src="/image/login/IconGoogle.png"
-              alt="Google"
-              className={styleLogin["imgIcon"]}
-            />
-          </button>
-          <button className={styleLogin["btnIcon"]}>
-            <img
-              src="/image/login/IconFacebook.png"
-              alt="Facebook"
->>>>>>> e3a9c8bc2d8a1b35902c7500e2b40edbfeef2cbb
               className={styleLogin["imgIcon"]}
             />
           </button>
         </div>
 
-<<<<<<< HEAD
         <div className={styleLogin["flexRow"]}>
           <p className={styleLogin["bold18"]}>Chưa có tài khoản ? </p>
           <Link href="/auth/register" className={styleLogin["bold18Blue"]}>
-=======
-        <div style={{ display: "flex" }}>
-          <p style={{ fontWeight: "bold", fontSize: 18 }}>
-            Chưa có tài khoản ?{" "}
-          </p>
-          <Link
-            href="/auth/register"
-            style={{ fontWeight: "bold", fontSize: 18, color: "#3B82F6" }}
-          >
->>>>>>> e3a9c8bc2d8a1b35902c7500e2b40edbfeef2cbb
             {" "}
             Đăng ký tài khoản mới
           </Link>
@@ -291,12 +176,3 @@ const Home = () => {
 };
 
 export default Home;
-<<<<<<< HEAD
-=======
-
-
-
-
-
-
->>>>>>> e3a9c8bc2d8a1b35902c7500e2b40edbfeef2cbb

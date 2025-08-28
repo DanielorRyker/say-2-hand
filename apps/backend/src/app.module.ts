@@ -6,27 +6,22 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { MailerModule } from '@nestjs-modules/mailer';
-<<<<<<< HEAD
-=======
-import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
->>>>>>> e3a9c8bc2d8a1b35902c7500e2b40edbfeef2cbb
 import { VerificationTokensModule } from './verification_tokens/verification_tokens.module';
 import { PasswordResetsModule } from './password_resets/password_resets.module';
 import { PostsModule } from './posts/posts.module';
 import { UploadModule } from './upload/upload.module';
 
-
 @Module({
   imports: [
-   MailerModule.forRootAsync({
+    MailerModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         transport: {
-          host: "smtp.gmail.com",
-          port: 465,                 // ✅ cổng chính xác
-          secure: true,              // true nếu dùng 465, false nếu dùng 587
+          host: 'smtp.gmail.com',
+          port: 465, // ✅ cổng chính xác
+          secure: true, // true nếu dùng 465, false nếu dùng 587
           auth: {
-            user: configService.get<string>('MAIL_USER'),     // ví dụ: studies.mail.2024@gmail.com
+            user: configService.get<string>('MAIL_USER'), // ví dụ: studies.mail.2024@gmail.com
             pass: configService.get<string>('MAIL_PASSWORD'), // App Password, KHÔNG phải mật khẩu Gmail thường
           },
         },
@@ -52,7 +47,6 @@ import { UploadModule } from './upload/upload.module';
     PasswordResetsModule,
     PostsModule,
     UploadModule,
-
   ],
   controllers: [AppController],
   providers: [AppService],
