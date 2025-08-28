@@ -31,10 +31,10 @@ export default function ClientLayout({
   const hideHeaderFooter = noHeaderFooterRoutes.includes(pathname);
 
   return (
-    <body>
+    <>
       {!hideHeaderFooter && <Header />}
       <main>{children}</main>
       {!hideHeaderFooter && <Footer />}
-    </body>
+    </>
   );
 }
