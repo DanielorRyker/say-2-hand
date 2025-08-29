@@ -21,13 +21,7 @@ export class UpdateUserDto {
   @IsString()
   phone_number?: string;
 
-  @IsOptional()
-  @IsString()
-  avatar_url?: string;
 
-  @IsOptional()
-  @IsString()
-  address_text?: string;
 
   @IsOptional()
   @IsString()

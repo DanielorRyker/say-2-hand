@@ -24,7 +24,8 @@ export class User {
   role: string;
 
   @Prop({ type: String })
-  avatar_url?: string;
+  avatar?: string;
+
   @Prop({ type: String, default: 'inactive' })
   status: string;
 
@@ -35,7 +36,10 @@ export class User {
   phone_verified: boolean;
 
   @Prop({ type: String })
-  address_text?: string;
+  address?: string;
+
+  @Prop({ type: String })
+  description?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

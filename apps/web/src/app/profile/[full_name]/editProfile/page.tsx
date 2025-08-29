@@ -66,22 +66,7 @@ const Home = () => {
       setPreview(URL.createObjectURL(selected));
     }
   };
-  // const handleUpload = async () => {
-  //   if (!file) return alert("Vui lòng chọn file!");
 
-  //   const formData = new FormData();
-  //   formData.append("file", file); // phải trùng với FileInterceptor('file')
-
-  //   try {
-  //     const res = await axios.post("http://localhost:8080/api/upload/avatar", formData, {
-  //       headers: { "Content-Type": "multipart/form-data" },
-  //     });
-  //     setUploadedUrl(res.data.url);
-  //     alert("Upload thành công!");
-  //   } catch (err) {
-  //     console.error("Upload failed:", err);
-  //   }
-  // };
   const handleUpload = async () => {
   if (!file) return alert("Vui lòng chọn file!");
 
@@ -97,7 +82,16 @@ const Home = () => {
         headers: { "Content-Type": "multipart/form-data" },
       }
     );
-    setUploadedUrl(res.data.url);
+     const imageUrl = res.data.url;
+    setUploadedUrl(imageUrl);
+
+    const avatar_url = imageUrl.split("say2hand/");
+
+    // ✅ Gán ảnh mới vào form
+    setForm((prevForm) => ({
+      ...prevForm,
+      avatar: avatar_url[1],
+    }));
     alert("Upload thành công!");
       const userRes = await axios.get(
             `http://localhost:8080/api/users/find/${form.email}`
@@ -246,23 +240,7 @@ const Home = () => {
 
               
                 
-                {/* Upload anh
-                <div>
-                    <h2>Upload Avatar</h2>
-                    <input type="file" accept="image/*" onChange={handleFileChange} style={{width: 300,height:120,background:'red'}}/>
-                    {preview && <img src={preview} alt="preview" width="120" />}
-                    <br />
-                    <button onClick={handleUpload} style={{width: 300,height:120,background:'blue'}}>Upload</button>
 
-                    {uploadedUrl && (
-                        <div>
-                        <p>Uploaded Avatar:</p>
-                        <img src={uploadedUrl} alt="uploaded" width="120" height="120" style={{width: 120,height:120}}/>
-                        <p>URL: {uploadedUrl}</p>
-                        </div>
-                    )}
-                </div> */}
-               
               </div>
             </div>          
         </div>

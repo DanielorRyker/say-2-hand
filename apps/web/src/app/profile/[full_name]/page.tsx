@@ -16,6 +16,7 @@ const Home = () => {
     phone_number: string;
     address: string;
     description: string;
+    avatar: string;
   } | null>(null);
 
   useEffect(() => {
@@ -49,13 +50,24 @@ const Home = () => {
       <div className={styleUser["gradientBorder"]}>
         <div className={styleUser["card"]}>
           <div className={styleUser["cardAvatarBackground"]}>
-            <Image
-              src="/image/header/carbon_user-avatar-filled-alt.svg"
-              alt=""
-              className={styleUser["avatarImg"]}
-              width={120}
-              height={120}
-            />
+
+            {user?.avatar ? (
+              <Image
+                src={process.env.NEXT_PUBLIC_URL_GCS + user.avatar}
+                alt=""
+                className={styleUser["avatarImg"]}
+                width={120}
+                height={120}
+              />
+            ) : (
+              <Image
+                src="/image/header/carbon_user-avatar-filled-alt.svg"
+                alt=""
+                className={styleUser["avatarImg"]}
+                width={120}
+                height={120}
+              />
+            )}
           </div>
 
           <div>
@@ -128,8 +140,7 @@ const Home = () => {
                 <p className={styleUser[""]}>{user?.description}</p>
               ) : (
                 <p className={styleUser["describe"]}>
-                  Sáng sớm ngày 26/8, bão Kajiki (hay bão số 5) đã suy yếu thành
-                  áp thấp .
+                  
                 </p>
               )}
             </div>

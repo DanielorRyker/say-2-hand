@@ -18,7 +18,7 @@ const Home = () => {
   };
 
   //Lấy mail
-  const [, setUser] = useState<{
+  const [user, setUser] = useState<{
     _id: string;
     email: string;
     full_name: string;
@@ -106,6 +106,9 @@ const Home = () => {
     });
 
     alert("Mã đã được gửi lại tới email: " + form.email);
+  };
+  const handleBtnBack = () => {
+    router.push("/profile/" + user?.full_name);
   };
 
   return (
@@ -252,6 +255,16 @@ const Home = () => {
             <p className={stylechangePassword["btnConfirmText"]}>Xác nhận</p>
           </button>
         </div>
+
+        <div className={stylechangePassword["gradientBack"]}>
+          <button
+            className={stylechangePassword["btnBack"]}
+            onClick={() => handleBtnBack()}
+          >
+            <p className={stylechangePassword["btnConfirmText"]}>Quay lại</p>
+          </button>
+        </div>
+
       </div>
     </div>
   );
