@@ -10,6 +10,7 @@ import { VerificationTokensModule } from './verification_tokens/verification_tok
 import { PasswordResetsModule } from './password_resets/password_resets.module';
 import { PostsModule } from './posts/posts.module';
 import { UploadModule } from './upload/upload.module';
+import { CategoriesModule } from './categories/categories.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { UploadModule } from './upload/upload.module';
     PasswordResetsModule,
     PostsModule,
     UploadModule,
+    CategoriesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

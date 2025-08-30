@@ -1,0 +1,204 @@
+.container {
+  background-size: cover;
+  background-repeat: no-repeat;
+  height: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #F8F8F8;
+
+  padding-Top:150px;
+  padding-bottom: 20px;
+}
+
+.gradientBorder {
+  display: block; 
+  position: relative;
+  padding: 1px;
+  border-radius: 10px;
+  background: linear-gradient(to right, #2DE099, #3B82F6);
+  width: 90%;
+  max-width: 1200px;   
+}
+
+.card{
+  width: 100%;
+  /* max-width: 900px; */
+  height: auto;
+  border-radius: 10px;
+  background-color: #EEEEEE;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 0 20px 0;
+  
+  /* padding: 20px; */
+}
+
+/* thẻ trái */
+.cardLeft{
+  width: 50%;
+  /* max-width: 900px; */
+  height: 100%;
+  border-radius: 10px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  
+  /* padding: 20px; */
+}
+
+.labelLeft {
+  display: flex;
+  flex-direction: row;
+  align-items: start;
+  font-weight: bold;
+  font-size: 28px;
+  width: 100%;
+  margin-left: 100px;
+}
+
+.gradientBorderAvatar {
+  display: block; 
+  position: relative;
+  padding: 1px;
+  border-radius: 20;
+  background: linear-gradient(to right, #2DE099, #3B82F6);
+  width: 100%;
+  max-width: 500px;   
+  height: 500px;
+  margin-bottom: 25;
+}
+
+.cardChangeAvatar{
+  background: #E5E5E5;
+  width: 100%;
+  height: 100%;
+  border-radius: 20;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.changeAvatarImg{
+  width: 100px;
+  height: 100px;
+}
+.avatarImgNew{
+  width: 500px;
+  height: 500px;
+  border-radius: 20;
+  margin-bottom: 25;
+}
+
+/* thẻ phải */
+.cardRight{
+  width: 50%;
+  /* max-width: 900px; */
+  height: 100%;
+  border-radius: 10px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: start;
+  gap: 20px;
+  
+  /* padding: 20px; */
+}
+
+.gradientBorderInfo {
+  display: block; 
+  position: relative;
+  padding: 1px;
+  border-radius: 10px;
+  background: linear-gradient(to right, #2DE099, #3B82F6);
+  width: 90%;
+}
+
+.select{
+ 
+  border-radius: 10px;
+  width: 100%;
+  height: 50px;
+  Background-color: #EEEEEE;
+  border: none;
+  font-size: 18px;
+  padding: 0 20px 0 10px;
+}
+
+.labelInfoDetail{
+  font-weight: bold;
+  font-size: 28px;
+}
+
+.gradientBorderCondition {
+  display: block; 
+  position: relative;
+  padding: 1px;
+  border-radius: 30px;
+  background: linear-gradient(to right, #2DE099, #3B82F6);
+  width: 130px;
+}
+.btnCondition{
+  background-color: #E5E5E5;  
+  border: none;
+  border-radius: 30px;
+  font-size: 18px;
+  cursor: pointer;
+  width: 100%;
+  height: 50px;
+  font-weight: bold;
+}
+
+.input{
+  border-radius: 10px;
+  width: 100%;
+  height: 50px;
+  background-color: #EEEEEE;
+  border: none;
+  font-size: 18px;
+  padding-left: 20px;
+
+}
+
+.groupInfo{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.gradientBorderTextArea {
+  display: block; 
+  position: relative;
+  padding: 1px;
+  border-radius: 10px;
+  background: linear-gradient(to right, #2DE099, #3B82F6);
+  width: 90%;
+  height: 100px;
+}
+
+.textArea{
+  padding: 10px;
+  width: 100%;
+  word-wrap: break-word;
+  height: 100%;
+  border-radius: 10px;
+  background-color: #EEEEEE;
+  resize: none;
+}
+
+.btnPost{
+  background: linear-gradient(to right, #2DE099, #3B82F6);
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 18px;
+  padding: 12px 20px;
+  cursor: pointer;
+  width: 90%;
+}
