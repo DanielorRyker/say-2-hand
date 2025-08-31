@@ -19,10 +19,10 @@ export class Post {
   @Prop({ required: true })
   title: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true , default: 0})
   price: number;
 
-  @Prop({ required: true })
+  @Prop()
   description: string;
 
   @Prop({ required: true , enum: ['new','used'] })
@@ -37,20 +37,24 @@ export class Post {
   @Prop({ required: true })
   image: string;
 
-  @Prop({
-    type: {
-      type: { type: String, enum: ['Point'], default: 'Point' },
-      coordinates: { type: [Number], required: true },
-      address: { type: String }
-    }
-  })
-  location: {
-    type?: 'Point';
-    coordinates?: number[];
-    address: string;
-  };
 
-  
+//  @Prop({
+//   type: {
+//     type: String,
+//     enum: ['Point'],
+//     default: 'Point'
+//   },
+//   coordinates: {
+//     type: [Number],
+//     required: false   // 👈 không bắt buộc
+//   },
+//   address: { type: String }
+// })
+// location?: {
+//   type: 'Point';
+//   coordinates?: [number, number];
+//   address?: string;
+// };
 }
 
 export const PostSchema = SchemaFactory.createForClass(Post);
