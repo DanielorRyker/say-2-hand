@@ -31,4 +31,9 @@ export class PostsController {
   remove(@Param('id') id: string) {
     return this.postsService.remove(+id);
   }
+
+  @Get('user/:userId')
+  findByUserId(@Param('userId') userId: string) {
+    return this.postsService.findByUserId(userId);
+  }
 }
