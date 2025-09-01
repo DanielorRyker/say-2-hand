@@ -31,11 +31,12 @@ export default function Category() {
               <Image
                 src={category.image}
                 alt={category.name}
-                width={150}
-                height={150}
+                width={110}
+                height={110}
+                className={styles.imageItem}
               />
-              <p>{category.name}</p>
             </div>
+            <div className={styles.categoryName}>{category.name}</div>
           </button>
         ))}
       </div>
