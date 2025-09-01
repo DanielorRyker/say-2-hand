@@ -2,13 +2,20 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 
 export type PostDocument = Post & Document;
+@Schema({ _id: false })
+class Location {
+
+  @Prop({ enum: ['Point'], default: 'Point' })
+  type: string;
+
+  @Prop({ type: [Number] }) // [lng, lat]
+  coordinates?: [number, number];
+}
+
 @Schema({
   timestamps: true,
   collection: 'posts',
 })
-
-
-
 export class Post {
   @Prop({ type: Types.ObjectId, required: true })
   author_id: Types.ObjectId;
@@ -19,38 +26,31 @@ export class Post {
   @Prop({ required: true })
   title: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, default: 0 })
   price: number;
 
-  @Prop({ required: true })
+  @Prop()
   description: string;
 
-  @Prop({ required: true , enum: ['new','used'] })
+  @Prop({ required: true, enum: ['new','used'] })
   condition: string;
 
-  @Prop({ required: true ,enum: ['free','sell'] })
-  transaction_type : string;
+  @Prop({ required: true, enum: ['free','sell'] })
+  transaction_type: string;
 
-  @Prop({ required: true ,enum: ['pending','active','rejected','deleted'], default: 'pending' })
-  status  : string;
+  @Prop({ required: true, enum: ['pending','active','rejected','deleted'], default: 'pending' })
+  status: string;
 
   @Prop({ required: true })
   image: string;
 
-  @Prop({
-    type: {
-      type: { type: String, enum: ['Point'], default: 'Point' },
-      coordinates: { type: [Number], required: true },
-      address: { type: String }
-    }
-  })
-  location: {
-    type?: 'Point';
-    coordinates?: number[];
-    address: string;
-  };
+  @Prop()
+  address?: string;
 
-  
+  @Prop({ type: Location })
+  location?: Location;
 }
 
+
 export const PostSchema = SchemaFactory.createForClass(Post);
+PostSchema.index({ location: '2dsphere' });

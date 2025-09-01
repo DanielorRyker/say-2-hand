@@ -2,20 +2,20 @@ import { Type } from "class-transformer";
 import {  ArrayMinSize, IsArray, IsEnum, IsMongoId, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from "class-validator";
 
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 class LocationDto {
   @IsEnum(['Point'])
-  type: 'Point';
+  @IsOptional()
+  type?: 'Point'; // <-- bỏ default ở đây
 
   @IsArray()
-  @ArrayMinSize(2) // phải có ít nhất 2 số (lng, lat)
+  @ArrayMinSize(2, { message: 'coordinates phải có đủ [lng, lat]' })
   @IsNumber({}, { each: true })
-  coordinates: number[];
-
-  @IsString()
   @IsOptional()
-  address?: string;
+  coordinates?: [number, number];
+
+
 }
+
 
 export class CreatePostDto {
       @IsNotEmpty()
@@ -30,9 +30,11 @@ export class CreatePostDto {
       @IsString()
       title: string;
 
-      @IsNotEmpty()
+      @IsOptional()
+      @Type(() => Number)       // 👈 ép kiểu
       @IsNumber()
-      price: number;
+      price?: number;
+
     
       @IsString()
       description: string;
@@ -43,14 +45,20 @@ export class CreatePostDto {
       @IsString()
       transaction_type : string;
 
+      @IsOptional()
       @IsString()
-      status  : string;
+      status?: string;
 
       @IsString()
       image: string;
-    
+
+      @IsString()
       @IsOptional()
+      address?: string;
+    
+     @IsOptional()
     @ValidateNested()
-    @Type(() => LocationDto) // cần để class-transformer hiểu
+    @Type(() => LocationDto)
     location?: LocationDto;
+
 }
