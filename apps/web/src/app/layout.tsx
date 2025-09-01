@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "@/styles/globals.scss";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
-import ClientLayout from "@/components/ClientLayout";
+import ClientLayout from "@/app/ClientLayout";
 
 export const metadata: Metadata = {
   title: "Say 2 Hand",
@@ -16,7 +16,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
+      <body suppressHydrationWarning={true}>
         <AntdRegistry>
           <ClientLayout>{children}</ClientLayout>
         </AntdRegistry>

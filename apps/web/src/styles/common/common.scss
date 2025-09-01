@@ -1,0 +1,10 @@
+@use '../abstracts/variables' as variables;
+
+
+.container {
+  width: 70%;
+  background: variables.$background-card-light;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: row;
+}
