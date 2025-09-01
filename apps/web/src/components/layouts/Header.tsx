@@ -1,7 +1,7 @@
 "use client";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import "@/styles/globals.scss";
-import headerStyles from "@/styles/components/header.module.scss";
+import headerStyles from "@/styles/layout/header.module.scss";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";

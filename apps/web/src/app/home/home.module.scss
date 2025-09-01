@@ -1,0 +1,17 @@
+@use '@/styles/abstracts/variables' as variables;
+
+.headerSpace {
+  padding-top: 150px
+}
+
+.paddingTop20 {
+  padding-top: 20px;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  background: variables.$background-light;
+  justify-content: center;
+  align-items: center;
+}
