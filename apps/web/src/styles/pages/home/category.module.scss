@@ -1,0 +1,24 @@
+
+@use '../../common/common.scss';
+
+
+
+.categoryList {
+  display: grid;
+  /* force exactly 2 rows, items will fill top->bottom then left->right */
+  grid-template-rows: repeat(2, auto);
+  grid-auto-flow: column;
+  /* make columns share available space */
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 12px;
+  padding: 12px;
+  align-items: center;
+  justify-items: center;
+}
+
+
+
+.image {
+  width: 100px;
+  height: 100px;
+}

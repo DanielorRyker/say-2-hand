@@ -1,0 +1,12 @@
+@use "../../common/common.scss";
+
+.imageList{
+        width: 150px;
+        height: 150px;
+        position: relative;
+}
+
+.imageItem{
+        object-fit: cover;
+}
+
