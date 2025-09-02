@@ -33,23 +33,27 @@ const Home = () => {
       );
 
       console.log("Login success:", res.data);
-      // localStorage.setItem("token", res.data.access_token);
-
-      //kiểm tra xem đã được kích hoạt chưa
-      const isActive = await axios.get(
-        `http://localhost:8080/api/users/checkActive/${form.email}`,
-        { withCredentials: true }
-      );
-
-      if (isActive.data === true) {
-        //lưu user vào localStorage
-        const userRes = await axios.get(
+      //Lấy thông tin user
+      const userRes = await axios.get(
           `http://localhost:8080/api/users/find/${form.email}`
         );
         localStorage.setItem("user", JSON.stringify(userRes.data));
 
-        router.push("/");
-      } else {
+        const userStr = localStorage.getItem("user");
+        let user;
+        if (userStr) {
+          user = JSON.parse(userStr); // chuyển string -> object
+          console.log(user.status); // ✅ lấy được status
+        }
+
+      if (user.status == 'active') {
+        if(user.role == 'admin'){
+          router.push("/admin/users");
+        }else{
+          router.push("/");
+        }
+      } 
+      else {
         alert("Tài khoản chưa được kích hoạt");
         localStorage.setItem("email", form.email);
         router.push("/auth/verification");
