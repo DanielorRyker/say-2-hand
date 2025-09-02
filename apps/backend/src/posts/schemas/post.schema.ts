@@ -35,14 +35,14 @@ export class Post {
   @Prop({ required: true, enum: ['new','used'] })
   condition: string;
 
-  @Prop({ required: true, enum: ['free','sell'] })
-  transaction_type: string;
+  @Prop({  enum: ['free','sell'] ,default: 'free'})
+  transaction_type?: string;
 
   @Prop({ required: true, enum: ['pending','active','rejected','deleted'], default: 'pending' })
   status: string;
 
-  @Prop({ required: true })
-  image: string;
+  @Prop()
+  image?: string;
 
   @Prop()
   address?: string;

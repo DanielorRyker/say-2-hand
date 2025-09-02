@@ -41,8 +41,9 @@ export class UpdatePostDto extends PartialType(CreatePostDto) {
           @IsString()
           condition: string;
         
+           @IsOptional()
           @IsString()
-          transaction_type : string;
+          transaction_type?: string;
     
           @IsOptional()
           @IsString()

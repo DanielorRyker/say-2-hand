@@ -28,4 +28,13 @@ export class UploadController {
   return { url };
   }
 
+  @Post('postIMG')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadPostImage(
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+  const filename = await this.uploadService.uploadFilePost(file);
+  return { filename };
+  }
+
 }

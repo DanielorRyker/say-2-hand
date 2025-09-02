@@ -134,7 +134,7 @@ const Header = () => {
 
           {user ? (
             <>
-              <button className="btnLogin">
+              <button className="btnLogin" onClick={() => router.push("/post/createPost")}>
                 <p className={headerStyles.headerBtnText}>Đăng tin</p>
               </button>
             </>

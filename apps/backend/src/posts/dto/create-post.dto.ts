@@ -42,15 +42,17 @@ export class CreatePostDto {
       @IsString()
       condition: string;
     
+      @IsOptional()
       @IsString()
-      transaction_type : string;
+      transaction_type?: string;
 
       @IsOptional()
       @IsString()
       status?: string;
 
       @IsString()
-      image: string;
+      @IsOptional()
+      image?: string;
 
       @IsString()
       @IsOptional()

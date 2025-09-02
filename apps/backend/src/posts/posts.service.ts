@@ -12,29 +12,22 @@ export class PostsService {
     private postModel: Model<PostDocument>,
   ) {}
 
-  // async create(createPostDto: CreatePostDto) {
-  //   const {author_id, category_id,title, price, description,condition,transaction_type,status,image} = createPostDto;
-  //   const post = await this.postModel.create({
-  //     author_id: new Types.ObjectId(author_id),
-  //     category_id: new Types.ObjectId(category_id),
-  //     title,
-  //     price,
-  //     description,
-  //     condition,
-  //     transaction_type,
-  //     status,
-  //     image
-  //   });
-  //   return { _id: post._id };
-  // }
+ 
 
   async create(createPostDto: CreatePostDto) {
-  const { author_id, category_id, ...rest } = createPostDto;
+  const { author_id, category_id, price, transaction_type, ...rest } = createPostDto;
+
+  let finalTransactionType = transaction_type;
+  if (price === undefined || price === null || price === 0) {
+    finalTransactionType = 'free';
+  }
 
   const postData: any = {
     ...rest,
     author_id: new Types.ObjectId(author_id),
     category_id: new Types.ObjectId(category_id),
+    price: price,
+    transaction_type: finalTransactionType,
   };
 
   // build location an toàn
