@@ -4,12 +4,18 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 
 const Home = () =>{
-
+   //lấy dữ liệu
     interface User {
+        _id: string;
         email?: string;
         full_name?: string;
         role?: string;
         status?: string;
+        phone_number?: string;
+        address?: string;
+        description?: string;
+        avatar?: string;
+
     }
     const [usersData, setUsersData] = useState<User[]>([]);
 
@@ -22,67 +28,181 @@ const Home = () =>{
         fetchUsers();
         }, []);
 
-        // Dữ liệu mẫu, bạn có thể thay bằng dữ liệu thực tế từ API
-        const usersTest = [
-            { email: "user1@example.com", name: "User One", role: "user", status: "active" },
-            { email: "admin@example.com", name: "Admin", role: "admin", status: "inactive" },
-            { email: "user2@example.com", name: "User Two", role: "user", status: "active" },
-            { email: "user1@example.com", name: "User One", role: "user", status: "active" },
-            { email: "admin@example.com", name: "Admin", role: "admin", status: "inactive" },
-            { email: "user2@example.com", name: "User Two", role: "user", status: "active" },
-            { email: "user1@example.com", name: "User One", role: "user", status: "active" },
-            { email: "admin@example.com", name: "Admin", role: "admin", status: "inactive" },
-            { email: "user2@example.com", name: "User Two", role: "user", status: "active" },
-            { email: "user1@example.com", name: "User One", role: "user", status: "active" },
-            { email: "admin@example.com", name: "Admin", role: "admin", status: "inactive" },
-            { email: "user2@example.com", name: "User Two", role: "user", status: "active" },
-            { email: "user1@example.com", name: "User One", role: "user", status: "active" },
-            { email: "admin@example.com", name: "Admin", role: "admin", status: "inactive" },
-            { email: "user2@example.com", name: "User Two", role: "user", status: "active" },
-            { email: "user1@example.com", name: "User One", role: "user", status: "active" },
-            { email: "admin@example.com", name: "Admin", role: "admin", status: "inactive" },
-            { email: "user2@example.com", name: "User Two", role: "user", status: "active" },
-            { email: "user1@example.com", name: "User One", role: "user", status: "active" },
-            { email: "admin@example.com", name: "Admin", role: "admin", status: "inactive" },
-            { email: "user2@example.com", name: "User Two", role: "user", status: "active" },
-            { email: "user1@example.com", name: "User One", role: "user", status: "active" },
-            { email: "admin@example.com", name: "Admin", role: "admin", status: "inactive" },
-            { email: "user2@example.com", name: "User Two", role: "user", status: "active" },
-        ];
 
         // Phân trang
         const pageSize = 10;
         const [currentPage, setCurrentPage] = useState(1);
         const totalPages = Math.ceil(usersData.length / pageSize);
         const paginatedUsers = usersData.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+        
+        //xóa user
+        const handleDeleteUser = async (userId: string) => {
+        const ok = window.confirm("Bạn có chắc chắn muốn xóa user này không?");
+        if (!ok) return;
 
+        try {
+            await axios.delete(`http://localhost:8080/api/users/${userId}`);
+            setUsersData(usersData.filter((user) => user._id !== userId));
+            alert("Xóa thành công");
+        } catch (error) {
+            console.error("Error deleting user:", error);
+            alert("Có lỗi xảy ra khi xóa user");
+        }
+        };
+        //chỉnh sửa user
+        const [editingUserId, setEditingUserId] = useState<string | null>(null);
+        const [editForm, setEditForm] = useState<Partial<User>>({});
+        
+        const handleEdit = (user: User) => {
+            setEditingUserId(user._id);
+            setEditForm(user);
+            };
+
+       const handleFieldChange = (field: keyof User, value: string) => {
+        setEditForm((prev) => ({
+            ...prev,
+            [field]: value,
+        }));
+        };
+
+
+        const handleSave = async () => {
+        if (!editingUserId) return;
+        try {
+           await axios.patch("http://localhost:8080/api/users", {
+            _id: editingUserId,
+            ...editForm,
+            });
+            setUsersData(usersData.map(u => u._id === editingUserId ? { ...u, ...editForm } : u));
+            setEditingUserId(null);
+            alert("Cập nhật thành công");
+        } catch (error) {
+            console.error("Error updating user:", error);
+            alert("Có lỗi khi cập nhật user");
+        }
+        };
+
+        const userFields: (keyof User)[] = [
+            "email",
+            "full_name",
+            "role",
+            "status",
+            "avatar",
+            "description",
+            "phone_number",
+            "address",
+            ];
         return (
             <div className={styleAdmin.container}>
                 <h2>Danh sách người dùng</h2>
-                <table style={{ borderCollapse: "collapse" }}>
+                <table style={{ borderCollapse: "collapse" , width: "90%"}}>
                     <thead>
                         <tr>
-                            <th style={{ border: "1px solid #ccc", padding: "1px 2px"}}>Email</th>
-                            <th style={{ border: "1px solid #ccc", padding: "1px 2px"}}>Name</th>
-                            <th style={{ border: "1px solid #ccc", padding: "1px 2px" }}>Role</th>
-                            <th style={{ border: "1px solid #ccc", padding: "1px 2px"}}>Status</th>
-                            <th style={{ border: "1px solid #ccc", padding: "1px 2px"}}>Actions</th>
+                            <th className={styleAdmin.tbheader}>#</th>
+                            <th className={styleAdmin.tbheader}>Email</th>
+                            <th className={styleAdmin.tbheader}>Name</th>
+                            <th className={styleAdmin.tbheader}>Role</th>
+                            <th className={styleAdmin.tbheader}>Status</th>
+                            <th className={styleAdmin.tbheader}>Avatar</th>
+                            <th className={styleAdmin.tbheader}>Description</th>
+                            <th className={styleAdmin.tbheader}>Phone Number</th>
+                            <th className={styleAdmin.tbheader}>Address</th>
+                            <th className={styleAdmin.tbheader}>Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    {/* <tbody>
                         {paginatedUsers.map((user, idx) => (
                             <tr key={idx}>
-                                <td style={{ border: "1px solid #ccc", padding: "1px 2px" }}>{user.email|| ""}</td>
-                                <td style={{ border: "1px solid #ccc", padding: "1px 2px" }}>{user.full_name|| ""}</td>
-                                <td style={{ border: "1px solid #ccc", padding: "1px 2px" }}>{user.role|| ""}</td>
-                                <td style={{ border: "1px solid #ccc", padding: "1px 2px"}}>{user.status|| ""}</td>
-                                <td style={{ border: "1px solid #ccc", padding: "1px 2px" }}>
-                                    <button style={{ marginRight: "8px", padding: "1px 4px" }}>Edit</button>
-                                    <button style={{ color: "red", padding: "1px 4px" }}>Remove</button>
+                                <td  className={styleAdmin.tbheader}>{currentPage-1} {idx }</td>
+                                <td className={styleAdmin.tbrow}>{user.email|| ""}</td>
+                                <td className={styleAdmin.tbrow}>{user.full_name|| ""}</td>
+                                <td className={styleAdmin.tbrow}>{user.role|| ""}</td>
+                                <td className={styleAdmin.tbrow}>{user.status|| ""}</td>
+                                <td className={styleAdmin.tbrow}>{user.avatar|| ""}</td>
+                                <td className={styleAdmin.tbrow}>{user.description|| ""}</td>
+                                <td className={styleAdmin.tbrow}>{user.phone_number|| ""}</td>
+                                <td className={styleAdmin.tbrow}>{user.address|| ""}</td>
+                                <td className={styleAdmin.tbrow}>
+                                {user.role === "admin" ? (
+                                    // Nếu là admin thì disable
+                                    <>
+                                    <button
+                                        className={styleAdmin.btnEdit}
+                                        style={{cursor: "not-allowed",opacity: 0.5}}
+                                        disabled
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        className={styleAdmin.btnEdit}
+                                        style={{cursor: "not-allowed",opacity: 0.5}}
+                                        disabled
+                                    >
+                                        Accept
+                                    </button>
+                                    <button
+                                        className={styleAdmin.btnRemove}
+                                        style={{cursor: "not-allowed",opacity: 0.5}}
+                                        disabled
+                                    >
+                                        Remove
+                                    </button>
+                                    </>
+                                ) : (
+                                    // Nếu KHÔNG phải admin thì cho phép
+                                    <>
+                                    <button className={styleAdmin.btnEdit}>Edit</button>
+                                    <button className={styleAdmin.btnEdit}>Accept</button>
+                                    <button className={styleAdmin.btnRemove} onClick={() => handleDeleteUser(user._id)}>Remove</button>
+                                    </>
+                                )}
                                 </td>
+
                             </tr>
                         ))}
-                    </tbody>
+                    </tbody> */}
+                   <tbody>
+  {paginatedUsers.map((user, idx) => (
+    <tr key={user._id}>
+      <td className={styleAdmin.tbrow}>{(currentPage - 1) * pageSize + idx + 1}</td>
+
+      {userFields.map((field) => (
+        <td key={field} className={styleAdmin.tbrow}>
+          {editingUserId === user._id ? (
+            <input
+              className={styleAdmin.tableInput}
+              value={editForm[field] || ""}
+              onChange={(e) => handleFieldChange(field, e.target.value)}
+            />
+          ) : (
+            user[field] || ""
+          )}
+        </td>
+      ))}
+
+      <td className={styleAdmin.tbrow}>
+        {user.role === "admin" ? (
+          <>
+            <button className={styleAdmin.btnEdit} disabled style={{ opacity: 0.5 }}>Edit</button>
+            <button className={styleAdmin.btnRemove} disabled style={{ opacity: 0.5 }}>Remove</button>
+          </>
+        ) : editingUserId === user._id ? (
+          <>
+            <button className={styleAdmin.btnEdit} onClick={handleSave}>Save</button>
+            <button className={styleAdmin.btnEdit} onClick={() => { setEditingUserId(null); setEditForm({}); }}>Cancel</button>
+          </>
+        ) : (
+          <>
+            <button className={styleAdmin.btnEdit} onClick={() => handleEdit(user)}>Edit</button>
+            <button className={styleAdmin.btnRemove} onClick={() => handleDeleteUser(user._id)}>Remove</button>
+          </>
+        )}
+      </td>
+    </tr>
+  ))}
+</tbody>
+
+
                 </table>
                 {/* Phân trang */}
                 {totalPages > 1 && (
