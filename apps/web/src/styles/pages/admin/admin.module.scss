@@ -1,0 +1,14 @@
+.container {
+  background-size: cover;
+  background-repeat: no-repeat;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #F8F8F8;
+
+  padding-top: 150px;
+  padding-bottom: 20px;
+}
