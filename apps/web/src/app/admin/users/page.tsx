@@ -110,57 +110,6 @@ const Home = () =>{
                             <th className={styleAdmin.tbheader}>Actions</th>
                         </tr>
                     </thead>
-                    {/* <tbody>
-                        {paginatedUsers.map((user, idx) => (
-                            <tr key={idx}>
-                                <td  className={styleAdmin.tbheader}>{currentPage-1} {idx }</td>
-                                <td className={styleAdmin.tbrow}>{user.email|| ""}</td>
-                                <td className={styleAdmin.tbrow}>{user.full_name|| ""}</td>
-                                <td className={styleAdmin.tbrow}>{user.role|| ""}</td>
-                                <td className={styleAdmin.tbrow}>{user.status|| ""}</td>
-                                <td className={styleAdmin.tbrow}>{user.avatar|| ""}</td>
-                                <td className={styleAdmin.tbrow}>{user.description|| ""}</td>
-                                <td className={styleAdmin.tbrow}>{user.phone_number|| ""}</td>
-                                <td className={styleAdmin.tbrow}>{user.address|| ""}</td>
-                                <td className={styleAdmin.tbrow}>
-                                {user.role === "admin" ? (
-                                    // Nếu là admin thì disable
-                                    <>
-                                    <button
-                                        className={styleAdmin.btnEdit}
-                                        style={{cursor: "not-allowed",opacity: 0.5}}
-                                        disabled
-                                    >
-                                        Edit
-                                    </button>
-                                    <button
-                                        className={styleAdmin.btnEdit}
-                                        style={{cursor: "not-allowed",opacity: 0.5}}
-                                        disabled
-                                    >
-                                        Accept
-                                    </button>
-                                    <button
-                                        className={styleAdmin.btnRemove}
-                                        style={{cursor: "not-allowed",opacity: 0.5}}
-                                        disabled
-                                    >
-                                        Remove
-                                    </button>
-                                    </>
-                                ) : (
-                                    // Nếu KHÔNG phải admin thì cho phép
-                                    <>
-                                    <button className={styleAdmin.btnEdit}>Edit</button>
-                                    <button className={styleAdmin.btnEdit}>Accept</button>
-                                    <button className={styleAdmin.btnRemove} onClick={() => handleDeleteUser(user._id)}>Remove</button>
-                                    </>
-                                )}
-                                </td>
-
-                            </tr>
-                        ))}
-                    </tbody> */}
                    <tbody>
   {paginatedUsers.map((user, idx) => (
     <tr key={user._id}>

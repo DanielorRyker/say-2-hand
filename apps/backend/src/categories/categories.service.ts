@@ -30,9 +30,17 @@ export class CategoriesService {
     return this.categoryModel.findById(id).exec();
   }
 
-  update(id: string, updateCategoryDto: UpdateCategoryDto) {
-    return this.categoryModel.findByIdAndUpdate(id, updateCategoryDto).exec();
-  }
+
+  
+   async update(updateCategoryDto: UpdateCategoryDto) {
+      return this.categoryModel.updateOne(
+        { _id: updateCategoryDto._id },
+        { name: updateCategoryDto.name,
+          slug: slugify(updateCategoryDto.name)
+         },
+      );
+    }
+
 
   remove(id: string) {
     return this.categoryModel.findByIdAndDelete(id).exec();
