@@ -73,11 +73,11 @@ console.log('>>> location data:', postData.location);
     return this.postModel.findById(id).exec();
   }
 
-  update(id: number, updatePostDto: UpdatePostDto) {
+  update(id: string, updatePostDto: UpdatePostDto) {
     return this.postModel.findByIdAndUpdate(id, updatePostDto, { new: true }).exec();
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return this.postModel.findByIdAndDelete(id).exec();
   }
 

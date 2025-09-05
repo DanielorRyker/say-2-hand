@@ -33,28 +33,55 @@ const Home = () =>{
                 const totalPages = Math.ceil(postsData.length / pageSize);
                 const paginatedPosts = postsData.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
-        //Sort và filter
+      
+        // Sort và filter
         const handleSortByNewest = async () => {
-            const res = await axios.get("http://localhost:8080/api/posts");
-            setPostsData(res.data);
+        const res = await axios.get("http://localhost:8080/api/posts");
+        setPostsData(res.data);
+        setCurrentPage(1); // reset về trang 1
         };
+
         const handleSortByOldest = async () => {
-            const res = await axios.get("http://localhost:8080/api/posts/oldest");
-            setPostsData(res.data);
+        const res = await axios.get("http://localhost:8080/api/posts/oldest");
+        setPostsData(res.data);
+        setCurrentPage(1);
         };
-         const handleFilterByPending = async () => {
-            const res = await axios.get("http://localhost:8080/api/posts/pending");
-            setPostsData(res.data);
+
+        const handleFilterByPending = async () => {
+        const res = await axios.get("http://localhost:8080/api/posts/pending");
+        setPostsData(res.data);
+        setCurrentPage(1);
         };
-         const handleFilterByActive = async () => {
-            const res = await axios.get("http://localhost:8080/api/posts/active");
-            setPostsData(res.data);
+
+        const handleFilterByActive = async () => {
+        const res = await axios.get("http://localhost:8080/api/posts/active");
+        setPostsData(res.data);
+        setCurrentPage(1);
         };
-         const handleFilterByRejected = async () => {
-            const res = await axios.get("http://localhost:8080/api/posts/rejected");
-            setPostsData(res.data);
+
+        const handleFilterByRejected = async () => {
+        const res = await axios.get("http://localhost:8080/api/posts/rejected");
+        setPostsData(res.data);
+        setCurrentPage(1);
         };
-        
+
+
+        // Xử lý xóa bài đăng
+        //1.Chấp thuận
+        const handleActivePost = async (postId: string) => {
+            await axios.patch(`http://localhost:8080/api/posts/${postId}`, { status: "active" });
+            setPostsData(postsData.map(post => post._id === postId ? { ...post, status: "active" } : post));
+        };
+        //2.Từ chối
+        const handleRejectPost = async (postId: string) => {
+            await axios.patch(`http://localhost:8080/api/posts/${postId}`, { status: "rejected" });
+            setPostsData(postsData.map(post => post._id === postId ? { ...post, status: "rejected" } : post));
+        };
+        //3.Xóa
+        const handleDeletePost = async (postId: string) => {
+            await axios.delete(`http://localhost:8080/api/posts/${postId}`);
+            setPostsData(postsData.filter(post => post._id !== postId));
+        };
         return (
         <div className={styleAdmin.container}>
              <h2>Danh sách các bài đăng</h2>
@@ -93,8 +120,19 @@ const Home = () =>{
                                 <td className={styleAdmin.tbrow}>{post.address}</td>
                                 <td className={styleAdmin.tbrow}>{post.status}</td>
                                 <td className={styleAdmin.tbrow}>
-                                    {/* <button className={styleAdmin.btnEdit} onClick={() => handleEdit(post)}>Edit</button>
-                                    <button className={styleAdmin.btnRemove} onClick={() => handleDeletePost(post._id)}>Remove</button> */}
+                                    {(post.status === 'active' || post.status === 'rejected') ? (
+                                        <>
+                                            <button className={styleAdmin.btnEdit} style={{ opacity: 0.5 }} disabled>Active</button>
+                                            <button className={styleAdmin.btnEdit} style={{ opacity: 0.5 }} disabled>Reject</button>
+                                            <button onClick={() => handleDeletePost(post._id)} className={styleAdmin.btnRemove}>Remove</button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <button onClick={() => handleActivePost(post._id)} className={styleAdmin.btnEdit}>Active</button>
+                                            <button onClick={() => handleRejectPost(post._id)} className={styleAdmin.btnEdit}>Reject</button>
+                                            <button onClick={() => handleDeletePost(post._id)} className={styleAdmin.btnRemove}>Remove</button>
+                                        </>
+                                    )}
                                 </td>
                             </tr>
                         ))}
