@@ -16,6 +16,25 @@ export class PostsController {
   findAll() {
     return this.postsService.findAll();
   }
+  @Get('oldest')
+  findAllSortOldest() {
+    return this.postsService.findAllSortOldest();
+  }
+
+  @Get('pending')
+  findAllPending() {
+    return this.postsService.findAllPending();
+  }
+
+  @Get('active')
+  findAllActive() {
+    return this.postsService.findAllActive();
+  }
+
+  @Get('rejected')
+  findAllRejected() {
+    return this.postsService.findAllRejected();
+  }
 
   @Get(':id')
   findOne(@Param('id') id: string) {

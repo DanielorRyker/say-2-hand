@@ -53,6 +53,22 @@ console.log('>>> location data:', postData.location);
     return this.postModel.find().exec();
   }
 
+   findAllSortOldest() {
+  return this.postModel.find().sort({ createdAt: -1 }).exec();
+  }
+
+  findAllPending() {
+  return this.postModel.find({ status: "pending" }).exec();
+  }
+
+  findAllActive() {
+  return this.postModel.find({ status: "active" }).exec();
+  }
+
+    findAllRejected() {
+  return this.postModel.find({ status: "rejected" }).exec();
+  }
+
   findOne(id: number) {
     return this.postModel.findById(id).exec();
   }
