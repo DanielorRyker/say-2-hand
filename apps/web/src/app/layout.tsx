@@ -15,7 +15,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className="mdl-js">
       <body suppressHydrationWarning={true}>
         <AntdRegistry>
           <ClientLayout>{children}</ClientLayout>

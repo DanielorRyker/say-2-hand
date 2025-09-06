@@ -17,6 +17,7 @@ export default function ListPost() {
       condition: "mới",
       category: { name: "Nội thất" },
       stats: { view_count: 120, favorite_count: 5 },
+      distance_km: 0.8,
     },
     {
       _id: "post2",
@@ -33,6 +34,7 @@ export default function ListPost() {
       condition: "đã sử dụng",
       category: { name: "Sách & Văn phòng" },
       stats: { view_count: 85, favorite_count: 2 },
+      distance_km: 3.2,
     },
     {
       _id: "post3",
@@ -49,6 +51,7 @@ export default function ListPost() {
       condition: "như mới",
       category: { name: "Thời trang" },
       stats: { view_count: 250, favorite_count: 15 },
+      distance_km: 12.4,
     },
     {
       _id: "post4",
@@ -66,6 +69,7 @@ export default function ListPost() {
       condition: "đã sử dụng",
       category: { name: "Cây cảnh & Vật nuôi" },
       stats: { view_count: 50, favorite_count: 1 },
+      distance_km: 0.5,
     },
   ];
 
@@ -87,18 +91,25 @@ export default function ListPost() {
     return `${years} năm trước`;
   };
 
+  const formatDistance = (distance_km?: number) => {
+    if (distance_km == null) return "-";
+    if (distance_km < 1) {
+      const meters = Math.round(distance_km * 1000);
+      return `${meters} m`;
+    }
+    return `${distance_km.toFixed(1)} km`;
+  };
+
   return (
     <div className={stylePostList.container}>
       {posts.map((post) => {
         const isSell = post.transaction_type === "sell";
         let priceHtml;
         if (isSell) {
+          // Format number with Vietnamese separators and append ' VNĐ' instead of the currency symbol
           priceHtml = (
             <span className={stylePostList.postPrice}>
-              {new Intl.NumberFormat("vi-VN", {
-                style: "currency",
-                currency: "VND",
-              }).format(post.price!)}
+              {`${new Intl.NumberFormat("vi-VN").format(post.price!)} VNĐ`}
             </span>
           );
         } else {
@@ -160,11 +171,22 @@ export default function ListPost() {
               {priceHtml}
               <div className={stylePostList.postDetails}>
                 <p>
-                  <strong>Loại:</strong> {post.category.name}
+                  <strong>Tình trạng:</strong> {post.category.name}
                 </p>
                 <p>
                   <strong>Vị trí:</strong> {post.location.address}
                 </p>
+                <div className={stylePostList.location}>
+                  <Image
+                    src="image/post/location.svg"
+                    alt="Vị trí"
+                    width={15}
+                    height={15}
+                  />
+                  <p style={{ fontSize: "15px", color: "#888" }}>
+                    {formatDistance(post.distance_km)}
+                  </p>
+                </div>
               </div>
               <div className={stylePostList.postMeta}>
                 <div className={stylePostList.authorInfo}>
