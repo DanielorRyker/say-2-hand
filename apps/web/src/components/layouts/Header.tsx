@@ -14,6 +14,7 @@ const Header = () => {
     email: string;
     full_name: string;
     role: string;
+     avatar:string;
   } | null>(null);
 
   useEffect(() => {
@@ -51,6 +52,8 @@ const Header = () => {
 
     router.push("/profile/" + user?.full_name);
   };
+
+  const avatarUrl = user ? process.env.NEXT_PUBLIC_URL_GCS + user.avatar : "/image/header/carbon_user-avatar-filled-alt.svg";
 
   return (
     <div className="headerContainer">
@@ -134,7 +137,7 @@ const Header = () => {
 
           {user ? (
             <>
-              <button className="btnLogin">
+              <button className="btnLogin" onClick={() => router.push("/post/createPost")}>
                 <p className={headerStyles.headerBtnText}>Đăng tin</p>
               </button>
             </>
@@ -148,7 +151,7 @@ const Header = () => {
             title={
               <span className={headerStyles.headerUserDropdown}>
                 <Image
-                  src="/image/header/carbon_user-avatar-filled-alt.svg"
+                   src={user?.avatar ? process.env.NEXT_PUBLIC_URL_GCS + user.avatar : "/image/header/carbon_user-avatar-filled-alt.svg"}
                   alt=""
                   className="imgAvatar"
                   width={32}
@@ -165,13 +168,7 @@ const Header = () => {
             }
             id="basic-nav-dropdown"
           >
-            {/* <NavDropdown.Item onClick={handleLogout}>Đăng nhập</NavDropdown.Item>
-          <NavDropdown.Divider />
-          <NavDropdown.Item onClick={handleRegister}>Đăng ký</NavDropdown.Item>
-          <NavDropdown.Divider />
-          <NavDropdown.Item href="#action/2" >Cài đặt tài khoản</NavDropdown.Item>
-          <NavDropdown.Divider />
-          <NavDropdown.Item onClick={handleLogout}>Đăng xuất</NavDropdown.Item> */}
+          
             {/* Nếu chưa login thì hiện Đăng nhập + Đăng ký */}
             {!user && (
               <>
@@ -186,10 +183,29 @@ const Header = () => {
             )}
 
             {/* Nếu có user thì hiện Cài đặt tài khoản + Đăng xuất */}
-            {user && (
+            {user && user.role === "user" && (
               <>
                 <NavDropdown.Item onClick={handleProfile}>
                   Cài đặt tài khoản
+                </NavDropdown.Item>
+                <NavDropdown.Divider />
+                <NavDropdown.Item onClick={handleLogout}>
+                  Đăng xuất
+                </NavDropdown.Item>
+              </>
+            )}
+                 {user && user.role === "admin" && (
+              <>
+                <NavDropdown.Item onClick={() => router.push("/admin/users")}>
+                  Quản lý tài khoản
+                </NavDropdown.Item>
+                <NavDropdown.Divider />
+                <NavDropdown.Item onClick={() => router.push("/admin/posts")}>
+                  Quản lý bài đăng
+                </NavDropdown.Item>
+                <NavDropdown.Divider />
+                <NavDropdown.Item onClick={() => router.push("/admin/categories")}>
+                  Quản lý danh mục
                 </NavDropdown.Item>
                 <NavDropdown.Divider />
                 <NavDropdown.Item onClick={handleLogout}>
