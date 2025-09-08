@@ -13,9 +13,9 @@ export class CategoriesService {
     ) {}
 
   async create(createCategoryDto: CreateCategoryDto) {
-    const { name } = createCategoryDto;
+    const { name ,image} = createCategoryDto;
     const slug = slugify(name);
-    const category = await this.categoryModel.create({ name, slug });
+    const category = await this.categoryModel.create({ name, slug, image });
     return { _id: category._id };
   }
 
@@ -36,7 +36,8 @@ export class CategoriesService {
       return this.categoryModel.updateOne(
         { _id: updateCategoryDto._id },
         { name: updateCategoryDto.name,
-          slug: slugify(updateCategoryDto.name)
+          slug: slugify(updateCategoryDto.name),
+          image: updateCategoryDto.image
          },
       );
     }

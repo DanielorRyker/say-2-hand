@@ -12,6 +12,9 @@ export class Category {
 
   @Prop({ required: true })
   slug: string;
+
+  @Prop()
+  image?: string;
 }
 
 export const CategorySchema = SchemaFactory.createForClass(Category);

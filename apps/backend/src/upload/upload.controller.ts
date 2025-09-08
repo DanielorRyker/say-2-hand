@@ -37,4 +37,14 @@ export class UploadController {
   return { filename };
   }
 
+  @Post('img')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadImage(
+    @UploadedFile() file: Express.Multer.File,
+    @Body('bucket') bucket: string
+  ) {
+  const filename = await this.uploadService.uploadImg(file, bucket);
+  return { filename };
+  }
+
 }

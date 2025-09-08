@@ -64,10 +64,6 @@ export class UploadService {
     // thêm "products/" vào trước tên file để phân folder
     const random = Math.floor(100000 + Math.random() * 900000).toString();
     const fileName = `products/${Date.now()}-${random}`;
-    //  await this.usersService.update({
-    //         _id: userId,
-    //         avatar: fileName,
-    //       });
     const blob = bucket.file(fileName);
 
     const blobStream = blob.createWriteStream({
@@ -77,7 +73,34 @@ export class UploadService {
 
     return new Promise((resolve, reject) => {
       blobStream.on('finish', () => {
-        // const publicUrl = `https://storage.googleapis.com/${this.bucketName}/${fileName}`;
+        resolve(fileName);
+      });
+
+      blobStream.on('error', (err) => {
+        reject(
+          new Error(`Unable to upload image, something went wrong: ${err}`),
+        );
+      });
+
+      blobStream.end(file.buffer);
+    });
+  }
+
+  async uploadImg(file: Express.Multer.File, name: string) {
+    const bucket = this.storage.bucket(this.bucketName);
+
+    // thêm "products/" vào trước tên file để phân folder
+    const random = Math.floor(100000 + Math.random() * 900000).toString();
+    const fileName = `${name}/${Date.now()}-${random}`;
+    const blob = bucket.file(fileName);
+
+    const blobStream = blob.createWriteStream({
+      resumable: false,
+      contentType: file.mimetype,
+    });
+
+    return new Promise((resolve, reject) => {
+      blobStream.on('finish', () => {
         resolve(fileName);
       });
 
