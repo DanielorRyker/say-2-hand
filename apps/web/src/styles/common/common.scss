@@ -1,9 +1,9 @@
-@use '../abstracts/variables' as variables;
+@use '../abstracts/variables' ;
 
 
 .container {
   width: 70%;
-  background: variables.$background-card-light;
+  background: var(--background-card-light);
   border-radius: 20px;
   display: flex;
   

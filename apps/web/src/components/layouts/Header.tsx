@@ -2,12 +2,13 @@
 import NavDropdown from "react-bootstrap/NavDropdown";
 // import "@/styles/globals.scss";
 import headerStyles from "@/styles/layout/header.module.scss";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 
 const Header = () => {
   const router = useRouter();
+  const pathname = usePathname();
 
   const [user, setUser] = useState<{
     _id: string;
@@ -56,18 +57,18 @@ const Header = () => {
   const avatarUrl = user ? process.env.NEXT_PUBLIC_URL_GCS + user.avatar : "/image/header/carbon_user-avatar-filled-alt.svg";
 
   return (
-    <div className="headerContainer">
+    <div className={headerStyles.headerContainer}>
       <div className={headerStyles.flexRow}>
-        <div className="group1">
+        <div className={headerStyles.group1}>
           <NavDropdown
-            className="dropDownCar"
+            className={headerStyles.dropDownCar}
             title={
               <Image
                 src="/image/header/pajamas_hamburger.svg"
                 alt=""
                 width={32}
                 height={32}
-                className="img"
+                className={headerStyles.img}
               />
             }
             id="basic-nav-dropdown"
@@ -89,14 +90,14 @@ const Header = () => {
               alt="Logo"
               width={200}
               height={45}
-              style={{ cursor: "pointer" }}
+              className={headerStyles.logoImg}
             />
           </a>
         </div>
 
-        <div className="group2">
+        <div className={headerStyles.group2}>
           <button
-            className="btnHeader"
+            className={headerStyles.btnHeader}
             type="button"
             title="Yêu thích"
             aria-label="Yêu thích"
@@ -104,13 +105,13 @@ const Header = () => {
             <Image
               src="/image/header/Favourite icon.svg"
               alt="Yêu thích"
-              className="img"
+              className={headerStyles.img}
               width={24}
               height={24}
             />
           </button>
           <button
-            className="btnHeader"
+            className={headerStyles.btnHeader}
             type="button"
             title="Tin nhắn"
             aria-label="Tin nhắn"
@@ -118,13 +119,13 @@ const Header = () => {
             <Image
               src="/image/header/IconMessage.svg"
               alt="Tin nhắn"
-              className="img"
+              className={headerStyles.img}
               width={24}
               height={24}
             />
           </button>
           <button
-            className="btnHeader"
+            className={headerStyles.btnHeader}
             type="button"
             title="Thông báo"
             aria-label="Thông báo"
@@ -132,7 +133,7 @@ const Header = () => {
             <Image
               src="/image/header/Notification Icon.svg"
               alt="Thông báo"
-              className="img"
+              className={headerStyles.img}
               width={24}
               height={24}
             />
@@ -140,30 +141,30 @@ const Header = () => {
 
           {user ? (
             <>
-              <button className="btnLogin" onClick={() => router.push("/post/createPost")}>
+              <button className={headerStyles.btnLogin} onClick={() => router.push("/post/createPost")}>
                 <p className={headerStyles.headerBtnText}>Đăng tin</p>
               </button>
             </>
           ) : (
-            <button className="btnLogin" onClick={() => handleBtn()}>
+            <button className={headerStyles.btnLogin} onClick={() => handleBtn()}>
               <p className={headerStyles.headerBtnText}>Đăng nhập</p>
             </button>
           )}
           <NavDropdown
-            className="userDropDown"
+            className={headerStyles.userDropDown}
             title={
               <span className={headerStyles.headerUserDropdown}>
                 <Image
                    src={user?.avatar ? process.env.NEXT_PUBLIC_URL_GCS + user.avatar : "/image/header/carbon_user-avatar-filled-alt.svg"}
                   alt=""
-                  className="imgAvatar"
+                  className={headerStyles.imgAvatar}
                   width={32}
                   height={32}
                 />
                 <Image
                   src="/image/header/arrow-down.svg"
                   alt=""
-                  className="img"
+                  className={headerStyles.img}
                   width={16}
                   height={16}
                 />
@@ -220,65 +221,72 @@ const Header = () => {
         </div>
       </div>
 
-      <div className="group3">
-        <Image
-          src="/image/header/search_gray.svg"
-          alt=""
-          className="img"
-          width={24}
-          height={24}
-        />
-        <input
-          type="text"
-          className="inputSearch"
-          placeholder="Tìm kiếm sản phẩm ..."
-        />
-        <div className="locationDropDownWrapper">
-          <NavDropdown
-            className="locationDropDown"
-            title={
-              <span className={headerStyles.headerLocationDropdown}>
-                <Image
-                  src="/image/header/location 1.svg"
-                  alt=""
-                  className="imgLocation"
-                  width={16}
-                  height={16}
-                />
-                <p className={headerStyles.headerLocationText}>
-                  {selectedItem}
-                </p>
-              </span>
-            }
-            id="basic-nav-dropdown"
-          >
-            <NavDropdown.Item onClick={() => handleSelect("Hà nội")}>
-              {" "}
-              Hà nội
-            </NavDropdown.Item>
-            <NavDropdown.Item onClick={() => handleSelect("Vĩnh Long")}>
-              {" "}
-              Vĩnh Long{" "}
-            </NavDropdown.Item>
-            <NavDropdown.Item onClick={() => handleSelect("Cần thơ")}>
-              Cần thơ{" "}
-            </NavDropdown.Item>
-            <NavDropdown.Item onClick={() => handleSelect("Thanh hóa")}>
-              Thanh hóa
-            </NavDropdown.Item>
-          </NavDropdown>
-        </div>
+      <div
+          className={`${headerStyles.searchBG1} ${
+            pathname === "/home" ? headerStyles.home : headerStyles.about
+          }`}
+>
+          <div className={headerStyles.group3}>
+            <Image
+              src="/image/header/search_gray.svg"
+              alt=""
+              className={headerStyles.img}
+              width={24}
+              height={24}
+            />
+            <input
+              type="text"
+              className={headerStyles.inputSearch}
+              placeholder="Tìm kiếm sản phẩm ..."
+            />
+            <div className={headerStyles.locationDropDownWrapper}>
+              <NavDropdown
+                className={headerStyles.locationDropDown}
+                title={
+                  <span className={headerStyles.headerLocationDropdown}>
+                    <Image
+                      src="/image/header/location 1.svg"
+                      alt=""
+                      className={headerStyles.imgLocation}
+                      width={16}
+                      height={16}
+                    />
+                    <p className={headerStyles.headerLocationText}>
+                      {selectedItem}
+                    </p>
+                  </span>
+                }
+                id="basic-nav-dropdown"
+              >
+                <NavDropdown.Item onClick={() => handleSelect("Hà nội")}>
+                  {" "}
+                  Hà nội
+                </NavDropdown.Item>
+                <NavDropdown.Item onClick={() => handleSelect("Vĩnh Long")}>
+                  {" "}
+                  Vĩnh Long{" "}
+                </NavDropdown.Item>
+                <NavDropdown.Item onClick={() => handleSelect("Cần thơ")}>
+                  Cần thơ{" "}
+                </NavDropdown.Item>
+                <NavDropdown.Item onClick={() => handleSelect("Thanh hóa")}>
+                  Thanh hóa
+                </NavDropdown.Item>
+              </NavDropdown>
+            </div>
 
-        <button className="btnSearch" title="Tìm kiếm" aria-label="Tìm kiếm">
-          <Image
-            src="/image/header/search_black.svg"
-            alt=""
-            className="img"
-            width={24}
-            height={24}
-          />
-        </button>
+            <button className={headerStyles.btnSearch} title="Tìm kiếm" aria-label="Tìm kiếm">
+              <Image
+                src="/image/header/search_black.svg"
+                alt=""
+                className={headerStyles.img}
+                width={24}
+                height={24}
+              />
+            </button>
+          </div>
       </div>
+        
     </div>
   );
 };

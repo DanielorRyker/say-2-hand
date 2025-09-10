@@ -14,6 +14,7 @@ export class AuthService {
     private passwordResetsService: PasswordResetsService,
   ) {}
 
+  //Đăng nhập
   async signIn(username: string, pass: string): Promise<any> {
     const user = await this.usersService.findByEmail(username);
     if (!user) {
@@ -31,6 +32,9 @@ export class AuthService {
       access_token: await this.jwtService.signAsync(payload),
     };
   }
+
+
+  
  //tạo OTP
   async createHashOTP(otp:string,email :string): Promise<any> {
      

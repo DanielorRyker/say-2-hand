@@ -1,4 +1,3 @@
-//Client Layout
 "use client";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -16,6 +15,17 @@ export default function ClientLayout({
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    // reset class cũ
+    document.body.classList.remove("home", "about");
+
+    if (pathname === "/") {
+      document.body.classList.add("home");
+    } else {
+      document.body.classList.add("about");
+    }
+  }, [pathname]);
 
   if (!mounted) {
     return <main>{children}</main>;
