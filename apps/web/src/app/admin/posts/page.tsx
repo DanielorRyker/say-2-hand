@@ -8,7 +8,8 @@ const Home = () =>{
         interface Post {
             _id: string;
             title?: string;
-            author?: string;
+            author_id?: string;
+            category_id?: string;
             description?: string;
             price?: number;
             condition?: string;
@@ -27,6 +28,58 @@ const Home = () =>{
             }
             fetchPosts();
         }, []);
+
+        //lấy user
+         interface User {
+        _id: string;
+        email?: string;
+        full_name?: string;
+        role?: string;
+        status?: string;
+        phone_number?: string;
+        address?: string;
+        description?: string;
+        avatar?: string;
+
+    }
+
+        const [usersData, setUsersData] = useState<User[]>([]);
+        useEffect(() => {
+            async function fetchUsers() {
+                const res = await axios.get("http://localhost:8080/api/users/");
+                setUsersData(res.data); // res.data là danh sách users
+            }
+            fetchUsers();
+        }, []);
+
+        const getAuthorName = (author_id: string) => {
+        const user = usersData.find(u => u._id === author_id);
+        return user ? user.full_name : author_id;
+        };
+
+        // Lấy tên danh mục
+        interface Category {
+        _id: string;
+        name?: string;
+        slug?: string;
+        image?: string;
+    }
+
+    const [categoriesData, setCategoriesData] = useState<Category[]>([]);
+
+    useEffect(() => {
+        async function fetchCategories() {
+            const res = await axios.get("http://localhost:8080/api/categories/");
+            setCategoriesData(res.data); // res.data là danh sách categories
+        }
+        fetchCategories();
+    }, []);
+
+    const getCategoryName = (category_id: string) => {
+        const category = categoriesData.find(c => c._id === category_id);
+        return category ? category.name : category_id;
+    };
+
         // Phân trang
                 const pageSize = 10;
                 const [currentPage, setCurrentPage] = useState(1);
@@ -99,6 +152,7 @@ const Home = () =>{
                             <th className={styleAdmin.tbheader}>#</th>
                             <th className={styleAdmin.tbheader}>Title</th>                      
                             <th className={styleAdmin.tbheader}>Author</th>
+                            <th className={styleAdmin.tbheader}>Category</th>
                             <th className={styleAdmin.tbheader}>Description</th>
                             <th className={styleAdmin.tbheader}>Price</th>
                             <th className={styleAdmin.tbheader}>Condition</th>
@@ -113,7 +167,8 @@ const Home = () =>{
                         <tr key={post._id}>
                         <td className={styleAdmin.tbrow}>{(currentPage - 1) * pageSize + idx + 1}</td>
                                 <td className={styleAdmin.tbrow}>{post.title}</td>
-                                <td className={styleAdmin.tbrow}>{post.author}</td>
+                                <td className={styleAdmin.tbrow}>{getAuthorName(post.author_id ?? "")}</td>
+                                <td className={styleAdmin.tbrow}>{getCategoryName(post.category_id ?? "")}</td>
                                 <td className={styleAdmin.tbrow}>{post.description}</td>
                                 <td className={styleAdmin.tbrow}>{post.price}</td>
                                 <td className={styleAdmin.tbrow}>{post.condition}</td>

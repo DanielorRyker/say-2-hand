@@ -30,7 +30,7 @@ export default function Category() {
   return (
     <div className={styles.container}>
       <div className={styles.categoryList}>
-        {categoriesData.map((category, index) => (
+        {categoriesData.slice(0, 14).map((category, index) => (
           <button key={index} type="button" className={styles.categoryItem}>
             <div className={styles.image}>
               

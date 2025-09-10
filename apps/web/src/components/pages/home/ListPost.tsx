@@ -1,7 +1,42 @@
 import stylePostList from "@/styles/pages/home/postList.module.scss";
+import axios from "axios";
+import { handler } from "next/dist/build/templates/app-page";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 
 export default function ListPost() {
+
+  interface Post {
+  _id: string;
+  title: string;
+  // images: { url: string }[];
+  image?: string;
+  price: number;
+  transaction_type: string;
+  // location: { address: string };
+  address: string;
+  author_id: { full_name: string; avatar: string };
+  createdAt: string;
+  reputation?: { average_score: number; total_ratings: number };
+  condition: string;
+  category_id: { name: string };
+  stats?: { view_count: number; favorite_count: number };
+  distance_km?: number;
+  status: string;
+}
+
+ const [postsData, setPostsData] = useState<Post[]>([]);
+
+useEffect(() => {
+        async function fetchPosts() {
+            const res = await axios.get("http://localhost:8080/api/posts/postmap");
+            setPostsData(res.data); // res.data là danh sách posts
+            console.log("posts", res.data);
+        }
+        fetchPosts();
+        }, []);
+
+console.log("postsData", postsData);
   const posts = [
     {
       _id: "post1",
@@ -102,7 +137,7 @@ export default function ListPost() {
 
   return (
     <div className={stylePostList.container}>
-      {posts.map((post) => {
+      {postsData.map((post) => {
         const isSell = post.transaction_type === "sell";
         let priceHtml;
         if (isSell) {
@@ -129,7 +164,8 @@ export default function ListPost() {
           >
             <div className={stylePostList.postImage}>
               <Image
-                src={post.images[0].url}
+                // src={post.images[0].url}
+                src={post.image ? process.env.NEXT_PUBLIC_URL_GCS + post.image : "/image/post/default.png"}
                 alt={post.title}
                 fill
                 className={stylePostList.imageItem}
@@ -171,10 +207,12 @@ export default function ListPost() {
               {priceHtml}
               <div className={stylePostList.postDetails}>
                 <p>
-                  <strong>Tình trạng:</strong> {post.category.name}
+                  {/* <strong>Tình trạng:</strong> {post.category.name} */}
+                   <strong>Danh mục:</strong> {post.category_id.name}
                 </p>
                 <p>
-                  <strong>Vị trí:</strong> {post.location.address}
+                  {/* <strong>Vị trí:</strong> {post.location.address} */}
+                   <strong>Vị trí:</strong> {post.address}
                 </p>
                 <div className={stylePostList.location}>
                   <Image
@@ -191,24 +229,24 @@ export default function ListPost() {
               <div className={stylePostList.postMeta}>
                 <div className={stylePostList.authorInfo}>
                   <Image
-                    src={post.author.avatar_url}
-                    alt={post.author.full_name}
+                    src={process.env.NEXT_PUBLIC_URL_GCS + post.author_id.avatar}
+                    alt={post.author_id.full_name}
                     width={35}
                     height={35}
                   />
                   <span className={stylePostList.authorName}>
-                    {post.author.full_name}
+                    {post.author_id.full_name}
                   </span>
                 </div>
                 <span className={stylePostList.rating}>
-                  ⭐ {post.reputation.average_score.toFixed(1)}
+                  ⭐ {post.reputation ? post.reputation.average_score.toFixed(1) : "-"}
                 </span>
-              </div>
-              <div className={stylePostList.postStats}>
-                <span>Lượt xem: {post.stats.view_count}</span>
-                <span>Yêu thích: {post.stats.favorite_count}</span>
+              </div> 
+               <div className={stylePostList.postStats}>
+                <span>Lượt xem: {post.stats?.view_count ?? "-"}</span>
+                <span>Yêu thích: {post.stats?.favorite_count ?? "-"}</span>
                 <span className={stylePostList.time}>
-                  {getRelativeTime(post.created_at)}
+                  {getRelativeTime(post.createdAt)}
                 </span>
               </div>
             </div>

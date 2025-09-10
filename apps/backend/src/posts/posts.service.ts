@@ -84,4 +84,12 @@ console.log('>>> location data:', postData.location);
   findByUserId(userId: string) {
     return this.postModel.find({ author_id: new Types.ObjectId(userId) }).exec();
   }
+
+  async findAllForHome() {
+  return this.postModel
+    .find({ status: 'active' })
+    .populate('author_id', 'full_name avatar') // lấy thông tin user
+    .populate('category_id', 'name') // lấy tên category
+    .exec();
+}
 }
