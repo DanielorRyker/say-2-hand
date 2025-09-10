@@ -12,6 +12,11 @@ export class PostsController {
     return this.postsService.create(createPostDto);
   }
 
+  @Get('postmap')
+  findAllForHome() {
+    return this.postsService.findAllForHome();
+  }
+
   @Get()
   findAll() {
     return this.postsService.findAll();

@@ -1,6 +1,7 @@
-// Light theme
 
-$primary-light: linear-gradient(to right, #ffffff, #A7F3D0);
-$background-light: linear-gradient(to right, #EBF8FF, #F0FDF4);
-$background-card-light: #ffffff;
-$header-background-light: linear-gradient(to right, #667eea, #764ba2);
+:root {
+	--primary-light: linear-gradient(to right, #ffffff, #A7F3D0);
+	--background-light: linear-gradient(to right, #EBF8FF, #F0FDF4);
+	--background-card-light: #ffffff;
+	--header-background-light: linear-gradient(to right, #667eea, #764ba2);
+}

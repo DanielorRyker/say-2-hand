@@ -17,10 +17,10 @@ class Location {
   collection: 'posts',
 })
 export class Post {
-  @Prop({ type: Types.ObjectId, required: true })
+  @Prop({ type: Types.ObjectId, required: true ,ref: 'User'})
   author_id: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, required: true })
+  @Prop({ type: Types.ObjectId, required: true, ref: 'Category' })
   category_id: Types.ObjectId;
 
   @Prop({ required: true })
