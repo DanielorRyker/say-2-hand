@@ -1,0 +1,151 @@
+/* Styles extracted from CreateNewPost.html and converted to a CSS module */
+:global(body) {
+  font-family: "Inter", sans-serif;
+  background: linear-gradient(135deg, #f0f9ff 0%, #f0fdf4 100%);
+  color: #1f2937;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.card {
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.08);
+  padding: 1.5rem;
+  transition: all .3s;
+}
+
+.formSection {
+  display: none;
+  animation: fadeIn .5s ease-in-out;
+}
+.formSectionActive {
+  display: block;
+}
+
+.progressBar {
+  height: 8px;
+  background-color: #d1d5db;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+.progress {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6 0%, #a855f7 100%);
+  transition: width .5s ease-in-out;
+}
+
+/* helper width classes for progress (0/50/100) to avoid inline styles */
+.progress0 { width: 0%; }
+.progress50 { width: 50%; }
+.progress100 { width: 100%; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.imagePreviewContainer {
+  overflow-x: auto;
+  white-space: nowrap;
+  padding-bottom: 1rem;
+  display:flex;
+  align-items:center;
+}
+.imagePreview {
+  display: inline-block;
+  position: relative;
+  width: 150px;
+  height: 150px;
+  margin-right: 1rem;
+  flex-shrink: 0;
+  background-color: #e5e7eb;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+.imagePreview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.deleteBtn {
+  position: absolute;
+  top: .25rem;
+  right: .25rem;
+  background-color: rgba(239,68,68,.8);
+  color: white;
+  border-radius: 9999px;
+  width: 1.5rem;
+  height: 1.5rem;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-size:.75rem;
+  cursor:pointer;
+  z-index:10;
+}
+.addImageBox {
+  display: inline-flex;
+  width: 150px;
+  height: 150px;
+  border: 2px dashed #d1d5db;
+  border-radius: 0.5rem;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink:0;
+  transition: border-color .2s;
+}
+.addImageBox:hover { border-color: #3b82f6 }
+
+.floatingMessage {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 1rem 1.5rem;
+  border-radius: .5rem;
+  background: linear-gradient(90deg, #3b82f6 0%, #a855f7 100%);
+  color: white;
+  box-shadow: 0 4px 6px rgba(0,0,0,.1);
+  z-index:1000;
+  opacity:0;
+  transition: opacity .3s ease-in-out;
+}
+
+.visible { opacity: 1 !important }
+
+.btnGradientPrimary {
+  background: linear-gradient(90deg, #3b82f6 0%, #a855f7 100%);
+  color: white;
+  font-weight: 600;
+  padding: .75rem 2rem;
+  border-radius: .5rem;
+  box-shadow: 0 4px 6px rgba(0,0,0,.1);
+  transition: background .3s;
+  border: none;
+}
+.btnGradientPrimary:hover { background: linear-gradient(90deg,#2563eb 0%,#9333ea 100%) }
+.btnGradientSuccess {
+  background: linear-gradient(90deg, #22c55e 0%, #84cc16 100%);
+  color: white;
+  font-weight: 600;
+  padding: .75rem 2rem;
+  border-radius: .5rem;
+  box-shadow: 0 4px 6px rgba(0,0,0,.1);
+  transition: background .3s;
+  border: none;
+}
+.btnGradientSuccess:hover { background: linear-gradient(90deg,#15803d 0%,#65a30d 100%) }
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255,255,255,.6), 0 0 0 4px #60a5fa;
+  border-color: #60a5fa;
+}
+
+.hidden { display:none }

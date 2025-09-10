@@ -37,12 +37,12 @@ const Home = () => {
   };
   //Chỉnh sủa thông tin cá nnhân
   const handleEdit = () => {
-    router.push("/user/" + user?.full_name + "/edit");
+    router.push("/profile/" + user?.full_name + "/editProfile");
   };
 
   //Đổi mật khẩu
   const handleChangePassword = () => {
-    router.push("/user/" + user?.full_name + "/changePassword");
+    router.push("/profile/" + user?.full_name + "/changePassword");
   };
 
   return (

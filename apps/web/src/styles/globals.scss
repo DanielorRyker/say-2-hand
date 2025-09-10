@@ -2,7 +2,6 @@
 @use "./abstracts/variables" as *;
 @use "./common/common" as *;
 
-
 /* header */
 .headerContainer{
 
@@ -155,3 +154,7 @@
 }
 
 /* header */
+
+body{
+  padding-bottom: 300px;
+}
