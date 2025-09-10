@@ -83,12 +83,15 @@ const Header = () => {
             <NavDropdown.Item href="#action/3">Đồ gia dụng</NavDropdown.Item>
             <NavDropdown.Item href="#action/3">Sách </NavDropdown.Item>
           </NavDropdown>
-          <Image
-            src="/image/header/Say2Hand.svg"
-            alt=""
-            width={200}
-            height={45}
-          />
+          <a href="/home">
+            <Image
+              src="/image/header/Say2Hand.svg"
+              alt="Logo"
+              width={200}
+              height={45}
+              style={{ cursor: "pointer" }}
+            />
+          </a>
         </div>
 
         <div className="group2">

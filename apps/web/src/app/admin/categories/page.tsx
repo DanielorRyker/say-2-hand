@@ -61,22 +61,7 @@ const Home = () =>{
         }
         };
 
-        // const handleSave = async () => {
-        // if (!editingCategoryId) return;
-        // try {
-        //    await axios.patch("http://localhost:8080/api/categories", {
-        //     _id: editingCategoryId,
-        //     ...editForm,
-        //     });
-        //     setCategoriesData(categoriesData.map(c => c._id === editingCategoryId ? { ...c, ...editForm } : c));
-        //     setEditingCategoryId(null);
-        //     alert("Cập nhật thành công");
-        // } catch (error) {
-        //     console.error("Error updating category:", error);
-        //     alert("Có lỗi khi cập nhật category");
-        // }
-        // };
-        const handleSave = async () => {
+       const handleSave = async () => {
     if (!editingCategoryId) return;
     try {
         let imageUrl = editForm.image;
