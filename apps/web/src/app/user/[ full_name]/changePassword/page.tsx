@@ -264,7 +264,6 @@ const Home = () => {
             <p className={stylechangePassword["btnConfirmText"]}>Quay lại</p>
           </button>
         </div>
-
       </div>
     </div>
   );

@@ -15,8 +15,10 @@ async function bootstrap() {
   app.setGlobalPrefix('api', { exclude: [''] });
 
   // Bật CORS cho FE, dùng khi FE và BE khác port để tránh bị chặn
+  const frontendOrigin =
+    configService.get<string>('FRONTEND_URL') || 'http://localhost:3002';
   app.enableCors({
-    origin: 'http://localhost:3002', // FE Next.js đang chạy
+    origin: frontendOrigin,
     credentials: true,
   });
   // Gọi listen() trước để khởi động server

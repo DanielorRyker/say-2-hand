@@ -35,25 +35,24 @@ const Home = () => {
       console.log("Login success:", res.data);
       //Lấy thông tin user
       const userRes = await axios.get(
-          `http://localhost:8080/api/users/find/${form.email}`
-        );
-        localStorage.setItem("user", JSON.stringify(userRes.data));
+        `http://localhost:8080/api/users/find/${form.email}`
+      );
+      localStorage.setItem("user", JSON.stringify(userRes.data));
 
-        const userStr = localStorage.getItem("user");
-        let user;
-        if (userStr) {
-          user = JSON.parse(userStr); // chuyển string -> object
-          console.log(user.status); // ✅ lấy được status
-        }
+      const userStr = localStorage.getItem("user");
+      let user;
+      if (userStr) {
+        user = JSON.parse(userStr); // chuyển string -> object
+        console.log(user.status); // ✅ lấy được status
+      }
 
-      if (user.status == 'active') {
-        if(user.role == 'admin'){
+      if (user.status == "active") {
+        if (user.role == "admin") {
           router.push("/admin/users");
-        }else{
+        } else {
           router.push("/");
         }
-      } 
-      else {
+      } else {
         alert("Tài khoản chưa được kích hoạt");
         localStorage.setItem("email", form.email);
         router.push("/auth/verification");

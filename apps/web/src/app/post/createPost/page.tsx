@@ -202,25 +202,27 @@ export default function CreatePostPage() {
   }
 
   return (
-    <div className={`${styles.container} p-4 sm:p-8`}>
-      <div className={`${styles.card}`}>
-        <h1 className="text-3xl font-bold text-center mb-6 text-gray-800">
-          Đăng Tin Mới
-        </h1>
-        <div className={styles.progressBar + " mb-8"}>
+    <div className={styles.container}>
+      <div className={styles.card}>
+        <h1 className={styles.title}>Đăng Tin Mới</h1>
+        <div className={`${styles.progressBar}`}>
           <div
-            className={`${styles.progress} ${progress === 0 ? styles.progress0 : progress === 100 ? styles.progress100 : styles.progress50}`}
+            className={`${styles.progress} ${
+              progress === 0
+                ? styles.progress0
+                : progress === 100
+                  ? styles.progress100
+                  : styles.progress50
+            }`}
           />
         </div>
 
         <div
           className={`${styles.formSection} ${currentStep === 1 ? styles.formSectionActive : ""}`}
         >
-          <h2 className="text-xl font-semibold mb-4 text-gray-700">
-            1. Tải lên hình ảnh
-          </h2>
-          <div className={`${styles.imagePreviewContainer} mb-4`}>
-            <div id="image-previews" className="flex items-center">
+          <h2 className={styles.sectionTitle}>1. Tải lên hình ảnh</h2>
+          <div className={`${styles.imagePreviewContainer}`}>
+            <div id="image-previews" className={styles.previewRow}>
               {images.map((src, idx) => (
                 <div key={idx} className={styles.imagePreview}>
                   <Image
@@ -240,7 +242,7 @@ export default function CreatePostPage() {
               ))}
             </div>
             <div
-              className={styles.addImageBox + " ml-4"}
+              className={styles.addImageBox}
               onClick={() => fileInputRef.current?.click()}
             >
               <input
@@ -253,32 +255,97 @@ export default function CreatePostPage() {
                 className="hidden"
                 onChange={(e) => handleFiles(e.target.files)}
               />
-              <div className="text-center text-gray-500">Thêm ảnh</div>
+              <div className={styles.hint}>Thêm ảnh</div>
             </div>
           </div>
-          <p className="text-sm text-gray-500 text-center mb-8">
+          <p className={styles.hint}>
             Tối thiểu 1 ảnh, tối đa 10 ảnh. Cuộn ngang để xem tất cả.
           </p>
-          <div className="flex justify-end mt-8">
+          <div className={styles.actions}>
             <button className={styles.btnGradientPrimary} onClick={onNext1}>
               Tiếp tục
             </button>
+          </div>
+          {/* Category moved here: choose category right after images */}
+          <div className={`${styles.field} ${styles.mtLarge}`}>
+            <label htmlFor="category_id" className={styles.label}>
+              Danh mục <span className={styles.required}>*</span>
+            </label>
+            <select
+              id="category_id"
+              aria-label="Danh mục"
+              required
+              value={formData.category_id}
+              onChange={onCategoryChange}
+              className={styles.select}
+            >
+              <option value="">-- Chọn danh mục --</option>
+              <option value="1">Đồ điện tử</option>
+              <option value="2">Thời trang</option>
+              <option value="3">Sách</option>
+            </select>
+          </div>
+
+          <div
+            id="custom-fields-container"
+            className={`${styles.customFieldsContainer} ${dynamicFields.length === 0 ? styles.hidden : ""}`}
+          >
+            <h3 className={styles.sectionTitle}>Tùy chọn</h3>
+            <div id="dynamic-fields">
+              {dynamicFields.map((f: any) => (
+                <div className={styles.field} key={f.name}>
+                  <label className={styles.label}>{f.label}</label>
+                  {(f.type === "text" || f.type === "number") && (
+                    <input
+                      name={f.name}
+                      aria-label={f.label}
+                      type={f.type}
+                      placeholder={f.placeholder}
+                      className={styles.input}
+                    />
+                  )}
+                  {f.type === "select" && (
+                    <select
+                      name={f.name}
+                      aria-label={f.label}
+                      className={styles.select}
+                    >
+                      {f.options.map((opt: string) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                  {f.type === "checkbox" && (
+                    <input name={f.name} aria-label={f.label} type="checkbox" />
+                  )}
+                  {f.type === "radio" &&
+                    f.options.map((opt: string, idx: number) => (
+                      <label key={opt} className={styles.inlineLabel}>
+                        <input
+                          id={`dyn-${f.name}-${idx}`}
+                          name={f.name}
+                          type="radio"
+                          value={opt}
+                        />{" "}
+                        <span>{opt}</span>
+                      </label>
+                    ))}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
         <div
           className={`${styles.formSection} ${currentStep === 2 ? styles.formSectionActive : ""}`}
         >
-          <h2 className="text-xl font-semibold mb-4 text-gray-700">
-            2. Thông tin cơ bản
-          </h2>
+          <h2 className={styles.sectionTitle}>2. Thông tin cơ bản</h2>
           <form id="basic-info-form" onSubmit={onNext2}>
-            <div className="mb-5">
-              <label
-                htmlFor="title"
-                className="block text-gray-700 font-medium mb-2"
-              >
-                Tiêu đề tin đăng <span className="text-red-500">*</span>
+            <div className={styles.field}>
+              <label htmlFor="title" className={styles.label}>
+                Tiêu đề tin đăng <span className={styles.required}>*</span>
               </label>
               <input
                 id="title"
@@ -287,15 +354,12 @@ export default function CreatePostPage() {
                   setFormData((s: any) => ({ ...s, title: e.target.value }))
                 }
                 required
-                className="w-full p-3 border border-gray-300 rounded-lg"
+                className={styles.input}
               />
             </div>
-            <div className="mb-5">
-              <label
-                htmlFor="description"
-                className="block text-gray-700 font-medium mb-2"
-              >
-                Mô tả chi tiết <span className="text-red-500">*</span>
+            <div className={styles.field}>
+              <label htmlFor="description" className={styles.label}>
+                Mô tả chi tiết <span className={styles.required}>*</span>
               </label>
               <textarea
                 id="description"
@@ -307,14 +371,11 @@ export default function CreatePostPage() {
                   }))
                 }
                 required
-                className="w-full p-3 border border-gray-300 rounded-lg"
+                className={styles.textarea}
               />
             </div>
-            <div className="mb-5">
-              <label
-                htmlFor="condition"
-                className="block text-gray-700 font-medium mb-2"
-              >
+            <div className={styles.field}>
+              <label htmlFor="condition" className={styles.label}>
                 Tình trạng
               </label>
               <select
@@ -323,17 +384,14 @@ export default function CreatePostPage() {
                 onChange={(e) =>
                   setFormData((s: any) => ({ ...s, condition: e.target.value }))
                 }
-                className="w-full p-3 border border-gray-300 rounded-lg"
+                className={styles.select}
               >
                 <option value="used">Đã qua sử dụng</option>
                 <option value="new">Mới</option>
               </select>
             </div>
-            <div className="mb-5">
-              <label
-                htmlFor="transaction_type"
-                className="block text-gray-700 font-medium mb-2"
-              >
+            <div className={styles.field}>
+              <label htmlFor="transaction_type" className={styles.label}>
                 Hình thức giao dịch
               </label>
               <select
@@ -341,7 +399,7 @@ export default function CreatePostPage() {
                 aria-label="Hình thức giao dịch"
                 value={formData.transaction_type}
                 onChange={onTransactionChange}
-                className="w-full p-3 border border-gray-300 rounded-lg"
+                className={styles.select}
               >
                 <option value="sell">Bán</option>
                 <option value="giveaway">Cho</option>
@@ -349,11 +407,8 @@ export default function CreatePostPage() {
               </select>
             </div>
             {formData.transaction_type === "sell" && (
-              <div id="price-field" className="mb-5">
-                <label
-                  htmlFor="price"
-                  className="block text-gray-700 font-medium mb-2"
-                >
+              <div id="price-field" className={styles.field}>
+                <label htmlFor="price" className={styles.label}>
                   Giá tiền (VND)
                 </label>
                 <input
@@ -367,15 +422,15 @@ export default function CreatePostPage() {
                       price: e.target.value ? parseFloat(e.target.value) : null,
                     }))
                   }
-                  className="w-full p-3 border border-gray-300 rounded-lg"
+                  className={styles.input}
                 />
               </div>
             )}
 
-            <div className="flex justify-between mt-8">
+            <div className={styles.rowBetween}>
               <button
                 type="button"
-                className="bg-gray-200 text-gray-700 font-semibold py-3 px-8 rounded-lg shadow hover:bg-gray-300"
+                className={styles.btnSecondary}
                 onClick={() => onPrev(1)}
               >
                 Quay lại
@@ -404,9 +459,9 @@ export default function CreatePostPage() {
               onSubmit();
             }}
           >
-            <div className="mb-5">
-              <label htmlFor="category_id" className="block">
-                Danh mục <span className="text-red-500">*</span>
+            <div className={styles.field}>
+              <label htmlFor="category_id" className={styles.label}>
+                Danh mục <span className={styles.required}>*</span>
               </label>
               <select
                 id="category_id"
@@ -414,7 +469,7 @@ export default function CreatePostPage() {
                 required
                 value={formData.category_id}
                 onChange={onCategoryChange}
-                className="w-full p-3 border border-gray-300 rounded-lg"
+                className={styles.select}
               >
                 <option value="">-- Chọn danh mục --</option>
                 <option value="1">Đồ điện tử</option>
@@ -425,32 +480,28 @@ export default function CreatePostPage() {
 
             <div
               id="custom-fields-container"
-              className={`border border-dashed border-gray-300 rounded-lg p-5 mt-6 transition-all duration-300 ${dynamicFields.length === 0 ? styles.hidden : ""}`}
+              className={`${styles.customFieldsContainer} ${dynamicFields.length === 0 ? styles.hidden : ""}`}
             >
-              <h3 className="text-lg font-semibold mb-4 text-gray-700">
-                Tùy chọn
-              </h3>
+              <h3 className={styles.sectionTitle}>Tùy chọn</h3>
               <div id="dynamic-fields">
                 {dynamicFields.map((f: any) => {
                   return (
-                    <div className="mb-5" key={f.name}>
-                      <label className="block text-gray-700 font-medium mb-2">
-                        {f.label}
-                      </label>
+                    <div className={styles.field} key={f.name}>
+                      <label className={styles.label}>{f.label}</label>
                       {(f.type === "text" || f.type === "number") && (
                         <input
                           name={f.name}
                           aria-label={f.label}
                           type={f.type}
                           placeholder={f.placeholder}
-                          className="w-full p-3 border border-gray-300 rounded-lg"
+                          className={styles.input}
                         />
                       )}
                       {f.type === "select" && (
                         <select
                           name={f.name}
                           aria-label={f.label}
-                          className="w-full p-3 border border-gray-300 rounded-lg"
+                          className={styles.select}
                         >
                           {f.options.map((opt: string) => (
                             <option key={opt} value={opt}>
@@ -468,17 +519,14 @@ export default function CreatePostPage() {
                       )}
                       {f.type === "radio" &&
                         f.options.map((opt: string) => (
-                          <label
-                            key={opt}
-                            className="inline-flex items-center mr-4"
-                          >
+                          <label key={opt} className={styles.inlineLabel}>
                             <input
                               id={`dyn-${f.name}-${opt}`}
                               name={f.name}
                               type="radio"
                               value={opt}
                             />{" "}
-                            <span className="ml-2">{opt}</span>
+                            <span>{opt}</span>
                           </label>
                         ))}
                     </div>
@@ -491,13 +539,13 @@ export default function CreatePostPage() {
               <label className="block text-gray-700 font-medium mb-2">
                 Địa chỉ
               </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              <div className={styles.gridTwo}>
                 <select
                   id="province-select"
                   aria-label="Tỉnh/Thành"
                   value={formData.location.province}
                   onChange={onProvinceChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg"
+                  className={styles.select}
                 >
                   <option value="">-- Tỉnh/Thành --</option>
                   {Object.keys(addressData).map((p) => (
@@ -511,7 +559,7 @@ export default function CreatePostPage() {
                   aria-label="Quận/Huyện"
                   value={formData.location.district}
                   onChange={onDistrictChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg"
+                  className={styles.select}
                 >
                   <option value="">-- Quận/Huyện --</option>
                   {(addressData[formData.location.province] || []).map((d) => (
@@ -525,7 +573,7 @@ export default function CreatePostPage() {
                 id="street-address"
                 aria-label="Số nhà, tên đường"
                 placeholder="Số nhà, tên đường"
-                className="w-full p-3 border border-gray-300 rounded-lg"
+                className={styles.input}
                 onChange={(e) =>
                   setFormData((s: any) => ({
                     ...s,
@@ -535,10 +583,10 @@ export default function CreatePostPage() {
               />
             </div>
 
-            <div className="flex justify-between mt-8">
+            <div className={styles.rowBetween}>
               <button
                 type="button"
-                className="bg-gray-200 text-gray-700 font-semibold py-3 px-8 rounded-lg shadow hover:bg-gray-300"
+                className={styles.btnSecondary}
                 onClick={() => onPrev(2)}
               >
                 Quay lại
