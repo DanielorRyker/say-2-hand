@@ -131,13 +131,17 @@ const Home = () => {
   };
 
   const handleFormSubmit = async () => {
+    const token = localStorage.getItem("access_token");
+      console.log('Token:',token)
     try {
       const res = await axios.patch(`http://localhost:8080/api/users/`, form, {
-        withCredentials: true,
-      });
+          headers: {
+          Authorization: `Bearer ${token}`,
+      },
+        }
+      );
 
-      const token = localStorage.getItem("access_token");
-      console.log('Token:',token)
+      
       const userRes = await axios.get(
         `http://localhost:8080/api/users/find/${form.email}`,{
           headers: {

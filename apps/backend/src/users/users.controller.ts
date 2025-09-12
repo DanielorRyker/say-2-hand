@@ -32,6 +32,7 @@ export class UsersController {
     return this.usersService.findOne(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch()
   update(@Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(updateUserDto);

@@ -95,7 +95,12 @@ const Home = () => {
       await axios.patch("http://localhost:8080/api/users", {
         _id: editingUserId,
         ...editForm,
-      });
+      },{
+          headers: {
+          Authorization: `Bearer ${token}`,
+      },
+        }
+    );
       setUsersData(
         usersData.map((u) =>
           u._id === editingUserId ? { ...u, ...editForm } : u
@@ -103,9 +108,16 @@ const Home = () => {
       );
       setEditingUserId(null);
       alert("Cập nhật thành công");
-    } catch (error) {
-      console.error("Error updating user:", error);
+    } catch (error : any) {
+       if (error.response?.status === 401) {
+        
+        alert( "Phiên đăng nhập đã kết thúc vui lòng đăng nhập lại !!!");
+         router.push("/auth/login");
+      }else{
+        console.error("Error updating user:", error);
       alert("Có lỗi khi cập nhật user");
+      }
+      
     }
   };
 

@@ -1,8 +1,9 @@
 
-import { Body, Controller, Post, Get, Query } from '@nestjs/common';
+import { Body, Controller, Post, Get, Query, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { MailerService } from '@nestjs-modules/mailer';
+import { JwtAuthGuard } from 'src/common/jwt/jwt-auth.guard';
 
 export class VerifyOtpDto {
   email: string;
@@ -55,6 +56,7 @@ export class AuthController {
   }
  
   //Gửi mail để đổi mật khẩu
+  @UseGuards(JwtAuthGuard)
   @Get('mailResetPassword/')
   async sendMailResetPassword(@Query('email') email: string) {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
