@@ -22,7 +22,6 @@ export class UpdateUserDto {
   phone_number?: string;
 
 
-
   @IsOptional()
   @IsString()
   status?: string;
@@ -46,4 +45,9 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   avatar?: string;
+
+  @IsOptional()
+  @IsString()
+  role?: string;
+
 }

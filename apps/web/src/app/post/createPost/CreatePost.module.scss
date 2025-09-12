@@ -209,7 +209,7 @@
 /* Styles extracted from CreateNewPost.html and converted to a CSS module */
 :global(body) {
   font-family: "Inter", sans-serif;
-  background: linear-gradient(135deg, #f0f9ff 0%, #f0fdf4 100%);
+  background: var(--background-light);
   color: #1f2937;
 }
 
