@@ -4,8 +4,11 @@ import { handler } from "next/dist/build/templates/app-page";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { API_BASE, URL_GCS } from "@/lib/constants";
+import { useRouter } from "next/navigation";
 
 export default function ListPost() {
+   const router = useRouter();
+   
   interface Post {
     _id: string;
     title: string;
@@ -15,7 +18,7 @@ export default function ListPost() {
     transaction_type: string;
     // location: { address: string };
     address: string;
-    author_id: { full_name: string; avatar: string };
+    author_id: {_id:string; full_name: string; avatar: string };
     createdAt: string;
     reputation?: { average_score: number; total_ratings: number };
     condition: string;
@@ -36,25 +39,10 @@ export default function ListPost() {
     fetchPosts();
   }, []);
 
-  // const posts = [
-  //   {
-  //     _id: "post1",
-  //     title:
-  //       "Ghế sofa đơn phong cách vintage còn rất mới, vải nỉ mềm, không rách",
-  //     images: [{ url: "https://placehold.co/400x300/8c8c8c/ffffff?text=Sofa" }],
-  //     price: 1500000,
-  //     transaction_type: "sell",
-  //     location: { address: "Quận 1, TP. HCM" },
-  //     author: { full_name: "Minh Anh", avatar_url: "https://placehold.co/50" },
-  //     created_at: "2025-08-31T20:00:00Z",
-  //     reputation: { average_score: 4.8, total_ratings: 25 },
-  //     condition: "mới",
-  //     category: { name: "Nội thất" },
-  //     stats: { view_count: 120, favorite_count: 5 },
-  //     distance_km: 0.8,
-  //   },
-
-  // ];
+const handlerTest = (post: Post) => {
+  localStorage.setItem("post", JSON.stringify(post));
+  router.push(`/post/${post._id}`)
+};
 
   const getRelativeTime = (isoString: string) => {
     const date = new Date(isoString);
@@ -106,9 +94,11 @@ export default function ListPost() {
         return (
           <a
             key={post._id}
-            href="#"
+            // href="#"
             className={stylePostList.postCard}
             title={post.title}
+            
+             onClick={()=>handlerTest(post)}
           >
             <div className={stylePostList.postImage}>
               <Image
