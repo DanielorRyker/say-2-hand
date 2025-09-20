@@ -1,12 +1,50 @@
 import { Injectable } from '@nestjs/common';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Message, MessageDocument } from './schemas/message.schema';
+import { Model, Types } from 'mongoose';
+import { Conversation, ConversationDocument } from 'src/conversations/schemas/conversation.schema';
+import { ConversationsService } from 'src/conversations/conversations.service';
 
 @Injectable()
 export class MessagesService {
-  create(createMessageDto: CreateMessageDto) {
-    return 'This action adds a new message';
+
+  constructor(
+    @InjectModel(Message.name) private messageModel: Model<MessageDocument>,
+    @InjectModel(Conversation.name) private conversationModel: Model<ConversationDocument>,
+     private conversationsService: ConversationsService,
+  ) {}
+
+  // create(createMessageDto: CreateMessageDto) {
+  //   return 'This action adds a new message';
+  // }
+ 
+  async create(createMessageDto: CreateMessageDto): Promise<Message> {
+    // Bước 1: Tạo message mới
+    const message = new this.messageModel({
+      ...createMessageDto,
+      created_at: new Date(),
+      read_by: [new Types.ObjectId(createMessageDto.sender_id)], // Người gửi mặc định "đã đọc"
+    });
+    const savedMessage = await message.save();
+
+    // Bước 2: Cập nhật last_message trong Conversation
+    await this.conversationModel.findByIdAndUpdate(
+      createMessageDto.conversation_id,
+      {
+        last_message: {
+          text: createMessageDto.text,
+          sender_id: new Types.ObjectId(createMessageDto.sender_id),
+          created_at: savedMessage.created_at,
+        },
+      },
+      { new: true },
+    );
+
+    return savedMessage;
   }
+
 
   findAll() {
     return `This action returns all messages`;
