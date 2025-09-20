@@ -1,7 +1,7 @@
+// This file contains design tokens for Sass-level use. CSS custom properties
+// are defined in `globals.scss` (so they are registered in the global scope
+// and don't violate CSS Modules purity when imported into module styles).
 
-:root {
-	--primary-light: linear-gradient(to right, #ffffff, #A7F3D0);
-	--background-light: linear-gradient(to right, #EBF8FF, #F0FDF4);
-	--background-card-light: #ffffff;
-	--header-background-light: linear-gradient(to right, #667eea, #764ba2);
-}
+// Example Sass tokens (add more as needed):
+$primary-light: linear-gradient(to right, #ffffff, #A7F3D0);
+$background-light: linear-gradient(to right, #EBF8FF, #F0FDF4);

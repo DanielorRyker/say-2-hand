@@ -41,6 +41,7 @@ export default function Category() {
                 height={110}
                 className={styles.imageItem}
                 unoptimized
+                priority={true}
               />
             </div>
             <div className={styles.categoryName}>{category.name}</div>

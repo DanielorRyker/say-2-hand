@@ -15,7 +15,7 @@ const Header = () => {
     email: string;
     full_name: string;
     role: string;
-     avatar:string;
+    avatar: string;
   } | null>(null);
 
   useEffect(() => {
@@ -54,7 +54,9 @@ const Header = () => {
     router.push("/profile/" + user?.full_name);
   };
 
-  const avatarUrl = user ? process.env.NEXT_PUBLIC_URL_GCS + user.avatar : "/image/header/carbon_user-avatar-filled-alt.svg";
+  const avatarUrl = user
+    ? process.env.NEXT_PUBLIC_URL_GCS + user.avatar
+    : "/image/header/carbon_user-avatar-filled-alt.svg";
 
   return (
     <div className={headerStyles.headerContainer}>
@@ -91,6 +93,7 @@ const Header = () => {
               width={200}
               height={45}
               className={headerStyles.logoImg}
+              style={{ width: "auto", height: "auto" }}
             />
           </a>
         </div>
@@ -141,12 +144,18 @@ const Header = () => {
 
           {user ? (
             <>
-              <button className={headerStyles.btnLogin} onClick={() => router.push("/post/createPost")}>
+              <button
+                className={headerStyles.btnLogin}
+                onClick={() => router.push("/post/createPost")}
+              >
                 <p className={headerStyles.headerBtnText}>Đăng tin</p>
               </button>
             </>
           ) : (
-            <button className={headerStyles.btnLogin} onClick={() => handleBtn()}>
+            <button
+              className={headerStyles.btnLogin}
+              onClick={() => handleBtn()}
+            >
               <p className={headerStyles.headerBtnText}>Đăng nhập</p>
             </button>
           )}
@@ -155,7 +164,11 @@ const Header = () => {
             title={
               <span className={headerStyles.headerUserDropdown}>
                 <Image
-                   src={user?.avatar ? process.env.NEXT_PUBLIC_URL_GCS + user.avatar : "/image/header/carbon_user-avatar-filled-alt.svg"}
+                  src={
+                    user?.avatar
+                      ? process.env.NEXT_PUBLIC_URL_GCS + user.avatar
+                      : "/image/header/carbon_user-avatar-filled-alt.svg"
+                  }
                   alt=""
                   className={headerStyles.imgAvatar}
                   width={32}
@@ -172,7 +185,6 @@ const Header = () => {
             }
             id="basic-nav-dropdown"
           >
-          
             {/* Nếu chưa login thì hiện Đăng nhập + Đăng ký */}
             {!user && (
               <>
@@ -198,7 +210,7 @@ const Header = () => {
                 </NavDropdown.Item>
               </>
             )}
-                 {user && user.role === "admin" && (
+            {user && user.role === "admin" && (
               <>
                 <NavDropdown.Item onClick={() => router.push("/admin/users")}>
                   Quản lý tài khoản
@@ -208,7 +220,9 @@ const Header = () => {
                   Quản lý bài đăng
                 </NavDropdown.Item>
                 <NavDropdown.Divider />
-                <NavDropdown.Item onClick={() => router.push("/admin/categories")}>
+                <NavDropdown.Item
+                  onClick={() => router.push("/admin/categories")}
+                >
                   Quản lý danh mục
                 </NavDropdown.Item>
                 <NavDropdown.Divider />
@@ -222,71 +236,76 @@ const Header = () => {
       </div>
 
       <div
-          className={`${headerStyles.searchBG1} ${
-            pathname === "/home" ? headerStyles.home : headerStyles.about
-          }`}
->
-          <div className={headerStyles.group3}>
+        className={`${headerStyles.searchBG1} ${
+          pathname === "/home" ? headerStyles.home : headerStyles.about
+        }`}
+      >
+        <div className={headerStyles.group3}>
+          <Image
+            src="/image/header/search_gray.svg"
+            alt=""
+            className={headerStyles.img}
+            width={24}
+            height={24}
+            style={{ width: "auto", height: "auto" }}
+          />
+          <input
+            type="text"
+            className={headerStyles.inputSearch}
+            placeholder="Tìm kiếm sản phẩm ..."
+          />
+          <div className={headerStyles.locationDropDownWrapper}>
+            <NavDropdown
+              className={headerStyles.locationDropDown}
+              title={
+                <span className={headerStyles.headerLocationDropdown}>
+                  <Image
+                    src="/image/header/location 1.svg"
+                    alt=""
+                    className={headerStyles.imgLocation}
+                    width={16}
+                    height={16}
+                  />
+                  <p className={headerStyles.headerLocationText}>
+                    {selectedItem}
+                  </p>
+                </span>
+              }
+              id="basic-nav-dropdown"
+            >
+              <NavDropdown.Item onClick={() => handleSelect("Hà nội")}>
+                {" "}
+                Hà nội
+              </NavDropdown.Item>
+              <NavDropdown.Item onClick={() => handleSelect("Vĩnh Long")}>
+                {" "}
+                Vĩnh Long{" "}
+              </NavDropdown.Item>
+              <NavDropdown.Item onClick={() => handleSelect("Cần thơ")}>
+                Cần thơ{" "}
+              </NavDropdown.Item>
+              <NavDropdown.Item onClick={() => handleSelect("Thanh hóa")}>
+                Thanh hóa
+              </NavDropdown.Item>
+            </NavDropdown>
+          </div>
+
+          <button
+            className={headerStyles.btnSearch}
+            title="Tìm kiếm"
+            aria-label="Tìm kiếm"
+          >
             <Image
-              src="/image/header/search_gray.svg"
+              src="/image/header/search_black.svg"
               alt=""
               className={headerStyles.img}
-              width={24}
-              height={24}
+              width={25}
+              height={25}
+              unoptimized={true}
             />
-            <input
-              type="text"
-              className={headerStyles.inputSearch}
-              placeholder="Tìm kiếm sản phẩm ..."
-            />
-            <div className={headerStyles.locationDropDownWrapper}>
-              <NavDropdown
-                className={headerStyles.locationDropDown}
-                title={
-                  <span className={headerStyles.headerLocationDropdown}>
-                    <Image
-                      src="/image/header/location 1.svg"
-                      alt=""
-                      className={headerStyles.imgLocation}
-                      width={16}
-                      height={16}
-                    />
-                    <p className={headerStyles.headerLocationText}>
-                      {selectedItem}
-                    </p>
-                  </span>
-                }
-                id="basic-nav-dropdown"
-              >
-                <NavDropdown.Item onClick={() => handleSelect("Hà nội")}>
-                  {" "}
-                  Hà nội
-                </NavDropdown.Item>
-                <NavDropdown.Item onClick={() => handleSelect("Vĩnh Long")}>
-                  {" "}
-                  Vĩnh Long{" "}
-                </NavDropdown.Item>
-                <NavDropdown.Item onClick={() => handleSelect("Cần thơ")}>
-                  Cần thơ{" "}
-                </NavDropdown.Item>
-                <NavDropdown.Item onClick={() => handleSelect("Thanh hóa")}>
-                  Thanh hóa
-                </NavDropdown.Item>
-              </NavDropdown>
-            </div>
-
-            <button className={headerStyles.btnSearch} title="Tìm kiếm" aria-label="Tìm kiếm">
-              <Image
-                src="/image/header/search_black.svg"
-                alt=""
-                className={headerStyles.img}
-                width={24}
-                height={24}
-              />
-            </button>
-          </div>
+          </button>
+        </div>
       </div>
-        
     </div>
   );
 };

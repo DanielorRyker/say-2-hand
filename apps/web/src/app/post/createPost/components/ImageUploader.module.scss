@@ -1,0 +1,255 @@
+.previewContainer {
+  overflow: visible;
+}
+
+.previews {
+  display: flex;
+  align-items: center;
+  /* allow horizontal scrolling of previews but keep no visible scrollbar */
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  gap: 1rem;
+  padding-bottom: 0.25rem;
+  /* space so content isn't flush to edge when clipped */
+  /* hide scrollbar visually */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+  /* ensure the previews box is constrained so overflow can happen */
+  width: 100%;
+  flex-wrap: nowrap;
+  touch-action: pan-x;
+}
+
+.previews::-webkit-scrollbar {
+  height: 0;
+  /* hide horizontal scrollbar in WebKit/Blink */
+}
+
+.previews::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.previews::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+/* ensure previews is positioned so ::after indicator can be placed */
+.previews {
+  position: relative;
+}
+
+/* when JS detects overflow, show a subtle scrollbar */
+.showScrollbar {
+  scrollbar-width: thin;
+}
+
+.showScrollbar::-webkit-scrollbar {
+  height: 8px;
+}
+
+.showScrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 999px;
+}
+
+/* visible custom scroll indicator (drawn via ::after) */
+.previews::after {
+  /* Removed: custom scroll indicator (thin gray bar). Kept selector in case it's wanted later.
+     Previously rendered a small rounded bar at the bottom of the previews strip.
+     To re-enable, restore the background and sizing rules above. */
+  display: none;
+}
+
+
+.imagePreview {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  background-color: #e5e7eb;
+  border-radius: 0.5rem;
+  /* don't clip image during scroll — allow content to be visible */
+  overflow: visible;
+  flex-shrink: 0;
+}
+
+.imagePreview img {
+  width: 100%;
+  height: 100%;
+  /* show the entire image inside the preview (no cropping) */
+  object-fit: contain;
+  object-position: center;
+  display: block;
+}
+
+.deleteBtn {
+  position: absolute;
+  top: 0.25rem;
+
+  /* when JS detects overflow, show a subtle scrollbar */
+  .showScrollbar {
+    scrollbar-width: thin;
+  }
+
+  .showScrollbar::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  .showScrollbar::-webkit-scrollbar-thumb {
+    // background: rgba(0, 0, 0, 0.12);
+    border-radius: 999px;
+  }
+
+
+  right: 0.25rem;
+  background-color: rgba(239, 68, 68, 0.9);
+  border-radius: 50%;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  border: none;
+}
+
+.deleteBtn .imgSmall {
+  width: 1rem;
+  height: 1rem;
+  opacity: 0.9;
+}
+
+.coverBadge {
+  position: absolute;
+  left: 0.5rem;
+  top: 0.5rem;
+  background: rgba(17, 24, 39, 0.9);
+  color: white;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 999px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.makeCoverBtn {
+  position: absolute;
+  left: 0.5rem;
+  bottom: 0.5rem;
+  background: rgba(99, 102, 241, 0.95);
+  color: white;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.imgLarge {
+  width: 5rem;
+  height: 5rem;
+}
+
+.deleteBtn:hover {
+  background-color: rgba(239, 68, 68, 1);
+  opacity: 1;
+}
+
+
+.addBox {
+  display: inline-flex;
+  width: 150px;
+  height: 150px;
+  border: none;
+  border-radius: 0.5rem;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+  /* for ::before/::after overlays */
+  flex-shrink: 0;
+}
+
+.addInner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 200ms ease;
+}
+
+.imgLarge {
+  width: 5rem;
+  height: 5rem;
+  display: block;
+  transition: transform 200ms ease;
+}
+
+/* control the two svg paths: gray visible by default, gradient hidden; on hover cross-fade */
+.plusGray {
+  transition: opacity 180ms ease;
+  opacity: 1;
+}
+
+.plusGrad {
+  transition: opacity 180ms ease;
+  opacity: 0;
+}
+
+.addBox:hover .addInner {
+  transform: rotate(90deg);
+}
+
+.addBox:hover .plusGray {
+  opacity: 0;
+}
+
+.addBox:hover .plusGrad {
+  opacity: 1;
+}
+
+.addBox::before,
+.addBox::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  transition: opacity 150ms ease;
+}
+
+/* Gray dashed border (visible by default) */
+.addBox::before {
+  opacity: 1;
+  /* inline SVG with a solid stroke color */
+  background-image: url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20150%20150'%20preserveAspectRatio='none'><rect%20x='1'%20y='1'%20width='148'%20height='148'%20rx='8'%20ry='8'%20fill='none'%20stroke='%23d1d5db'%20stroke-width='2'%20stroke-dasharray='12,8'%20stroke-linecap='butt'/%3E</svg>");
+}
+
+/* Gradient dashed border (fades in on hover) */
+.addBox::after {
+  opacity: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20150%20150'%20preserveAspectRatio='none'><defs><linearGradient%20id='g'%20x1='0%25'%20y1='0%25'%20x2='100%25'%20y2='0%25'><stop%20offset='0%25'%20stop-color='%233b82f6'/%3E<stop%20offset='100%25'%20stop-color='%23a855f7'/%3E</linearGradient></defs><rect%20x='1'%20y='1'%20width='148'%20height='148'%20rx='8'%20ry='8'%20fill='none'%20stroke='url(%23g)'%20stroke-width='2'%20stroke-dasharray='12,8'%20stroke-linecap='butt'/%3E</svg>");
+}
+
+.addBox:hover::after {
+  opacity: 1;
+}
+
+.addBox:hover::before {
+  opacity: 0;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.hint {
+  color: #6b7280;
+  font-weight: 600;
+  font-size: 1rem;
+  text-align: center;
+  margin-top: 0.75rem;
+}

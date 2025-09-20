@@ -1,6 +1,5 @@
 import stylePostList from "@/styles/pages/home/postList.module.scss";
 import axios from "axios";
-import { handler } from "next/dist/build/templates/app-page";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { API_BASE, URL_GCS } from "@/lib/constants";
@@ -118,7 +117,9 @@ export default function ListPost() {
                 }
                 alt={post.title}
                 fill
+                sizes="(max-width: 600px) 100vw, 33vw"
                 className={stylePostList.imageItem}
+                priority={true}
               />
               <button
                 type="button"

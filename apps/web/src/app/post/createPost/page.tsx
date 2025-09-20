@@ -1,80 +1,32 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
-import Image from "next/image";
+import React, { useState } from "react";
 import styles from "./CreatePost.module.scss";
+import {
+  ProgressBar,
+  ImageUploader,
+  BasicInfoForm,
+  CategoryForm,
+  FloatingMessage,
+} from "./components";
 
-const addressData: Record<string, string[]> = {
-  "Hà Nội": ["Ba Đình", "Hoàn Kiếm", "Đống Đa", "Hai Bà Trưng", "Thanh Xuân"],
-  "TP. Hồ Chí Minh": [
-    "Quận 1",
-    "Quận 2",
-    "Quận 3",
-    "Quận 4",
-    "Quận 5",
-    "Quận Gò Vấp",
-    "Quận Bình Thạnh",
-  ],
-  "Đà Nẵng": ["Hải Châu", "Thanh Khê", "Sơn Trà", "Ngũ Hành Sơn"],
-  "Hải Phòng": ["Hồng Bàng", "Lê Chân", "Ngô Quyền", "Kiến An"],
-  "Cần Thơ": ["Ninh Kiều", "Bình Thủy", "Cái Răng", "Ô Môn"],
+type PostFormData = {
+  title: string;
+  description: string;
+  condition: "used" | "new";
+  transaction_type: "sell" | "exchange" | "donate";
+  price: number | null;
+  category_id: string;
+  location: { province: string; district: string; street: string };
+  custom_fields: Record<string, any>;
 };
 
-const customFieldData: Record<string, any[]> = {
-  "1": [
-    {
-      name: "brand",
-      label: "Hãng sản xuất",
-      type: "text",
-      placeholder: "Ví dụ: Apple, Samsung",
-    },
-    {
-      name: "model",
-      label: "Model",
-      type: "text",
-      placeholder: "Ví dụ: iPhone 13, Galaxy S21",
-    },
-    {
-      name: "is_new_device",
-      label: "Thiết bị mới nguyên hộp?",
-      type: "checkbox",
-    },
-    {
-      name: "warranty_info",
-      label: "Bảo hành còn hay không?",
-      type: "radio",
-      options: ["Còn", "Hết", "Không có"],
-    },
-  ],
-  "2": [
-    {
-      name: "brand",
-      label: "Thương hiệu",
-      type: "text",
-      placeholder: "Ví dụ: Nike, Zara",
-    },
-    {
-      name: "size",
-      label: "Kích cỡ",
-      type: "select",
-      options: ["S", "M", "L", "XL", "Free Size"],
-    },
-    {
-      name: "material",
-      label: "Chất liệu",
-      type: "text",
-      placeholder: "Ví dụ: Cotton, Jeans",
-    },
-  ],
-};
-
-export default function CreatePostPage() {
-  const [currentStep, setCurrentStep] = useState(1);
+export default function Page() {
+  const [currentStep, setCurrentStep] = useState<number>(1);
   const [images, setImages] = useState<string[]>([]);
-  const [progress, setProgress] = useState(0);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
 
-  const [formData, setFormData] = useState<any>({
+  const [formData, setFormData] = useState<PostFormData>({
     title: "",
     description: "",
     condition: "used",
@@ -85,530 +37,146 @@ export default function CreatePostPage() {
     custom_fields: {},
   });
 
-  const [dynamicFields, setDynamicFields] = useState<any[]>([]);
-  const [message, setMessage] = useState("");
+  const addressData: Record<string, string[]> = {
+    "Hà Nội": ["Ba Đình", "Hoàn Kiếm", "Đống Đa", "Hai Bà Trưng", "Thanh Xuân"],
+    "TP. Hồ Chí Minh": [
+      "Quận 1",
+      "Quận 2",
+      "Quận 3",
+      "Quận 4",
+      "Quận 5",
+      "Quận Gò Vấp",
+      "Quận Bình Thạnh",
+    ],
+    "Đà Nẵng": ["Hải Châu", "Thanh Khê", "Sơn Trà", "Ngũ Hành Sơn"],
+    "Hải Phòng": ["Hồng Bàng", "Lê Chân", "Ngô Quyền", "Kiến An"],
+    "Cần Thơ": ["Ninh Kiều", "Bình Thủy", "Cái Răng", "Ô Môn"],
+  };
 
-  useEffect(() => {
-    const pct = ((currentStep - 1) / (3 - 1)) * 100;
-    setProgress(pct);
-  }, [currentStep]);
+  const customFieldData: Record<string, any[]> = {
+    "1": [
+      {
+        name: "brand",
+        label: "Hãng sản xuất",
+        type: "text",
+        placeholder: "Ví dụ: Apple, Samsung",
+      },
+      {
+        name: "model",
+        label: "Model",
+        type: "text",
+        placeholder: "Ví dụ: iPhone 13",
+      },
+      {
+        name: "is_new_device",
+        label: "Thiết bị mới nguyên hộp?",
+        type: "checkbox",
+      },
+      {
+        name: "warranty_info",
+        label: "Bảo hành",
+        type: "radio",
+        options: ["Còn", "Hết", "Không có"],
+      },
+    ],
+    "2": [
+      { name: "brand", label: "Thương hiệu", type: "text" },
+      {
+        name: "size",
+        label: "Kích cỡ",
+        type: "select",
+        options: ["S", "M", "L", "XL", "Free Size"],
+      },
+      { name: "material", label: "Chất liệu", type: "text" },
+    ],
+  };
 
-  useEffect(() => {
-    if (!message) return;
-    const t = setTimeout(() => setMessage(""), 3000);
-    return () => clearTimeout(t);
-  }, [message]);
-
-  function showMessage(msg: string) {
+  function showMessage(msg: string, duration = 3000) {
     setMessage(msg);
+    setTimeout(() => setMessage(null), duration);
   }
 
-  function handleFiles(files: FileList | null) {
-    if (!files) return;
-    if (images.length + files.length > 10) {
-      showMessage("Chỉ được tải lên tối đa 10 ảnh!");
-      return;
-    }
-    const readers: Promise<string>[] = [];
-    for (const file of Array.from(files)) {
-      readers.push(
-        new Promise((res, rej) => {
-          const reader = new FileReader();
-          reader.onload = (e) => res(String(e.target?.result || ""));
-          reader.onerror = rej;
-          reader.readAsDataURL(file);
-        })
-      );
-    }
-    Promise.all(readers).then((results) =>
-      setImages((prev) => [...prev, ...results])
-    );
+  function nextStep() {
+    setCurrentStep((s) => Math.min(s + 1, 3));
+  }
+  function prevStep() {
+    setCurrentStep((s) => Math.max(s - 1, 1));
   }
 
-  function removeImage(index: number) {
-    setImages((prev) => prev.filter((_, i) => i !== index));
-  }
-
-  function onNext1() {
+  function handleSubmit() {
     if (images.length === 0) {
       showMessage("Vui lòng tải lên ít nhất 1 ảnh.");
+      setCurrentStep(1);
       return;
     }
-    setCurrentStep(2);
-  }
-
-  function onNext2(e?: React.FormEvent) {
-    e?.preventDefault();
     if (!formData.title.trim() || !formData.description.trim()) {
-      showMessage("Vui lòng nhập đầy đủ tiêu đề và mô tả.");
+      showMessage("Vui lòng nhập tiêu đề và mô tả.");
+      setCurrentStep(2);
       return;
     }
-    setCurrentStep(3);
-  }
-
-  function onPrev(step: number) {
-    setCurrentStep(step);
-  }
-
-  function onTransactionChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    setFormData((s: any) => ({ ...s, transaction_type: e.target.value }));
-  }
-
-  function onCategoryChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const id = e.target.value;
-    setFormData((s: any) => ({ ...s, category_id: id }));
-    setDynamicFields(customFieldData[id] || []);
-  }
-
-  function onProvinceChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const province = e.target.value;
-    setFormData((s: any) => ({
-      ...s,
-      location: { ...s.location, province, district: "" },
-    }));
-  }
-
-  function onDistrictChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const district = e.target.value;
-    setFormData((s: any) => ({ ...s, location: { ...s.location, district } }));
-  }
-
-  function onSubmit(e?: React.FormEvent) {
-    e?.preventDefault();
     if (!formData.category_id) {
       showMessage("Vui lòng chọn danh mục.");
+      setCurrentStep(3);
       return;
     }
-    const custom: any = {};
-    dynamicFields.forEach((f) => {
-      const el = document.getElementById(`dyn-${f.name}`) as
-        | HTMLInputElement
-        | HTMLSelectElement
-        | null;
-      if (!el) return;
-      if ((el as HTMLInputElement).type === "checkbox")
-        custom[f.name] = (el as HTMLInputElement).checked;
-      else if ((el as HTMLInputElement).type === "radio") {
-        const radios = document.getElementsByName(
-          f.name
-        ) as NodeListOf<HTMLInputElement>;
-        const checked = Array.from(radios).find((r) => r.checked);
-        custom[f.name] = checked ? checked.value : null;
-      } else custom[f.name] = (el as HTMLInputElement).value;
-    });
-    const dataToSend = { ...formData, custom_fields: custom };
-    console.log("Dữ liệu tin đăng:", JSON.stringify(dataToSend, null, 2));
+
+    console.log("Dữ liệu tin đăng:", { images, formData });
     showMessage("Đăng tin thành công!");
   }
 
   return (
     <div className={styles.container}>
-      <div className={styles.card}>
-        <h1 className={styles.title}>Đăng Tin Mới</h1>
-        <div className={`${styles.progressBar}`}>
-          <div
-            className={`${styles.progress} ${
-              progress === 0
-                ? styles.progress0
-                : progress === 100
-                  ? styles.progress100
-                  : styles.progress50
-            }`}
+      <h1 className={styles.heading}>Đăng Tin Mới</h1>
+      <ProgressBar step={currentStep} />
+
+      <div className={styles.section}>
+        {currentStep === 1 && (
+          <section>
+            <h2 className={styles.sectionTitle}>1. Tải lên hình ảnh</h2>
+            <ImageUploader
+              images={images}
+              setImages={setImages}
+              showMessage={showMessage}
+            />
+            <div className={styles.actionsRow}>
+              <button
+                className={styles.btnPrimary}
+                onClick={() => {
+                  if (images.length === 0)
+                    return showMessage("Vui lòng tải lên ít nhất 1 ảnh.");
+                  nextStep();
+                }}
+              >
+                <p>Tiếp tục</p>
+              </button>
+            </div>
+          </section>
+        )}
+
+        {currentStep === 2 && (
+          <BasicInfoForm
+            formData={formData}
+            setFormData={setFormData}
+            onPrev={prevStep}
+            onNext={nextStep}
+            showMessage={showMessage}
           />
-        </div>
+        )}
 
-        <div
-          className={`${styles.formSection} ${currentStep === 1 ? styles.formSectionActive : ""}`}
-        >
-          <h2 className={styles.sectionTitle}>1. Tải lên hình ảnh</h2>
-          <div className={`${styles.imagePreviewContainer}`}>
-            <div id="image-previews" className={styles.previewRow}>
-              {images.map((src, idx) => (
-                <div key={idx} className={styles.imagePreview}>
-                  <Image
-                    src={src}
-                    alt={`preview-${idx}`}
-                    fill
-                    sizes="150px"
-                    style={{ objectFit: "cover" }}
-                  />
-                  <div
-                    className={styles.deleteBtn}
-                    onClick={() => removeImage(idx)}
-                  >
-                    x
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div
-              className={styles.addImageBox}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <input
-                ref={fileInputRef}
-                id="image-upload"
-                aria-label="Tải lên ảnh"
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                onChange={(e) => handleFiles(e.target.files)}
-              />
-              <div className={styles.hint}>Thêm ảnh</div>
-            </div>
-          </div>
-          <p className={styles.hint}>
-            Tối thiểu 1 ảnh, tối đa 10 ảnh. Cuộn ngang để xem tất cả.
-          </p>
-          <div className={styles.actions}>
-            <button className={styles.btnGradientPrimary} onClick={onNext1}>
-              Tiếp tục
-            </button>
-          </div>
-          {/* Category moved here: choose category right after images */}
-          <div className={`${styles.field} ${styles.mtLarge}`}>
-            <label htmlFor="category_id" className={styles.label}>
-              Danh mục <span className={styles.required}>*</span>
-            </label>
-            <select
-              id="category_id"
-              aria-label="Danh mục"
-              required
-              value={formData.category_id}
-              onChange={onCategoryChange}
-              className={styles.select}
-            >
-              <option value="">-- Chọn danh mục --</option>
-              <option value="1">Đồ điện tử</option>
-              <option value="2">Thời trang</option>
-              <option value="3">Sách</option>
-            </select>
-          </div>
-
-          <div
-            id="custom-fields-container"
-            className={`${styles.customFieldsContainer} ${dynamicFields.length === 0 ? styles.hidden : ""}`}
-          >
-            <h3 className={styles.sectionTitle}>Tùy chọn</h3>
-            <div id="dynamic-fields">
-              {dynamicFields.map((f: any) => (
-                <div className={styles.field} key={f.name}>
-                  <label className={styles.label}>{f.label}</label>
-                  {(f.type === "text" || f.type === "number") && (
-                    <input
-                      name={f.name}
-                      aria-label={f.label}
-                      type={f.type}
-                      placeholder={f.placeholder}
-                      className={styles.input}
-                    />
-                  )}
-                  {f.type === "select" && (
-                    <select
-                      name={f.name}
-                      aria-label={f.label}
-                      className={styles.select}
-                    >
-                      {f.options.map((opt: string) => (
-                        <option key={opt} value={opt}>
-                          {opt}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                  {f.type === "checkbox" && (
-                    <input name={f.name} aria-label={f.label} type="checkbox" />
-                  )}
-                  {f.type === "radio" &&
-                    f.options.map((opt: string, idx: number) => (
-                      <label key={opt} className={styles.inlineLabel}>
-                        <input
-                          id={`dyn-${f.name}-${idx}`}
-                          name={f.name}
-                          type="radio"
-                          value={opt}
-                        />{" "}
-                        <span>{opt}</span>
-                      </label>
-                    ))}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div
-          className={`${styles.formSection} ${currentStep === 2 ? styles.formSectionActive : ""}`}
-        >
-          <h2 className={styles.sectionTitle}>2. Thông tin cơ bản</h2>
-          <form id="basic-info-form" onSubmit={onNext2}>
-            <div className={styles.field}>
-              <label htmlFor="title" className={styles.label}>
-                Tiêu đề tin đăng <span className={styles.required}>*</span>
-              </label>
-              <input
-                id="title"
-                value={formData.title}
-                onChange={(e) =>
-                  setFormData((s: any) => ({ ...s, title: e.target.value }))
-                }
-                required
-                className={styles.input}
-              />
-            </div>
-            <div className={styles.field}>
-              <label htmlFor="description" className={styles.label}>
-                Mô tả chi tiết <span className={styles.required}>*</span>
-              </label>
-              <textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData((s: any) => ({
-                    ...s,
-                    description: e.target.value,
-                  }))
-                }
-                required
-                className={styles.textarea}
-              />
-            </div>
-            <div className={styles.field}>
-              <label htmlFor="condition" className={styles.label}>
-                Tình trạng
-              </label>
-              <select
-                id="condition"
-                value={formData.condition}
-                onChange={(e) =>
-                  setFormData((s: any) => ({ ...s, condition: e.target.value }))
-                }
-                className={styles.select}
-              >
-                <option value="used">Đã qua sử dụng</option>
-                <option value="new">Mới</option>
-              </select>
-            </div>
-            <div className={styles.field}>
-              <label htmlFor="transaction_type" className={styles.label}>
-                Hình thức giao dịch
-              </label>
-              <select
-                id="transaction_type"
-                aria-label="Hình thức giao dịch"
-                value={formData.transaction_type}
-                onChange={onTransactionChange}
-                className={styles.select}
-              >
-                <option value="sell">Bán</option>
-                <option value="giveaway">Cho</option>
-                <option value="exchange">Đổi</option>
-              </select>
-            </div>
-            {formData.transaction_type === "sell" && (
-              <div id="price-field" className={styles.field}>
-                <label htmlFor="price" className={styles.label}>
-                  Giá tiền (VND)
-                </label>
-                <input
-                  id="price"
-                  type="number"
-                  min={0}
-                  value={formData.price ?? ""}
-                  onChange={(e) =>
-                    setFormData((s: any) => ({
-                      ...s,
-                      price: e.target.value ? parseFloat(e.target.value) : null,
-                    }))
-                  }
-                  className={styles.input}
-                />
-              </div>
-            )}
-
-            <div className={styles.rowBetween}>
-              <button
-                type="button"
-                className={styles.btnSecondary}
-                onClick={() => onPrev(1)}
-              >
-                Quay lại
-              </button>
-              <button
-                id="next-2"
-                type="submit"
-                className={styles.btnGradientPrimary}
-              >
-                Tiếp tục
-              </button>
-            </div>
-          </form>
-        </div>
-
-        <div
-          className={`${styles.formSection} ${currentStep === 3 ? styles.formSectionActive : ""}`}
-        >
-          <h2 className="text-xl font-semibold mb-4 text-gray-700">
-            3. Phân loại & Tùy biến
-          </h2>
-          <form
-            id="category-form"
-            onSubmit={(e) => {
-              e.preventDefault();
-              onSubmit();
-            }}
-          >
-            <div className={styles.field}>
-              <label htmlFor="category_id" className={styles.label}>
-                Danh mục <span className={styles.required}>*</span>
-              </label>
-              <select
-                id="category_id"
-                aria-label="Danh mục"
-                required
-                value={formData.category_id}
-                onChange={onCategoryChange}
-                className={styles.select}
-              >
-                <option value="">-- Chọn danh mục --</option>
-                <option value="1">Đồ điện tử</option>
-                <option value="2">Thời trang</option>
-                <option value="3">Sách</option>
-              </select>
-            </div>
-
-            <div
-              id="custom-fields-container"
-              className={`${styles.customFieldsContainer} ${dynamicFields.length === 0 ? styles.hidden : ""}`}
-            >
-              <h3 className={styles.sectionTitle}>Tùy chọn</h3>
-              <div id="dynamic-fields">
-                {dynamicFields.map((f: any) => {
-                  return (
-                    <div className={styles.field} key={f.name}>
-                      <label className={styles.label}>{f.label}</label>
-                      {(f.type === "text" || f.type === "number") && (
-                        <input
-                          name={f.name}
-                          aria-label={f.label}
-                          type={f.type}
-                          placeholder={f.placeholder}
-                          className={styles.input}
-                        />
-                      )}
-                      {f.type === "select" && (
-                        <select
-                          name={f.name}
-                          aria-label={f.label}
-                          className={styles.select}
-                        >
-                          {f.options.map((opt: string) => (
-                            <option key={opt} value={opt}>
-                              {opt}
-                            </option>
-                          ))}
-                        </select>
-                      )}
-                      {f.type === "checkbox" && (
-                        <input
-                          name={f.name}
-                          aria-label={f.label}
-                          type="checkbox"
-                        />
-                      )}
-                      {f.type === "radio" &&
-                        f.options.map((opt: string) => (
-                          <label key={opt} className={styles.inlineLabel}>
-                            <input
-                              id={`dyn-${f.name}-${opt}`}
-                              name={f.name}
-                              type="radio"
-                              value={opt}
-                            />{" "}
-                            <span>{opt}</span>
-                          </label>
-                        ))}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="mb-5 mt-6">
-              <label className="block text-gray-700 font-medium mb-2">
-                Địa chỉ
-              </label>
-              <div className={styles.gridTwo}>
-                <select
-                  id="province-select"
-                  aria-label="Tỉnh/Thành"
-                  value={formData.location.province}
-                  onChange={onProvinceChange}
-                  className={styles.select}
-                >
-                  <option value="">-- Tỉnh/Thành --</option>
-                  {Object.keys(addressData).map((p) => (
-                    <option key={p} value={p}>
-                      {p}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  id="district-select"
-                  aria-label="Quận/Huyện"
-                  value={formData.location.district}
-                  onChange={onDistrictChange}
-                  className={styles.select}
-                >
-                  <option value="">-- Quận/Huyện --</option>
-                  {(addressData[formData.location.province] || []).map((d) => (
-                    <option key={d} value={d}>
-                      {d}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <input
-                id="street-address"
-                aria-label="Số nhà, tên đường"
-                placeholder="Số nhà, tên đường"
-                className={styles.input}
-                onChange={(e) =>
-                  setFormData((s: any) => ({
-                    ...s,
-                    location: { ...s.location, street: e.target.value },
-                  }))
-                }
-              />
-            </div>
-
-            <div className={styles.rowBetween}>
-              <button
-                type="button"
-                className={styles.btnSecondary}
-                onClick={() => onPrev(2)}
-              >
-                Quay lại
-              </button>
-              <button
-                id="submit"
-                type="submit"
-                className={styles.btnGradientSuccess}
-              >
-                Đăng tin
-              </button>
-            </div>
-          </form>
-        </div>
-
-        <div
-          id="message-box"
-          className={`${styles.floatingMessage} ${message ? styles.visible : styles.hidden}`}
-        >
-          {message}
-        </div>
+        {currentStep === 3 && (
+          <CategoryForm
+            formData={formData}
+            setFormData={setFormData}
+            addressData={addressData}
+            customFieldData={customFieldData}
+            onPrev={prevStep}
+            onSubmit={handleSubmit}
+            showMessage={showMessage}
+          />
+        )}
       </div>
+
+      <FloatingMessage message={message} />
     </div>
   );
 }

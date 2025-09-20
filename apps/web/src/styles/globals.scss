@@ -1,17 +1,25 @@
-@use "tailwindcss" ;
-@use "abstracts/variables" ;
-@use "common/common" ;
+@use "tailwindcss";
+@use "common/common";
 
-
-
-
+/* Global CSS custom properties — these must live in a global stylesheet
+   (not a CSS module) so they are available to all components without
+   violating CSS Modules purity rules. */
+:root {
+  --primary-light: linear-gradient(to right, #ffffff, #A7F3D0);
+  --background-light: linear-gradient(to right, #EBF8FF, #F0FDF4);
+  --background-card-light: #ffffff;
+  --header-background-light: linear-gradient(to right, #3b82f6 0%, #a855f7);
+  --primary-button-light: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
+  --title-text-light: linear-gradient(to right, #343a40 0%, #212529 100%);
+  --text-light: #212529;
+  --text-placeholder-light: #6c757d;
+}
 
 .dropdown-toggle::after {
   display: none !important;
 }
 
 
-// body {
-//   padding-top: 300px;
-// }
-
+body {
+  background: var(--background-light);
+}

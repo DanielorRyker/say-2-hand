@@ -1,0 +1,14 @@
+.form { display: flex; flex-direction: column; }
+.sectionTitle { font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; }
+.label { display: block; margin-bottom: 0.5rem; color: #374151; }
+.select, .input { width: 100%; padding: 0.6rem; border: 1px solid #d1d5db; border-radius: 0.5rem; }
+.customFields { border: 1px dashed #d1d5db; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; }
+.subHeading { font-weight: 600; margin-bottom: 0.5rem; }
+.fieldRow { margin-bottom: 0.75rem; }
+.labelSmall { display: block; margin-bottom: 0.25rem; }
+.addressBlock { display: grid; grid-template-columns: 1fr; gap: 0.75rem; margin-top: 0.75rem; }
+.actionsRow { display: flex; justify-content: space-between; margin-top: 1.25rem; }
+.btnSecondary { background: #e5e7eb; color: #374151; padding: 0.6rem 1.25rem; border-radius: 0.5rem; border: none; }
+.btnSuccess { background: linear-gradient(90deg,#22c55e 0%,#84cc16 100%); color: white; padding: 0.6rem 1.25rem; border-radius: 0.5rem; border: none; }
+.required { color: #ef4444; }
+.radioLabel { margin-right: 0.75rem; }

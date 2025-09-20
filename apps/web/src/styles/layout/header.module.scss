@@ -2,8 +2,9 @@
 
 .flexRow {
   display: flex;
-  padding: 0 20px ;
+  padding: 0 20px;
 }
+
 .headerBtnText {
   font-size: 18px;
   font-weight: bold;
@@ -31,28 +32,29 @@
 }
 
 /* header */
-.headerContainer{
+.headerContainer {
 
   background: var(--header-background-light);
   width: 100%;
   height: auto;
-  display: flex; 
+  display: flex;
   // position: absolute;   
   /* top: 0;              
   left: 0; */
-  z-index: 1000; 
-  flex-direction: column;       
-  background-size: 100% 70%; 
+  z-index: 1000;
+  flex-direction: column;
+  background-size: 100% 70%;
   background-repeat: no-repeat;
   // align-items: center;
   //  padding: 10px 0px;
   padding: 10px 0px;
 }
-.dropDownCar{
+
+.dropDownCar {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background: linear-gradient(to right, #2DE099, #3B82F6);
+  background: var(--primary-button-light);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -63,12 +65,13 @@
 // }
 
 
-.group1{
+.group1 {
   display: flex;
   gap: 10px;
   margin: 10px;
 }
-.group2{
+
+.group2 {
   display: flex;
   gap: 10px;
   margin: 10px;
@@ -76,8 +79,8 @@
   margin-left: auto;
 }
 
-.btnHeader{
-   width: 50px;
+.btnHeader {
+  width: 50px;
   height: 50px;
   border-radius: 50%;
   background: white;
@@ -86,21 +89,27 @@
   align-items: center;
 }
 
-.img{
+.img {
   width: 25px;
   height: 25px;
+  /* if CSS changes only one dimension, keep aspect ratio */
+  width: auto;
+  height: auto;
+  max-width: 25px;
+  max-height: 25px;
 }
 
-.btnLogin{
+.btnLogin {
   width: 120px;
   height: 50px;
   border-radius: 30;
-  background: linear-gradient(to right, #2DE099, #3B82F6);
+  background: var(--primary-button-light);
   display: flex;
   justify-content: center;
   align-items: center;
 }
-.userDropDown{
+
+.userDropDown {
   width: 120px;
   height: 50px;
   border-radius: 30;
@@ -114,7 +123,7 @@
   display: none !important;
 }
 
-.imgAvatar{
+.imgAvatar {
   width: 35px;
   height: 35px;
 }
@@ -123,29 +132,28 @@
   background: white;
   width: 800px;
   height: 60px;
-  padding: 10px ;
+  padding: 20px;
   border-radius: 30;
   justify-content: center;
   align-items: center;
   display: flex;
   gap: 15px;
-   margin: 20px auto;
-
-
+  margin: 20px auto;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 
 }
 
-.btnSearch{
+.btnSearch {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background: linear-gradient(to right, #2DE099, #3B82F6);
+  background: var(--primary-button-light);
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.locationDropDown{
+.locationDropDown {
   width: 200px;
   height: 40px;
   border-radius: 30;
@@ -154,9 +162,11 @@
   justify-content: center;
   align-items: center;
 }
+
 .locationDropDownWrapper {
   background: linear-gradient(to right, #2DE099, #3B82F6);
-  padding: 1px; /* độ dày viền */
+  padding: 1px;
+  /* độ dày viền */
   border-radius: 30px;
   display: inline-block;
 }
@@ -174,21 +184,27 @@
 }
 
 .locationDropDown .dropdown-toggle::after {
-  margin-left: 6px; /* khoảng cách giữa ảnh và caret */
+  margin-left: 6px;
+  /* khoảng cách giữa ảnh và caret */
 }
 
-.inputSearch{
-  width:500px;
-  height:50;
-  color:'#8C8C8C' ;
+.inputSearch {
+  width: 500px;
+  height: 50;
+  color: '#8C8C8C';
   border: none;
   outline: none;
 }
 
-.logoImg{
+.logoImg {
   margin-top: 8px;
   margin-left: 10px;
   cursor: pointer;
+  /* preserve aspect ratio when scaled via CSS */
+  width: auto;
+  height: auto;
+  max-width: 200px;
+  max-height: 45px;
 }
 
 
@@ -198,13 +214,13 @@
 }
 
 .home {
-  background: 
+  background:
     var(--header-background-light) top/100% 50% no-repeat,
     var(--background-light) bottom/100% 50% no-repeat;
 }
 
 .about {
-  background: 
+  background:
     var(--header-background-light) top/100% 50% no-repeat,
     var(--background-light) bottom/100% 50% no-repeat;
 }
