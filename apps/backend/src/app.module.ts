@@ -11,6 +11,8 @@ import { PasswordResetsModule } from './password_resets/password_resets.module';
 import { PostsModule } from './posts/posts.module';
 import { UploadModule } from './upload/upload.module';
 import { CategoriesModule } from './categories/categories.module';
+import { ConversationsModule } from './conversations/conversations.module';
+import { MessagesModule } from './messages/messages.module';
 
 @Module({
   imports: [
@@ -49,6 +51,8 @@ import { CategoriesModule } from './categories/categories.module';
     PostsModule,
     UploadModule,
     CategoriesModule,
+    ConversationsModule,
+    MessagesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

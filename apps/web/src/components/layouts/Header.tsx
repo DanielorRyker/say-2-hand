@@ -5,6 +5,7 @@ import headerStyles from "@/styles/layout/header.module.scss";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import ConversationsSidebar from "@/components/conversation/ConversationsSidebar";
 
 const Header = () => {
   const router = useRouter();
@@ -113,7 +114,7 @@ const Header = () => {
               height={24}
             />
           </button>
-          <button
+          {/* <button
             className={headerStyles.btnHeader}
             type="button"
             title="Tin nhắn"
@@ -126,7 +127,8 @@ const Header = () => {
               width={24}
               height={24}
             />
-          </button>
+          </button> */}
+          <ConversationsSidebar />
           <button
             className={headerStyles.btnHeader}
             type="button"

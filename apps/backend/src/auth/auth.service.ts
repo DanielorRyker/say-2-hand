@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException,  ForbiddenException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { comparePasswordHelper, hashPasswordHelper } from 'src/common/helpers/util';
 import { PasswordResetsService } from 'src/password_resets/password_resets.service';
@@ -18,18 +18,18 @@ export class AuthService {
   async signIn(username: string, pass: string): Promise<any> {
     const user = await this.usersService.findByEmail(username);
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new ForbiddenException('User not found');
     }
     const isValidPassword = await comparePasswordHelper(
       pass,
       user.password_hash,
     );
     if (!isValidPassword) {
-      throw new UnauthorizedException('Wrong password');
+      throw new ForbiddenException('Wrong password');
     }
     const payload = { sub: user._id, username: user.email };
     return {
-      access_token: await this.jwtService.signAsync(payload),
+      access_token: await this.jwtService.signAsync(payload, { expiresIn: '2m' }),
     };
   }
 

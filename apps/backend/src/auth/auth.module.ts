@@ -6,6 +6,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { VerificationTokensModule } from 'src/verification_tokens/verification_tokens.module';
 import { PasswordResetsModule } from 'src/password_resets/password_resets.module';
+import { JwtStrategy } from 'src/common/jwt/jwt.strategy';
 
 @Module({
   imports:[ 
@@ -24,6 +25,6 @@ import { PasswordResetsModule } from 'src/password_resets/password_resets.module
 }),
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, JwtStrategy],
 })
 export class AuthModule {}

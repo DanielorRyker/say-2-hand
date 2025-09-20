@@ -7,6 +7,16 @@ import styleUser from "@/styles/pages/profile/user.module.css";
 
 const Home = () => {
   const router = useRouter();
+
+  //  const [token, setToken] = useState<string | null>(null);
+
+  // useEffect(() => {
+  //   // chỉ chạy ở client, không bị lỗi
+  //   const storedToken = localStorage.getItem("access_token");
+  //   setToken(storedToken);
+  //   console.log('token:',storedToken)
+  // }, []);
+
   const [form, setForm] = useState({
     _id: "",
     email: "",
@@ -93,12 +103,26 @@ const Home = () => {
         avatar: avatar_url[1],
       }));
       alert("Upload thành công!");
+      const token = localStorage.getItem("access_token");
+      console.log('Token:',token)
       const userRes = await axios.get(
-        `http://localhost:8080/api/users/find/${form.email}`
+        `http://localhost:8080/api/users/find/${form.email}`,{
+          headers: {
+          Authorization: `Bearer ${token}`,
+      },
+        }
       );
       localStorage.setItem("user", JSON.stringify(userRes.data));
-    } catch (err) {
-      console.error("Upload failed:", err);
+    } catch (err:any) {
+     if (err.response?.status === 401) {
+        // Lỗi đăng nhập sai
+        alert( "Phiên đăng nhập đã kết thúc vui lòng đăng nhập lại !!!");
+               router.push("/auth/login");
+      }
+      else{
+         console.error("Upload failed:", err);
+      }
+     
     }
   };
 
@@ -107,19 +131,36 @@ const Home = () => {
   };
 
   const handleFormSubmit = async () => {
+    const token = localStorage.getItem("access_token");
+      console.log('Token:',token)
     try {
       const res = await axios.patch(`http://localhost:8080/api/users/`, form, {
-        withCredentials: true,
-      });
+          headers: {
+          Authorization: `Bearer ${token}`,
+      },
+        }
+      );
 
+      
       const userRes = await axios.get(
-        `http://localhost:8080/api/users/find/${form.email}`
+        `http://localhost:8080/api/users/find/${form.email}`,{
+          headers: {
+          Authorization: `Bearer ${token}`,
+      },
+        }
       );
       localStorage.setItem("user", JSON.stringify(userRes.data));
       alert("Cập nhật thành công!");
       router.push(`/profile/${form.full_name}`);
-    } catch (err) {
-      console.error("Update failed:", err);
+    } catch (err : any) {
+      if (err.response?.status === 401) {
+        // Lỗi đăng nhập sai
+        alert( "Phiên đăng nhập đã kết thúc vui lòng đăng nhập lại !!!");
+         router.push("/auth/login");
+      }
+      else{
+         console.error("Upload failed:", err);
+      }
     }
   };
 
