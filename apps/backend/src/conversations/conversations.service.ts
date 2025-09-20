@@ -3,7 +3,7 @@ import { CreateConversationDto } from './dto/create-conversation.dto';
 import { UpdateConversationDto } from './dto/update-conversation.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Conversation, ConversationDocument} from './schemas/conversation.schema';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 
 @Injectable()
 export class ConversationsService {
@@ -69,6 +69,27 @@ async updateLastMessage(id: string, updateConversationDto: UpdateConversationDto
   }
 
 
+ 
+  // async findConversationsByUserId(userId :string) {
+  //   return this.conversationModel.find({ participants: userId });
+  // }
+
+  //   async findConversationsByUserId(userId :string) {
+  //   return this.conversationModel.find({
+  //   participants: { $in: [new Types.ObjectId(userId)] },
+  // }).sort({ updatedAt: -1 });
+  // }
+
+  async findConversationsByUserId(userId: string) {
+  return this.conversationModel
+    .find({
+      participants: { $in: [new Types.ObjectId(userId)] },
+    })
+    .populate('post_id') // lấy thêm thông tin post
+    .populate('last_message.sender_id', 'full_name avatar') // chỉ lấy 1 số field user
+    .sort({ updatedAt: -1 })
+    .exec();
+}
 
 
   findAll() {

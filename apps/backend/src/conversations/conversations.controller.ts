@@ -44,4 +44,9 @@ async updateLastMessage(
 ) {
   return this.conversationsService.updateLastMessage(id, updateConversationDto);
 }
+
+  @Get('conversations/:userId')
+  async findConversationsByUserId(@Param('userId') userId: string) {
+  return this.conversationsService.findConversationsByUserId(userId);
+}
 }
