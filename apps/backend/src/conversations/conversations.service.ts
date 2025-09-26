@@ -85,6 +85,7 @@ async updateLastMessage(id: string, updateConversationDto: UpdateConversationDto
     .find({
       participants: { $in: [new Types.ObjectId(userId)] },
     })
+    .populate('participants', 'full_name avatar')
     .populate('post_id') // lấy thêm thông tin post
     .populate('last_message.sender_id', 'full_name avatar') // chỉ lấy 1 số field user
     .sort({ updatedAt: -1 })

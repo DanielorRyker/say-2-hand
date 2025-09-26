@@ -21,30 +21,40 @@ export class MessagesService {
   // }
  
   async create(createMessageDto: CreateMessageDto): Promise<Message> {
-    // Bước 1: Tạo message mới
-    const message = new this.messageModel({
-      ...createMessageDto,
-      created_at: new Date(),
-      read_by: [new Types.ObjectId(createMessageDto.sender_id)], // Người gửi mặc định "đã đọc"
-    });
-    const savedMessage = await message.save();
+  // Bước 1: Tạo message mới
+  const message = new this.messageModel({
+    ...createMessageDto,
+    conversation_id: new Types.ObjectId(createMessageDto.conversation_id), // ép sang ObjectId
+    sender_id: new Types.ObjectId(createMessageDto.sender_id),             // ép sang ObjectId
+    read_by: [new Types.ObjectId(createMessageDto.sender_id)], // Người gửi mặc định "đã đọc"
+  });
 
-    // Bước 2: Cập nhật last_message trong Conversation
-    await this.conversationModel.findByIdAndUpdate(
-      createMessageDto.conversation_id,
-      {
-        last_message: {
-          text: createMessageDto.text,
-          sender_id: new Types.ObjectId(createMessageDto.sender_id),
-          created_at: savedMessage.created_at,
-        },
+  const savedMessage = await message.save();
+
+  // Bước 2: Cập nhật last_message trong Conversation
+  await this.conversationModel.findByIdAndUpdate(
+    createMessageDto.conversation_id,
+    {
+      last_message: {
+        text: createMessageDto.text,
+        sender_id: new Types.ObjectId(createMessageDto.sender_id),
+        created_at: savedMessage.created_at,
       },
-      { new: true },
-    );
+    },
+    { new: true },
+  );
 
-    return savedMessage;
-  }
+  return savedMessage;
+}
 
+
+  async findByConversation(conversationId: string) {
+      return this.messageModel
+        .find({ conversation_id: new Types.ObjectId(conversationId) })
+        .populate("sender_id", "full_name avatar") // lấy thêm tên & avatar người gửi
+        .sort({ created_at: 1 }) // sort tăng dần theo thời gian
+        .exec();
+    }
 
   findAll() {
     return `This action returns all messages`;

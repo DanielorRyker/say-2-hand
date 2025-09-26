@@ -1,15 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X } from "lucide-react"; // icon đóng (nếu bạn cài lucide-react)
+import { Route, X } from "lucide-react"; // icon đóng (nếu bạn cài lucide-react)
 import Image from "next/image";
 import headerStyles from "@/styles/layout/header.module.scss";
-import cvstStyles from "@/styles/pages/conversation/conversation.module.scss";
+import cvstStyles from "@/styles/pages/conversation/conversationSidebar.module.scss";
 import { API_BASE } from "@/lib/constants";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
 export default function ConversationsSidebar() {
   const [open, setOpen] = useState(false);
+  const router = useRouter();
+
+
+  const userData = localStorage.getItem("user");
+const currentUser = userData ? JSON.parse(userData) : null;
+
 
  interface IConversation {
   _id: string;
@@ -33,7 +40,11 @@ export default function ConversationsSidebar() {
   };
 
   // danh sách user tham gia
-  participants: string[];
+  participants: {
+    _id: string;
+    full_name: string;
+    avatar?: string; 
+  }[];
 
   // tin nhắn cuối
   last_message?: {
@@ -88,6 +99,19 @@ const [conversationsData, setConversationsData] = useState<IConversation[]>([]);
     return `${years} năm trước`;
   };
 
+  const handleMessage=(conversation: IConversation)=>{
+    localStorage.setItem("conversation", JSON.stringify(conversation));
+    router.push(`/conversation/${conversation._id}`);
+    
+  }
+
+  const uniqueUsers = conversationsData.reduce((acc: any[], c) => {
+  const otherUser = c.participants.find((p: any) => p._id !== currentUser?._id);
+  if (otherUser && !acc.find(u => u._id === otherUser._id)) {
+    acc.push(otherUser);
+  }
+  return acc;
+}, []);
 
   return (
     <div>
@@ -130,7 +154,7 @@ const [conversationsData, setConversationsData] = useState<IConversation[]>([]);
         {/* Danh sách conversation */}
         <div className={cvstStyles.content}>
           {conversationsData.map((c) => (
-            <div className={cvstStyles.card}  key={c._id}>
+            <div className={cvstStyles.card}  key={c._id} onClick={() => handleMessage(c)}>
               {/* Ảnh vuông bên trái */}
               <Image
                 src={c.post_id.image ? process.env.NEXT_PUBLIC_URL_GCS + c.post_id.image : "/image/header/carbon_user-avatar-filled-alt.svg"}
@@ -140,16 +164,30 @@ const [conversationsData, setConversationsData] = useState<IConversation[]>([]);
               />
 
               <div className={cvstStyles.contentItem}>
-                <div className={cvstStyles.headerItem}>
-                  <Image
-                    src={c.last_message?.sender_id?.avatar ? process.env.NEXT_PUBLIC_URL_GCS + c.last_message?.sender_id?.avatar : "/image/header/carbon_user-avatar-filled-alt.svg"}
-                    alt="Avatar"
-                    className={cvstStyles.avatar}  width={40} height={40}
-                  />
-                  <span className={cvstStyles.titleItem}>{c.last_message?.sender_id?.full_name}</span>
+                <div>
+                  <p className={cvstStyles.titleItem}>{c.post_id.title}</p>
                 </div>
-
+               {uniqueUsers.map((otherUser) => (
+                <div key={otherUser._id} className={cvstStyles.headerItem}>
+                  <Image
+                    src={
+                      otherUser.avatar
+                        ? process.env.NEXT_PUBLIC_URL_GCS + otherUser.avatar
+                        : "/image/header/carbon_user-avatar-filled-alt.svg"
+                    }
+                    alt="Avatar"
+                    className={cvstStyles.avatar}
+                    width={40}
+                    height={40}
+                  />
+                  <span className={cvstStyles.titleName}>
+                    {otherUser.full_name || "Người dùng"}
+                  </span>
+                </div>
+              ))}
+              
                 <p className={cvstStyles.text}>
+                  {c.last_message?.sender_id?.full_name}: &nbsp; 
                   {c.last_message?.text} 
                 </p>
                 <p className={cvstStyles.time}>{c.last_message?.created_at ? getRelativeTime(c.last_message?.created_at) : ""}</p>

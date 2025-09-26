@@ -31,4 +31,9 @@ export class MessagesController {
   remove(@Param('id') id: string) {
     return this.messagesService.remove(+id);
   }
+
+  @Get("conversationId/:conversationId")
+  async getMessagesByConversation(@Param("conversationId") conversationId: string) {
+    return this.messagesService.findByConversation(conversationId);
+  }
 }
