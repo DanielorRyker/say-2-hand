@@ -20,13 +20,40 @@ export class MessagesService {
   //   return 'This action adds a new message';
   // }
  
-  async create(createMessageDto: CreateMessageDto): Promise<Message> {
+//   async create(createMessageDto: CreateMessageDto): Promise<Message> {
+//   // Bước 1: Tạo message mới
+//   const message = new this.messageModel({
+//     ...createMessageDto,
+//     conversation_id: new Types.ObjectId(createMessageDto.conversation_id), // ép sang ObjectId
+//     sender_id: new Types.ObjectId(createMessageDto.sender_id),             // ép sang ObjectId
+//     read_by: [new Types.ObjectId(createMessageDto.sender_id)], // Người gửi mặc định "đã đọc"
+//   });
+
+//   const savedMessage = await message.save();
+
+//   // Bước 2: Cập nhật last_message trong Conversation
+//   await this.conversationModel.findByIdAndUpdate(
+//     createMessageDto.conversation_id,
+//     {
+//       last_message: {
+//         text: createMessageDto.text,
+//         sender_id: new Types.ObjectId(createMessageDto.sender_id),
+//         created_at: savedMessage.created_at,
+//       },
+//     },
+//     { new: true },
+//   );
+
+//   return savedMessage;
+// }
+
+async create(createMessageDto: CreateMessageDto): Promise<Message | null> {
   // Bước 1: Tạo message mới
   const message = new this.messageModel({
     ...createMessageDto,
-    conversation_id: new Types.ObjectId(createMessageDto.conversation_id), // ép sang ObjectId
-    sender_id: new Types.ObjectId(createMessageDto.sender_id),             // ép sang ObjectId
-    read_by: [new Types.ObjectId(createMessageDto.sender_id)], // Người gửi mặc định "đã đọc"
+    conversation_id: new Types.ObjectId(createMessageDto.conversation_id),
+    sender_id: new Types.ObjectId(createMessageDto.sender_id),
+    read_by: [new Types.ObjectId(createMessageDto.sender_id)],
   });
 
   const savedMessage = await message.save();
@@ -44,7 +71,11 @@ export class MessagesService {
     { new: true },
   );
 
-  return savedMessage;
+  // Bước 3: Populate sender trước khi trả về
+  return this.messageModel
+    .findById(savedMessage._id)
+    .populate("sender_id", "full_name avatar")
+    .exec();
 }
 
 

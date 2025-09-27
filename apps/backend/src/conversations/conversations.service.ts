@@ -12,9 +12,7 @@ export class ConversationsService {
     private conversationModel: Model<ConversationDocument>,
   ){}
 
-  // create(createConversationDto: CreateConversationDto) {
-  //   return 'This action adds a new conversation';
-  // }
+
 
    async create(createConversationDto: CreateConversationDto) {
   const { post_id, participants } = createConversationDto;
@@ -69,16 +67,6 @@ async updateLastMessage(id: string, updateConversationDto: UpdateConversationDto
   }
 
 
- 
-  // async findConversationsByUserId(userId :string) {
-  //   return this.conversationModel.find({ participants: userId });
-  // }
-
-  //   async findConversationsByUserId(userId :string) {
-  //   return this.conversationModel.find({
-  //   participants: { $in: [new Types.ObjectId(userId)] },
-  // }).sort({ updatedAt: -1 });
-  // }
 
   async findConversationsByUserId(userId: string) {
   return this.conversationModel

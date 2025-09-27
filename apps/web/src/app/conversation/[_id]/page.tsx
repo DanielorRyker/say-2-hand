@@ -6,9 +6,12 @@ import Image from "next/image";
 import axios from "axios";
 
 export default function ChatPage() {
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
+    useEffect(() => {
     const userData = localStorage.getItem("user");
-const currentUser = userData ? JSON.parse(userData) : null;
+    setCurrentUser(userData ? JSON.parse(userData) : null);
+  }, []);
 
    interface IConversation {
   _id: string;
@@ -87,6 +90,10 @@ const [conversationsData, setConversationsData] = useState<IConversation[]>([]);
     }
     return acc;
   }, []);
+
+  const otherUser = conversation?.participants.find(
+  (p: any) => p._id !== currentUser?._id
+);
 //messages
  interface IMessage {
   _id: string;
@@ -129,13 +136,40 @@ useEffect(() => {
 }, [conversation?._id]);
 
 
+const handleChangeConversation = (_id: string) => {
+  const selected = conversationsData.find(c => c._id === _id);
+  if (selected) {
+    setConversation(selected);
 
-  const [messages] = useState([
-    { id: 1, text: "Hello 👋", sender: "other" },
-    { id: 2, text: "Hi there!", sender: "me" },
-    { id: 3, text: "How are you?", sender: "me" },
-  ]);
+    // nếu muốn lưu vào localStorage để khi F5 không mất
+    localStorage.setItem("conversation", JSON.stringify(selected));
+  }
+};
 
+//Gửi tin nhắn
+const [text, setText] = useState("");
+const handleSendMessage = async () => {
+    if (!text.trim()) return; // không gửi rỗng
+    if (!conversation?._id || !currentUser?._id) return;
+
+    try {
+      const payload = {
+        conversation_id: conversation._id,
+        sender_id: currentUser._id,
+        type: "text",
+        text: text,
+      };
+
+      const res = await axios.post("http://localhost:8080/api/messages", payload);
+
+      // thêm tin nhắn mới vào messagesData
+      setMessagesData((prev: any[]) => [...prev, res.data]);
+
+      setText(""); // clear input
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
+  };
 
 
   return (
@@ -145,7 +179,9 @@ useEffect(() => {
         <div className={cvstStyles.sidebarHeader}>Tất cả tin nhắn</div>
         <div className={cvstStyles.conversationList}>
           {conversationsData.map((i) => (
-            <div key={i._id} className={cvstStyles.conversationItem}>
+            <div key={i._id} 
+            className={`${cvstStyles.conversationItem} ${conversation?._id === i._id ? cvstStyles.conversationItemActive : ""}`} 
+            onClick={() => {handleChangeConversation(i._id)}}>
               <Image
                 src={i.post_id.image ? process.env.NEXT_PUBLIC_URL_GCS + i.post_id.image : "/image/header/carbon_user-avatar-filled-alt.svg"}
                 alt="Post"
@@ -194,31 +230,32 @@ useEffect(() => {
                 width={80} height={80}
               />
          </div>
-         <Image
-                src={conversation?.post_id.image ? process.env.NEXT_PUBLIC_URL_GCS + conversation.post_id.image : "/image/header/carbon_user-avatar-filled-alt.svg"}
-                alt="Post"
+
+
+          {otherUser && (
+            <div className={cvstStyles.userInfo}>
+              <Image
+                src={
+                  otherUser.avatar
+                    ? process.env.NEXT_PUBLIC_URL_GCS + otherUser.avatar
+                    : "/image/header/carbon_user-avatar-filled-alt.svg"
+                }
+                alt="Avatar"
                 className={cvstStyles.avatar}
-                width={80} height={80}
+                width={50}
+                height={50}
               />
-          <div>
-            <p className={cvstStyles.title}>{conversation?.post_id.title}</p>
-            <p className={cvstStyles.name}>name</p>
+              <div>
+                <p className={cvstStyles.title}>{conversation?.post_id.title}</p>
+                <p className={cvstStyles.name}>{otherUser.full_name}</p>
+              </div>
+            </div>
+          )}
+          
           </div>
-        </div>
+              
 
         {/* Messages */}
-        {/* <div className={cvstStyles.messages}>
-          {messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`${cvstStyles.message} ${
-                msg.sender === "me" ? cvstStyles.me : cvstStyles.other
-              }`}
-            >
-              {msg.text}
-            </div>
-          ))}
-        </div> */}
         <div className={cvstStyles.messages}>
           {messagesData.map((msg) => (
             <div
@@ -233,14 +270,22 @@ useEffect(() => {
         </div>
 
         {/* Input */}
-        <div className={cvstStyles.chatInput}>
-          <input
-            type="text"
-            placeholder="Type a message..."
-            className={cvstStyles.input}
-          />
-          <button className={cvstStyles.sendBtn}>Send</button>
+          <div className={cvstStyles.chatInput}>
+            <input
+              type="text"
+              placeholder="Type a message..."
+              className={cvstStyles.input}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleSendMessage();
+              }}
+            />
+          <button className={cvstStyles.sendBtn} onClick={handleSendMessage}>
+            Send
+          </button>
         </div>
+
       </main>
     </div>
   );
