@@ -179,31 +179,36 @@ const [text, setText] = useState("");
       };
   }, []);
 
- // receive_message
+
 useEffect(() => {
-  if (!conversation?._id) return;
-  if (!socket) return;
+  if (!socket || !conversation?._id) return;
 
   socket.emit("join_conversation", { conversationId: conversation._id });
 
-  socket.on("receive_message", (msg) => {
-    setMessagesData((prev) => {
-      // tránh trùng _id
-      if (prev.some((m) => m._id === msg._id)) return prev;
-      return [...prev, msg];
-    });
+  const handleReceiveMessage = (msg: any) => {
+    // Nếu tin nhắn thuộc cuộc hội thoại đang mở → append vào messagesData
+    if (msg.conversation_id === conversation._id) {
+      setMessagesData((prev) => {
+        if (prev.some((m) => m._id === msg._id)) return prev; // tránh trùng
+        return [...prev, msg];
+      });
+    }
 
+    // Luôn update last_message cho sidebar
     setConversationsData((prev) =>
       prev.map((c) =>
         c._id === msg.conversation_id ? { ...c, last_message: msg } : c
       )
     );
-  });
+  };
+
+  socket.on("receive_message", handleReceiveMessage);
 
   return () => {
-    socket.off("receive_message");
+    socket.off("receive_message", handleReceiveMessage);
   };
-}, [conversation?._id, socket]);
+}, [socket, conversation?._id]);
+
 
 
 /// Gửi tin nhắn
@@ -235,9 +240,11 @@ const handleSendMessage = async () => {
   }
 };
 
-const endRef = useRef<HTMLDivElement | null>(null);
 
 // Mỗi khi messagesData thay đổi => cuộn xuống cuối
+const endRef = useRef<HTMLDivElement | null>(null);
+
+
 useEffect(() => {
   if (endRef.current) {
     endRef.current.scrollIntoView({ behavior: "smooth" });
