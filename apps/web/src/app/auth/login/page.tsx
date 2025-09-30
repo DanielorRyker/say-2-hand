@@ -29,25 +29,26 @@ const Home = () => {
       const res = await axios.post(
         "http://localhost:8080/api/auth/login", // API NestJS
         form,
-        { withCredentials: true } // nếu BE dùng cookie/session
+        { withCredentials: true }, // nếu BE dùng cookie/session
       );
 
-       const data = res.data;
-       console.log("data", data);
+      const data = res.data;
+      console.log("data", data);
 
       if (data.access_token) {
         localStorage.setItem("access_token", data.access_token);
       }
-    
+
       //Lấy thông tin user
       const token = localStorage.getItem("access_token");
-      console.log('Login Token:',token)
+      console.log("Login Token:", token);
       const userRes = await axios.get(
-        `http://localhost:8080/api/users/find/${form.email}`,{
+        `http://localhost:8080/api/users/find/${form.email}`,
+        {
           headers: {
-          Authorization: `Bearer ${token}`,
-      },
-        }
+            Authorization: `Bearer ${token}`,
+          },
+        },
       );
       localStorage.setItem("user", JSON.stringify(userRes.data));
 
@@ -73,10 +74,12 @@ const Home = () => {
       if (err.response?.status === 403) {
         // Lỗi đăng nhập sai
         alert(err.response?.data?.message || "Email hoặc mật khẩu không đúng");
-      }
-       else if (err.response?.status === 401) {
+      } else if (err.response?.status === 401) {
         // Lỗi đăng nhập sai
-        alert(err.response?.data?.message || "Phiên đăng nhập đã kết thúc vui lòng đăng nhập lại !!!");
+        alert(
+          err.response?.data?.message ||
+            "Phiên đăng nhập đã kết thúc vui lòng đăng nhập lại !!!",
+        );
       } else {
         // Các lỗi khác mới log ra console
         console.error(err);

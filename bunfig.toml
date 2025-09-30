@@ -1,0 +1,34 @@
+# Bun Configuration
+[install]
+# Tăng tốc độ cài đặt
+cache = true
+exact = false
+production = false
+auto = "fallback"
+
+[install.scopes]
+# Private registry configuration if needed
+# "@company" = { "url" = "https://npm.company.com/" }
+
+[run]
+# Bun runtime settings
+bun = true
+# Use system shell for better compatibility
+shell = "system" 
+
+[test]
+# Test configuration for Bun
+preload = ["./test/setup.ts"]
+coverage = true
+timeout = 30000
+
+[build]
+# Build optimizations
+sourcemap = "external"
+minify = true
+target = "bun"
+
+# Bundler settings
+[bundler]
+# Enable JSX transformation
+jsx = "automatic"

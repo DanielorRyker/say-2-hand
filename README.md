@@ -1,135 +1,271 @@
-# Turborepo starter
+# 🚀 Say 2 Hand - Modern Marketplace Platform
 
-This Turborepo starter is maintained by the Turborepo core team.
+Say 2 Hand là một nền tảng marketplace hiện đại được xây dựng với Bun runtime, Next.js, và NestJS trong kiến trúc monorepo.
 
-## Using this example
+## 📋 Mục lục
 
-Run the following command:
+- [Tính năng](#-tính-năng)
+- [Công nghệ](#️-công-nghệ)
+- [Cấu trúc dự án](#-cấu-trúc-dự-án)
+- [Bắt đầu nhanh](#-bắt-đầu-nhanh)
+- [Development](#️-development)
+- [Deployment](#-deployment)
+- [Đóng góp](#-đóng-góp)
 
-```sh
-npx create-turbo@latest
-```
+## ✨ Tính năng
 
-## What's inside?
+- 🔐 **Authentication & Authorization** - JWT-based với role management
+- 📱 **Responsive Design** - Tối ưu cho mọi thiết bị
+- 🖼️ **File Upload** - Upload hình ảnh với Google Cloud Storage
+- 💬 **Real-time Chat** - WebSocket cho tin nhắn real-time
+- 🔍 **Search & Filter** - Tìm kiếm và lọc sản phẩm mạnh mẽ
+- 📍 **Location-based** - Tích hợp Google Maps
+- 🎨 **Modern UI** - Tailwind CSS với components tái sử dụng
 
-This Turborepo includes the following packages/apps:
+## 🛠️ Công nghệ
 
-### Apps and Packages
+### Runtime & Tools
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+- **Bun** - JavaScript runtime và package manager
+- **Turborepo** - Build system và monorepo tool
+- **Docker** - Containerization
+- **GitHub Actions** - CI/CD
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+### Frontend
 
-### Utilities
+- **Next.js 15** - React framework với App Router
+- **TypeScript** - Type safety
+- **Tailwind CSS** - Styling
+- **React 19** - UI library
 
-This Turborepo has some additional tools already setup for you:
+### Backend
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+- **NestJS** - Node.js framework
+- **MongoDB** - Database
+- **Redis** - Caching và session storage
+- **Socket.IO** - Real-time communication
 
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
-```
-
-You can build a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+## 📁 Cấu trúc dự án
 
 ```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build --filter=docs
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
+say-2-hand/
+├── apps/                          # Ứng dụng chính
+│   ├── web/                      # Next.js Frontend
+│   └── backend/                  # NestJS Backend
+├── packages/                     # Shared packages
+│   ├── types/                   # TypeScript types
+│   ├── config/                  # Shared configurations
+│   └── ui/                      # Shared UI components
+├── tools/                       # Development tools
+│   ├── docker/                 # Docker configurations
+│   └── scripts/                # Setup và deploy scripts
+├── .github/                     # GitHub workflows
+├── bunfig.toml                 # Bun configuration
+└── turbo.json                  # Turborepo configuration
 ```
 
-### Develop
+## 🚀 Bắt đầu nhanh
 
-To develop all apps and packages, run the following command:
+### Yêu cầu hệ thống
 
+- **Bun** >= 1.0.0
+- **Docker** (tùy chọn)
+- **MongoDB** (hoặc Docker)
+- **Redis** (hoặc Docker)
+
+### Cài đặt
+
+1. **Clone repository**
+
+   ```bash
+   git clone https://github.com/DanielorRyker/say-2-hand.git
+   cd say-2-hand
+   ```
+
+2. **Chạy setup script**
+
+   ```bash
+   bun run setup
+   ```
+
+3. **Cấu hình environment**
+
+   ```bash
+   # Cấu hình backend
+   cp apps/backend/.env.example apps/backend/.env
+
+   # Cấu hình frontend
+   cp apps/web/.env.example apps/web/.env.local
+   ```
+
+4. **Khởi động development**
+   ```bash
+   bun dev
+   ```
+
+### Truy cập ứng dụng
+
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8080
+- **API Documentation**: http://localhost:8080/api
+
+## ⚡️ Development
+
+### Commands chính
+
+```bash
+# Development
+bun dev                    # Start tất cả services
+bun dev --filter=web      # Chỉ start frontend
+bun dev --filter=backend  # Chỉ start backend
+
+# Build
+bun run build             # Build tất cả apps
+bun run build --filter=web # Build chỉ frontend
+
+# Testing
+bun run test             # Run tất cả tests
+bun run lint             # Run ESLint
+bun run type-check       # TypeScript checking
+
+# Database
+bun run db:migrate       # Run database migrations
+bun run db:seed         # Seed database với sample data
 ```
-cd my-turborepo
 
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev
+### Thêm dependencies
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
+```bash
+# Thêm dependency cho specific app
+cd apps/web
+bun add package-name
+
+# Thêm shared dependency
+bun add package-name -w
 ```
 
-You can develop a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+### Tạo component mới
 
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev --filter=web
+```bash
+# Frontend component
+cd apps/web/src/components/ui
+# Tạo component theo pattern có sẵn
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo login
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
+# Backend module
+cd apps/backend/src/modules
+nest g module module-name
+nest g controller module-name
+nest g service module-name
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+## 🐳 Docker Development
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+### Sử dụng Docker Compose
 
+```bash
+# Start tất cả services với Docker
+bun run docker:dev
+
+# Chỉ start databases
+docker-compose -f tools/docker/docker-compose.yml up -d mongodb redis
+
+# Xem logs
+docker-compose -f tools/docker/docker-compose.yml logs -f
 ```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo link
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
+## 🚢 Deployment
+
+### Production Build
+
+```bash
+# Build cho production
+bun run build
+
+# Chạy production build local
+bun run start
 ```
 
-## Useful Links
+### Docker Deployment
 
-Learn more about the power of Turborepo:
+```bash
+# Build và push images
+docker build -f apps/backend/Dockerfile -t say2hand-backend .
+docker build -f apps/web/Dockerfile -t say2hand-frontend .
 
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+# Hoặc sử dụng docker-compose
+docker-compose -f tools/docker/docker-compose.prod.yml up -d
+```
+
+### Environment Variables
+
+#### Backend (.env)
+
+```bash
+NODE_ENV=production
+PORT=8080
+MONGODB_URI=mongodb://localhost:27017/say2hand
+REDIS_URL=redis://localhost:6379
+JWT_SECRET=your-secret-key
+GOOGLE_CLOUD_PROJECT_ID=your-project-id
+```
+
+#### Frontend (.env.local)
+
+```bash
+NEXT_PUBLIC_API_URL=https://api.yourdomain.com
+NEXT_PUBLIC_APP_URL=https://yourdomain.com
+NEXTAUTH_SECRET=your-nextauth-secret
+```
+
+## 🏗️ Architecture
+
+### Frontend Architecture
+
+- **App Router** - Next.js 15 app directory structure
+- **Component-driven** - Reusable UI components
+- **Custom Hooks** - Business logic separation
+- **State Management** - React state + custom stores
+
+### Backend Architecture
+
+- **Modular** - Feature-based modules
+- **Repository Pattern** - Data access layer
+- **Guards & Interceptors** - Authentication & logging
+- **DTOs** - Data validation
+
+### Database Schema
+
+- **Users** - User profiles và authentication
+- **Posts** - Marketplace listings
+- **Categories** - Product categories
+- **Messages** - Chat system
+- **Conversations** - Message threads
+
+## 🤝 Đóng góp
+
+1. **Fork** repository
+2. **Tạo feature branch** (`git checkout -b feature/amazing-feature`)
+3. **Commit changes** (`git commit -m 'Add amazing feature'`)
+4. **Push to branch** (`git push origin feature/amazing-feature`)
+5. **Open Pull Request**
+
+### Coding Standards
+
+- **TypeScript** - Bắt buộc type safety
+- **ESLint** - Code linting
+- **Prettier** - Code formatting
+- **Conventional Commits** - Commit message format
+
+## 📝 License
+
+MIT License - xem [LICENSE](LICENSE) file để biết chi tiết.
+
+## 🆘 Hỗ trợ
+
+- **Documentation**: [docs/](docs/)
+- **Issues**: [GitHub Issues](https://github.com/DanielorRyker/say-2-hand/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/DanielorRyker/say-2-hand/discussions)
+
+---
+
+**Made with ❤️ by the Say 2 Hand team**

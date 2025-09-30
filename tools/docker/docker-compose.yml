@@ -1,0 +1,81 @@
+version: "3.8"
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: say2hand-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: say2hand
+    volumes:
+      - mongodb_data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - say2hand-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: say2hand-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - say2hand-network
+
+  backend:
+    build:
+      context: ../../
+      dockerfile: apps/backend/Dockerfile
+    container_name: say2hand-backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=development
+      - PORT=8080
+      - MONGODB_URI=mongodb://admin:password@mongodb:27017/say2hand?authSource=admin
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=development-jwt-secret-key
+      - JWT_EXPIRES_IN=24h
+    depends_on:
+      - mongodb
+      - redis
+    volumes:
+      - ../../apps/backend:/app
+      - /app/node_modules
+    networks:
+      - say2hand-network
+
+  frontend:
+    build:
+      context: ../../
+      dockerfile: apps/web/Dockerfile
+    container_name: say2hand-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8080
+      - NODE_ENV=development
+    depends_on:
+      - backend
+    volumes:
+      - ../../apps/web:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - say2hand-network
+
+volumes:
+  mongodb_data:
+  redis_data:
+
+networks:
+  say2hand-network:
+    driver: bridge

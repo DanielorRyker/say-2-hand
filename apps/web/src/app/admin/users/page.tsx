@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 const Home = () => {
   const router = useRouter();
 
- const [token, setToken] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
     // chỉ chạy ở client, không bị lỗi
@@ -43,20 +43,20 @@ const Home = () => {
   const totalPages = Math.ceil(usersData.length / pageSize);
   const paginatedUsers = usersData.slice(
     (currentPage - 1) * pageSize,
-    currentPage * pageSize
+    currentPage * pageSize,
   );
 
   //xóa user
   const handleDeleteUser = async (userId: string) => {
     const ok = window.confirm("Bạn có chắc chắn muốn xóa user này không?");
-   
+
     if (!ok) return;
 
     try {
-      await axios.delete(`http://localhost:8080/api/users/${userId}`,{
+      await axios.delete(`http://localhost:8080/api/users/${userId}`, {
         headers: {
-        Authorization: `Bearer ${token}`,
-      },
+          Authorization: `Bearer ${token}`,
+        },
       });
       setUsersData(usersData.filter((user) => user._id !== userId));
       alert("Xóa thành công");
@@ -65,12 +65,10 @@ const Home = () => {
         alert("Phiên của bạn đã kết thúc, vui lòng đăng nhập lại !");
         localStorage.clear();
         router.push("/auth/login");
-      }
-      else{
+      } else {
         console.error("Error deleting user:", error);
-      alert("Có lỗi xảy ra khi xóa user");
+        alert("Có lỗi xảy ra khi xóa user");
       }
-      
     }
   };
   //chỉnh sửa user
@@ -92,32 +90,33 @@ const Home = () => {
   const handleSave = async () => {
     if (!editingUserId) return;
     try {
-      await axios.patch("http://localhost:8080/api/users", {
-        _id: editingUserId,
-        ...editForm,
-      },{
+      await axios.patch(
+        "http://localhost:8080/api/users",
+        {
+          _id: editingUserId,
+          ...editForm,
+        },
+        {
           headers: {
-          Authorization: `Bearer ${token}`,
-      },
-        }
-    );
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
       setUsersData(
         usersData.map((u) =>
-          u._id === editingUserId ? { ...u, ...editForm } : u
-        )
+          u._id === editingUserId ? { ...u, ...editForm } : u,
+        ),
       );
       setEditingUserId(null);
       alert("Cập nhật thành công");
-    } catch (error : any) {
-       if (error.response?.status === 401) {
-        
-        alert( "Phiên đăng nhập đã kết thúc vui lòng đăng nhập lại !!!");
-         router.push("/auth/login");
-      }else{
+    } catch (error: any) {
+      if (error.response?.status === 401) {
+        alert("Phiên đăng nhập đã kết thúc vui lòng đăng nhập lại !!!");
+        router.push("/auth/login");
+      } else {
         console.error("Error updating user:", error);
-      alert("Có lỗi khi cập nhật user");
+        alert("Có lỗi khi cập nhật user");
       }
-      
     }
   };
 

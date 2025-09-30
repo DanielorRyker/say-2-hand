@@ -66,7 +66,7 @@ const Home = () => {
       await axios.post(
         "http://localhost:8080/api/auth/verify", // API NestJS
         form,
-        { withCredentials: true } // nếu BE dùng cookie/session
+        { withCredentials: true }, // nếu BE dùng cookie/session
       );
       alert("Xác thực thành công");
       router.push("/auth/login");

@@ -85,7 +85,7 @@ const Home = () => {
   const totalPages = Math.ceil(postsData.length / pageSize);
   const paginatedPosts = postsData.slice(
     (currentPage - 1) * pageSize,
-    currentPage * pageSize
+    currentPage * pageSize,
   );
 
   // Sort và filter
@@ -127,8 +127,8 @@ const Home = () => {
     });
     setPostsData(
       postsData.map((post) =>
-        post._id === postId ? { ...post, status: "active" } : post
-      )
+        post._id === postId ? { ...post, status: "active" } : post,
+      ),
     );
   };
   //2.Từ chối
@@ -138,8 +138,8 @@ const Home = () => {
     });
     setPostsData(
       postsData.map((post) =>
-        post._id === postId ? { ...post, status: "rejected" } : post
-      )
+        post._id === postId ? { ...post, status: "rejected" } : post,
+      ),
     );
   };
   //3.Xóa

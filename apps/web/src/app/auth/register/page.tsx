@@ -75,7 +75,7 @@ const Home = () => {
       await axios.post(
         "http://localhost:8080/api/users/", // API NestJS
         form,
-        { withCredentials: true } // nếu BE dùng cookie/session
+        { withCredentials: true }, // nếu BE dùng cookie/session
       );
 
       await axios.get(`http://localhost:8080/api/auth/mail`, {

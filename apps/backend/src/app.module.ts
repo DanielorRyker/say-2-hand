@@ -1,18 +1,18 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { UsersModule } from './users/users.module';
+import { UsersModule } from './modules/users/users.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AuthModule } from './auth/auth.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { MailerModule } from '@nestjs-modules/mailer';
-import { VerificationTokensModule } from './verification_tokens/verification_tokens.module';
-import { PasswordResetsModule } from './password_resets/password_resets.module';
-import { PostsModule } from './posts/posts.module';
-import { UploadModule } from './upload/upload.module';
-import { CategoriesModule } from './categories/categories.module';
-import { ConversationsModule } from './conversations/conversations.module';
-import { MessagesModule } from './messages/messages.module';
+import { VerificationTokensModule } from './modules/verification_tokens/verification_tokens.module';
+import { PasswordResetsModule } from './modules/password_resets/password_resets.module';
+import { PostsModule } from './modules/posts/posts.module';
+import { UploadModule } from './modules/upload/upload.module';
+import { CategoriesModule } from './modules/categories/categories.module';
+import { ConversationsModule } from './modules/conversations/conversations.module';
+import { MessagesModule } from './modules/messages/messages.module';
 import { ChatGateway } from './common/socket/chat.gateway';
 
 @Module({

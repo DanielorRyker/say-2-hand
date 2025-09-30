@@ -138,9 +138,7 @@ const Home = () => {
               {user?.description ? (
                 <p className={styleUser[""]}>{user?.description}</p>
               ) : (
-                <p className={styleUser["describe"]}>
-                  
-                </p>
+                <p className={styleUser["describe"]}></p>
               )}
             </div>
           </div>

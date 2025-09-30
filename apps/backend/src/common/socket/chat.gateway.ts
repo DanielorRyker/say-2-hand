@@ -38,12 +38,19 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     );
   }
 
-
-@SubscribeMessage('send_message')
-handleMessage(
-  @MessageBody() data: { conversationId: string; user: string; message: string; _id?: string },
-) {
-     console.log('New message:', data);
-  this.server.to(`conversation_${data.conversationId}`).emit('receive_message', data);
-}
+  @SubscribeMessage('send_message')
+  handleMessage(
+    @MessageBody()
+    data: {
+      conversationId: string;
+      user: string;
+      message: string;
+      _id?: string;
+    },
+  ) {
+    console.log('New message:', data);
+    this.server
+      .to(`conversation_${data.conversationId}`)
+      .emit('receive_message', data);
+  }
 }

@@ -64,7 +64,7 @@ const Home = () => {
       await axios.post(
         "http://localhost:8080/api/auth/verifyResetPassword", // API NestJS
         form,
-        { withCredentials: true } // nếu BE dùng cookie/session
+        { withCredentials: true }, // nếu BE dùng cookie/session
       );
       alert("Đặt lại mật khẩu thành công");
       router.push("/auth/login");

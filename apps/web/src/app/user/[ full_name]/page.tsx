@@ -50,7 +50,6 @@ const Home = () => {
       <div className={styleUser["gradientBorder"]}>
         <div className={styleUser["card"]}>
           <div className={styleUser["cardAvatarBackground"]}>
-
             {user?.avatar ? (
               <Image
                 src={process.env.NEXT_PUBLIC_URL_GCS + user.avatar}
@@ -139,9 +138,7 @@ const Home = () => {
               {user?.description ? (
                 <p className={styleUser[""]}>{user?.description}</p>
               ) : (
-                <p className={styleUser["describe"]}>
-                  
-                </p>
+                <p className={styleUser["describe"]}></p>
               )}
             </div>
           </div>

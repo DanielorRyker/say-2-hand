@@ -2,20 +2,35 @@
   "name": "say-2-hand",
   "private": true,
   "scripts": {
-    "build": "turbo run build",
     "dev": "turbo run dev",
+    "dev:backend": "turbo run dev --filter=backend",
+    "dev:frontend": "turbo run dev --filter=web",
+    "dev:web": "turbo run dev --filter=web",
+    "build": "turbo run build",
+    "build:backend": "turbo run build --filter=backend",
+    "build:frontend": "turbo run build --filter=web",
+    "start:backend": "cd apps/backend && bun run start:prod",
+    "start:frontend": "cd apps/web && bun run start",
+    "db:migrate": "cd apps/backend && bun run db:migrate",
+    "db:seed": "cd apps/backend && bun run db:seed",
+    "docker:dev": "docker-compose -f tools/docker/docker-compose.yml up",
+    "docker:prod": "docker-compose -f tools/docker/docker-compose.prod.yml up",
     "lint": "turbo run lint",
+    "test": "turbo run test",
+    "clean": "turbo run clean",
+    "type-check": "turbo run type-check",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo run check-types"
+    "setup": "bun run tools/scripts/setup.js"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
+    "chalk": "^5.6.2",
     "prettier": "^3.6.2",
     "turbo": "^2.5.6",
     "typescript": "^5.9.2"
   },
   "engines": {
-    "node": ">=18"
+    "bun": ">=1.0.0"
   },
   "packageManager": "bun@1.2.20",
   "workspaces": [

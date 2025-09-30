@@ -34,7 +34,9 @@ export default function BasicInfoForm({
   // local display value for price so we can show thousand separators while
   // keeping numeric value in formData.price
   const [priceInput, setPriceInput] = useState<string>(
-    formData.price != null ? Number(formData.price).toLocaleString("vi-VN") : ""
+    formData.price != null
+      ? Number(formData.price).toLocaleString("vi-VN")
+      : "",
   );
 
   const PRICE_STEP = 1000;
@@ -47,14 +49,14 @@ export default function BasicInfoForm({
       if (formData.price == null) return null;
       const parsed = Number(formData.price);
       return Number.isFinite(parsed) ? Math.round(parsed / PRICE_STEP) : null;
-    })()
+    })(),
   );
   const prevRawRef = useRef<string>(
-    baseRef.current != null ? String(baseRef.current) : ""
+    baseRef.current != null ? String(baseRef.current) : "",
   );
 
   const [priceRaw, setPriceRaw] = useState<string>(
-    baseRef.current != null ? String(baseRef.current) : ""
+    baseRef.current != null ? String(baseRef.current) : "",
   );
   // editingPrice not required now; caret handled directly
   // priceBase intentionally not stored separately; baseRef and priceRaw track it
@@ -154,11 +156,11 @@ export default function BasicInfoForm({
       // count digits before start/end to map to raw indices
       const digitsBeforeStart = Math.min(
         (formatted.slice(0, start).match(/\d/g) || []).length,
-        (priceRaw || "").length
+        (priceRaw || "").length,
       );
       const digitsBeforeEnd = Math.min(
         (formatted.slice(0, end).match(/\d/g) || []).length,
-        (priceRaw || "").length
+        (priceRaw || "").length,
       );
       const cur = priceRaw || "";
       let newRaw =
@@ -179,11 +181,11 @@ export default function BasicInfoForm({
       const formatted = priceInput || "";
       const digitsBeforeStart = Math.min(
         (formatted.slice(0, start).match(/\d/g) || []).length,
-        (priceRaw || "").length
+        (priceRaw || "").length,
       );
       const digitsBeforeEnd = Math.min(
         (formatted.slice(0, end).match(/\d/g) || []).length,
-        (priceRaw || "").length
+        (priceRaw || "").length,
       );
       const cur = priceRaw || "";
       if (start !== end) {
@@ -214,11 +216,11 @@ export default function BasicInfoForm({
       const formatted = priceInput || "";
       const digitsBeforeStart = Math.min(
         (formatted.slice(0, start).match(/\d/g) || []).length,
-        (priceRaw || "").length
+        (priceRaw || "").length,
       );
       const digitsBeforeEnd = Math.min(
         (formatted.slice(0, end).match(/\d/g) || []).length,
-        (priceRaw || "").length
+        (priceRaw || "").length,
       );
       const cur = priceRaw || "";
       if (start !== end) {
@@ -252,11 +254,11 @@ export default function BasicInfoForm({
     const formatted = priceInput || "";
     const digitsBeforeStart = Math.min(
       (formatted.slice(0, start).match(/\d/g) || []).length,
-      (priceRaw || "").length
+      (priceRaw || "").length,
     );
     const digitsBeforeEnd = Math.min(
       (formatted.slice(0, end).match(/\d/g) || []).length,
-      (priceRaw || "").length
+      (priceRaw || "").length,
     );
     const newRaw =
       cur.slice(0, digitsBeforeStart) + digits + cur.slice(digitsBeforeEnd);
@@ -330,7 +332,7 @@ export default function BasicInfoForm({
       else if (result.errors.price) {
         // focus price input if present
         const priceEl = document.getElementById(
-          "price"
+          "price",
         ) as HTMLInputElement | null;
         priceEl?.focus();
       }
@@ -517,7 +519,7 @@ export default function BasicInfoForm({
                   if (!el) return;
                   const pos = Math.max(
                     0,
-                    (value != null ? formatVnd(value) : "").length - 4
+                    (value != null ? formatVnd(value) : "").length - 4,
                   );
                   el.setSelectionRange(pos, pos);
                 }, 0);

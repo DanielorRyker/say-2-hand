@@ -59,7 +59,7 @@ const Home = () => {
   }, []);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -90,7 +90,7 @@ const Home = () => {
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
-        }
+        },
       );
       const imageUrl = res.data.url;
       setUploadedUrl(imageUrl);
@@ -104,25 +104,24 @@ const Home = () => {
       }));
       alert("Upload thành công!");
       const token = localStorage.getItem("access_token");
-      console.log('Token:',token)
+      console.log("Token:", token);
       const userRes = await axios.get(
-        `http://localhost:8080/api/users/find/${form.email}`,{
+        `http://localhost:8080/api/users/find/${form.email}`,
+        {
           headers: {
-          Authorization: `Bearer ${token}`,
-      },
-        }
+            Authorization: `Bearer ${token}`,
+          },
+        },
       );
       localStorage.setItem("user", JSON.stringify(userRes.data));
-    } catch (err:any) {
-     if (err.response?.status === 401) {
+    } catch (err: any) {
+      if (err.response?.status === 401) {
         // Lỗi đăng nhập sai
-        alert( "Phiên đăng nhập đã kết thúc vui lòng đăng nhập lại !!!");
-               router.push("/auth/login");
+        alert("Phiên đăng nhập đã kết thúc vui lòng đăng nhập lại !!!");
+        router.push("/auth/login");
+      } else {
+        console.error("Upload failed:", err);
       }
-      else{
-         console.error("Upload failed:", err);
-      }
-     
     }
   };
 
@@ -132,34 +131,32 @@ const Home = () => {
 
   const handleFormSubmit = async () => {
     const token = localStorage.getItem("access_token");
-      console.log('Token:',token)
+    console.log("Token:", token);
     try {
       const res = await axios.patch(`http://localhost:8080/api/users/`, form, {
-          headers: {
+        headers: {
           Authorization: `Bearer ${token}`,
-      },
-        }
-      );
+        },
+      });
 
-      
       const userRes = await axios.get(
-        `http://localhost:8080/api/users/find/${form.email}`,{
+        `http://localhost:8080/api/users/find/${form.email}`,
+        {
           headers: {
-          Authorization: `Bearer ${token}`,
-      },
-        }
+            Authorization: `Bearer ${token}`,
+          },
+        },
       );
       localStorage.setItem("user", JSON.stringify(userRes.data));
       alert("Cập nhật thành công!");
       router.push(`/profile/${form.full_name}`);
-    } catch (err : any) {
+    } catch (err: any) {
       if (err.response?.status === 401) {
         // Lỗi đăng nhập sai
-        alert( "Phiên đăng nhập đã kết thúc vui lòng đăng nhập lại !!!");
-         router.push("/auth/login");
-      }
-      else{
-         console.error("Upload failed:", err);
+        alert("Phiên đăng nhập đã kết thúc vui lòng đăng nhập lại !!!");
+        router.push("/auth/login");
+      } else {
+        console.error("Upload failed:", err);
       }
     }
   };

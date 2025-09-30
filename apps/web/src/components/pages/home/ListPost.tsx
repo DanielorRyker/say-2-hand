@@ -6,8 +6,8 @@ import { API_BASE, URL_GCS } from "@/lib/constants";
 import { useRouter } from "next/navigation";
 
 export default function ListPost() {
-   const router = useRouter();
-   
+  const router = useRouter();
+
   interface Post {
     _id: string;
     title: string;
@@ -17,7 +17,7 @@ export default function ListPost() {
     transaction_type: string;
     // location: { address: string };
     address: string;
-    author_id: {_id:string; full_name: string; avatar: string };
+    author_id: { _id: string; full_name: string; avatar: string };
     createdAt: string;
     reputation?: { average_score: number; total_ratings: number };
     condition: string;
@@ -38,10 +38,10 @@ export default function ListPost() {
     fetchPosts();
   }, []);
 
-const handlerTest = (post: Post) => {
-  localStorage.setItem("post", JSON.stringify(post));
-  router.push(`/post/${post._id}`)
-};
+  const handlerTest = (post: Post) => {
+    localStorage.setItem("post", JSON.stringify(post));
+    router.push(`/post/${post._id}`);
+  };
 
   const getRelativeTime = (isoString: string) => {
     const date = new Date(isoString);
@@ -96,8 +96,7 @@ const handlerTest = (post: Post) => {
             // href="#"
             className={stylePostList.postCard}
             title={post.title}
-            
-             onClick={()=>handlerTest(post)}
+            onClick={() => handlerTest(post)}
           >
             <div className={stylePostList.postImage}>
               <Image

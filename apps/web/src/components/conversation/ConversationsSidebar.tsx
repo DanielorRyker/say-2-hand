@@ -13,7 +13,8 @@ export default function ConversationsSidebar() {
   const [open, setOpen] = useState(false);
   const router = useRouter();
 
-  const userData = typeof window !== "undefined" ? localStorage.getItem("user") : null;
+  const userData =
+    typeof window !== "undefined" ? localStorage.getItem("user") : null;
   const currentUser = userData ? JSON.parse(userData) : null;
 
   interface IConversation {
@@ -40,7 +41,9 @@ export default function ConversationsSidebar() {
     updatedAt: string;
   }
 
-  const [conversationsData, setConversationsData] = useState<IConversation[]>([]);
+  const [conversationsData, setConversationsData] = useState<IConversation[]>(
+    [],
+  );
   const [socket, setSocket] = useState<Socket | null>(null);
 
   // API lấy danh sách
@@ -48,7 +51,7 @@ export default function ConversationsSidebar() {
     if (!currentUser) return;
     try {
       const res = await axios.get(
-        `http://localhost:8080/api/conversations/conversations/${currentUser._id}`
+        `http://localhost:8080/api/conversations/conversations/${currentUser._id}`,
       );
       setConversationsData(res.data);
     } catch (err) {
@@ -129,14 +132,20 @@ export default function ConversationsSidebar() {
       </button>
 
       {/* Overlay */}
-      {open && <div className={cvstStyles.overlay} onClick={() => setOpen(false)} />}
+      {open && (
+        <div className={cvstStyles.overlay} onClick={() => setOpen(false)} />
+      )}
 
       {/* Sidebar */}
       <div className={`${cvstStyles.sidebar} ${open ? cvstStyles.open : ""}`}>
         {/* Header */}
         <div className={cvstStyles.header}>
           <h2 className={cvstStyles.title}>Tin nhắn</h2>
-          <button onClick={() => setOpen(false)}>
+          <button
+            onClick={() => setOpen(false)}
+            aria-label="Đóng tin nhắn"
+            title="Đóng"
+          >
             <X className={cvstStyles.x} />
           </button>
         </div>
@@ -144,7 +153,9 @@ export default function ConversationsSidebar() {
         {/* Danh sách conversation */}
         <div className={cvstStyles.content}>
           {conversationsData.map((c) => {
-            const otherUser = c.participants.find((p) => p._id !== currentUser?._id);
+            const otherUser = c.participants.find(
+              (p) => p._id !== currentUser?._id,
+            );
             return (
               <div
                 className={cvstStyles.card}

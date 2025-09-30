@@ -30,12 +30,12 @@ const Home = () => {
   const totalPages = Math.ceil(categoriesData.length / pageSize);
   const paginatedCategories = categoriesData.slice(
     (currentPage - 1) * pageSize,
-    currentPage * pageSize
+    currentPage * pageSize,
   );
 
   //chỉnh sửa category
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(
-    null
+    null,
   );
   const [editForm, setEditForm] = useState<Partial<Category>>({});
 
@@ -57,7 +57,7 @@ const Home = () => {
     try {
       await axios.delete(`http://localhost:8080/api/categories/${categoryId}`);
       setCategoriesData(
-        categoriesData.filter((category) => category._id !== categoryId)
+        categoriesData.filter((category) => category._id !== categoryId),
       );
       alert("Xóa thành công");
     } catch (error) {
@@ -84,8 +84,8 @@ const Home = () => {
         categoriesData.map((c) =>
           c._id === editingCategoryId
             ? { ...c, ...editForm, image: imageUrl }
-            : c
-        )
+            : c,
+        ),
       );
       setEditingCategoryId(null);
       setFile(null);
@@ -132,7 +132,7 @@ const Home = () => {
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
       return res.data.filename;
     } catch (error) {
@@ -150,7 +150,7 @@ const Home = () => {
     } else if (!file) return alert("Vui lòng chọn ảnh!");
 
     const ok = window.confirm(
-      `Bạn có chắc chắn muốn thêm danh mục: ${newCategoryName}?`
+      `Bạn có chắc chắn muốn thêm danh mục: ${newCategoryName}?`,
     );
     if (!ok) return;
     try {
