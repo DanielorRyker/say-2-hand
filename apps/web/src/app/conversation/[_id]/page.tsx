@@ -1,11 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import cvstStyles from "@/styles/pages/conversation/conversation.module.scss";
 import Image from "next/image";
 import axios from "axios";
+import { io, Socket } from 'socket.io-client';
 
 export default function ChatPage() {
+ 
+
+  // user hiện tại
+
   const [currentUser, setCurrentUser] = useState<any>(null);
 
     useEffect(() => {
@@ -146,30 +151,99 @@ const handleChangeConversation = (_id: string) => {
   }
 };
 
-//Gửi tin nhắn
+
 const [text, setText] = useState("");
-const handleSendMessage = async () => {
-    if (!text.trim()) return; // không gửi rỗng
-    if (!conversation?._id || !currentUser?._id) return;
 
-    try {
-      const payload = {
-        conversation_id: conversation._id,
-        sender_id: currentUser._id,
-        type: "text",
-        text: text,
+
+   //Socket
+  const [socket, setSocket] = useState<Socket | null>(null);
+  useEffect(() => {
+      // Kết nối socket.io tới BE (NestJS WebSocketGateway)
+      const newSocket = io("http://localhost:8080", {
+        transports: ["websocket"], // ép dùng websocket (tránh polling)
+      });
+
+      setSocket(newSocket);
+
+      newSocket.on("connect", () => {
+        console.log("Connected to socket:", newSocket.id);
+      });
+
+      newSocket.on("disconnect", () => {
+        console.log("Disconnected from socket");
+      });
+
+      // cleanup khi unmount
+      return () => {
+        newSocket.disconnect();
       };
+  }, []);
 
-      const res = await axios.post("http://localhost:8080/api/messages", payload);
+ // receive_message
+useEffect(() => {
+  if (!conversation?._id) return;
+  if (!socket) return;
 
-      // thêm tin nhắn mới vào messagesData
-      setMessagesData((prev: any[]) => [...prev, res.data]);
+  socket.emit("join_conversation", { conversationId: conversation._id });
 
-      setText(""); // clear input
-    } catch (error) {
-      console.error("Error sending message:", error);
-    }
+  socket.on("receive_message", (msg) => {
+    setMessagesData((prev) => {
+      // tránh trùng _id
+      if (prev.some((m) => m._id === msg._id)) return prev;
+      return [...prev, msg];
+    });
+
+    setConversationsData((prev) =>
+      prev.map((c) =>
+        c._id === msg.conversation_id ? { ...c, last_message: msg } : c
+      )
+    );
+  });
+
+  return () => {
+    socket.off("receive_message");
   };
+}, [conversation?._id, socket]);
+
+
+/// Gửi tin nhắn
+const handleSendMessage = async () => {
+  if (!text.trim()) return;
+  if (!conversation?._id || !currentUser?._id) return;
+
+  try {
+    const payload = {
+      conversation_id: conversation._id,
+      sender_id: currentUser._id,
+      type: "text",
+      text: text,
+    };
+
+    const res = await axios.post("http://localhost:8080/api/messages", payload);
+
+    // chỉ emit socket, không setMessagesData nữa
+    if (socket) {
+      socket.emit("send_message", {
+        conversationId: conversation._id,
+        ...res.data,
+      });
+    }
+
+    setText("");
+  } catch (error) {
+    console.error("Error sending message:", error);
+  }
+};
+
+const endRef = useRef<HTMLDivElement | null>(null);
+
+// Mỗi khi messagesData thay đổi => cuộn xuống cuối
+useEffect(() => {
+  if (endRef.current) {
+    endRef.current.scrollIntoView({ behavior: "smooth" });
+  }
+}, [messagesData]);
+
 
 
   return (
@@ -178,6 +252,7 @@ const handleSendMessage = async () => {
       <aside className={cvstStyles.sidebar}>
         <div className={cvstStyles.sidebarHeader}>Tất cả tin nhắn</div>
         <div className={cvstStyles.conversationList}>
+
           {conversationsData.map((i) => (
             <div key={i._id} 
             className={`${cvstStyles.conversationItem} ${conversation?._id === i._id ? cvstStyles.conversationItemActive : ""}`} 
@@ -215,6 +290,8 @@ const handleSendMessage = async () => {
               
             </div>
           ))}
+
+          
         </div>
       </aside>
 
@@ -267,7 +344,11 @@ const handleSendMessage = async () => {
               {msg.text}
             </div>
           ))}
+              {/* ref để scroll xuống cuối */}
+            <div ref={endRef} />
         </div>
+
+        
 
         {/* Input */}
           <div className={cvstStyles.chatInput}>

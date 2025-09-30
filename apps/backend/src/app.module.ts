@@ -13,6 +13,7 @@ import { UploadModule } from './upload/upload.module';
 import { CategoriesModule } from './categories/categories.module';
 import { ConversationsModule } from './conversations/conversations.module';
 import { MessagesModule } from './messages/messages.module';
+import { ChatGateway } from './common/socket/chat.gateway';
 
 @Module({
   imports: [
@@ -55,6 +56,6 @@ import { MessagesModule } from './messages/messages.module';
     MessagesModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, ChatGateway],
 })
 export class AppModule {}
