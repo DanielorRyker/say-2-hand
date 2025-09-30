@@ -63,7 +63,7 @@ export default function ChatPage() {
 
   const [conversation, setConversation] = useState<IConversation | null>(null);
   const [conversationsData, setConversationsData] = useState<IConversation[]>(
-    [],
+    []
   );
 
   useEffect(() => {
@@ -83,7 +83,7 @@ export default function ChatPage() {
         // console.log(user.status); // ✅ lấy được status
       }
       const res = await axios.get(
-        `http://localhost:8080/api/conversations/conversations/${user._id}`,
+        `http://localhost:8080/api/conversations/conversations/${user._id}`
       );
       setConversationsData(res.data);
     }
@@ -92,7 +92,7 @@ export default function ChatPage() {
 
   const uniqueUsers = conversationsData.reduce((acc: any[], c) => {
     const otherUser = c.participants.find(
-      (p: any) => p._id !== currentUser?._id,
+      (p: any) => p._id !== currentUser?._id
     );
     if (otherUser && !acc.find((u) => u._id === otherUser._id)) {
       acc.push(otherUser);
@@ -101,132 +101,17 @@ export default function ChatPage() {
   }, []);
 
   const otherUser = conversation?.participants.find(
-    (p: any) => p._id !== currentUser?._id,
+    (p: any) => p._id !== currentUser?._id
   );
   //messages
   interface IMessage {
     _id: string;
     conversation_id: string;
 
-<<<<<<< HEAD
-  type: "text" | "image" | "file"; // mở rộng nếu có thêm loại message khác
-  text?: string;
-  attachments: string[];
-  read_by: string[];
-
-  created_at: string;
-  createdAt: string;
-  updatedAt: string;
-  __v?: number;
-}
-const [messagesData, setMessagesData] = useState<IMessage[]>([]);
-
-useEffect(() => {
-  async function fetchPostsMessage() {
-    if (!conversation?._id) return; // tránh gọi khi chưa có id
-
-    try {
-      const res = await axios.get(
-        `http://localhost:8080/api/messages/conversationId/${conversation._id}`
-      );
-      setMessagesData(res.data);
-      console.log("messagesData", res.data);
-    } catch (error) {
-      console.error("Error fetching messages:", error);
-    }
-  }
-
-  fetchPostsMessage();
-}, [conversation?._id]);
-
-
-const handleChangeConversation = (_id: string) => {
-  const selected = conversationsData.find(c => c._id === _id);
-  if (selected) {
-    setConversation(selected);
-
-    // nếu muốn lưu vào localStorage để khi F5 không mất
-    localStorage.setItem("conversation", JSON.stringify(selected));
-  }
-};
-
-
-const [text, setText] = useState("");
-
-
-   //Socket
-  const [socket, setSocket] = useState<Socket | null>(null);
-  useEffect(() => {
-      // Kết nối socket.io tới BE (NestJS WebSocketGateway)
-      const newSocket = io("http://localhost:8080", {
-        transports: ["websocket"], // ép dùng websocket (tránh polling)
-      });
-
-      setSocket(newSocket);
-
-      newSocket.on("connect", () => {
-        console.log("Connected to socket:", newSocket.id);
-      });
-
-      newSocket.on("disconnect", () => {
-        console.log("Disconnected from socket");
-      });
-
-      // cleanup khi unmount
-      return () => {
-        newSocket.disconnect();
-      };
-  }, []);
-
-
-useEffect(() => {
-  if (!socket || !conversation?._id) return;
-
-  socket.emit("join_conversation", { conversationId: conversation._id });
-
-  const handleReceiveMessage = (msg: any) => {
-    // Nếu tin nhắn thuộc cuộc hội thoại đang mở → append vào messagesData
-    if (msg.conversation_id === conversation._id) {
-      setMessagesData((prev) => {
-        if (prev.some((m) => m._id === msg._id)) return prev; // tránh trùng
-        return [...prev, msg];
-      });
-    }
-
-    // Luôn update last_message cho sidebar
-    setConversationsData((prev) =>
-      prev.map((c) =>
-        c._id === msg.conversation_id ? { ...c, last_message: msg } : c
-      )
-    );
-  };
-
-  socket.on("receive_message", handleReceiveMessage);
-
-  return () => {
-    socket.off("receive_message", handleReceiveMessage);
-  };
-}, [socket, conversation?._id]);
-
-
-
-/// Gửi tin nhắn
-const handleSendMessage = async () => {
-  if (!text.trim()) return;
-  if (!conversation?._id || !currentUser?._id) return;
-
-  try {
-    const payload = {
-      conversation_id: conversation._id,
-      sender_id: currentUser._id,
-      type: "text",
-      text: text,
-=======
     sender_id: {
       _id: string;
       full_name: string;
       avatar?: string;
->>>>>>> 976e240 (feat: restructure to monorepo with bun, docker & shared packages)
     };
 
     type: "text" | "image" | "file"; // mở rộng nếu có thêm loại message khác
@@ -247,7 +132,7 @@ const handleSendMessage = async () => {
 
       try {
         const res = await axios.get(
-          `http://localhost:8080/api/messages/conversationId/${conversation._id}`,
+          `http://localhost:8080/api/messages/conversationId/${conversation._id}`
         );
         setMessagesData(res.data);
         console.log("messagesData", res.data);
@@ -259,18 +144,6 @@ const handleSendMessage = async () => {
     fetchPostsMessage();
   }, [conversation?._id]);
 
-<<<<<<< HEAD
-
-// Mỗi khi messagesData thay đổi => cuộn xuống cuối
-const endRef = useRef<HTMLDivElement | null>(null);
-
-
-useEffect(() => {
-  if (endRef.current) {
-    endRef.current.scrollIntoView({ behavior: "smooth" });
-  }
-}, [messagesData]);
-=======
   const handleChangeConversation = (_id: string) => {
     const selected = conversationsData.find((c) => c._id === _id);
     if (selected) {
@@ -280,7 +153,6 @@ useEffect(() => {
       localStorage.setItem("conversation", JSON.stringify(selected));
     }
   };
->>>>>>> 976e240 (feat: restructure to monorepo with bun, docker & shared packages)
 
   const [text, setText] = useState("");
 
@@ -308,32 +180,6 @@ useEffect(() => {
     };
   }, []);
 
-  // receive_message
-  // useEffect(() => {
-  //   if (!conversation?._id) return;
-  //   if (!socket) return;
-
-  //   socket.emit("join_conversation", { conversationId: conversation._id });
-
-  //   socket.on("receive_message", (msg) => {
-  //     setMessagesData((prev) => {
-  //       // tránh trùng _id
-  //       if (prev.some((m) => m._id === msg._id)) return prev;
-  //       return [...prev, msg];
-  //     });
-
-  //     setConversationsData((prev) =>
-  //       prev.map((c) =>
-  //         c._id === msg.conversation_id ? { ...c, last_message: msg } : c
-  //       )
-  //     );
-  //   });
-
-  //   return () => {
-  //     socket.off("receive_message");
-  //   };
-  // }, [conversation?._id, socket]);
-
   useEffect(() => {
     if (!socket || !conversation?._id) return;
 
@@ -351,8 +197,8 @@ useEffect(() => {
       // Luôn update last_message cho sidebar
       setConversationsData((prev) =>
         prev.map((c) =>
-          c._id === msg.conversation_id ? { ...c, last_message: msg } : c,
-        ),
+          c._id === msg.conversation_id ? { ...c, last_message: msg } : c
+        )
       );
     };
 
@@ -378,7 +224,7 @@ useEffect(() => {
 
       const res = await axios.post(
         "http://localhost:8080/api/messages",
-        payload,
+        payload
       );
 
       // chỉ emit socket, không setMessagesData nữa
