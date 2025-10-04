@@ -1,6 +1,27 @@
 import React, { useEffect, useState } from "react";
 import styles from "./CategoryForm.module.scss";
 
+type PostFormData = {
+  title: string;
+  description: string;
+  condition: "used" | "new";
+  transaction_type: "sell" | "exchange" | "donate";
+  price: number | null;
+  category_id: string;
+  location: { province: string; district: string; street: string };
+  custom_fields: Record<string, any>;
+};
+
+type Props = {
+  formData: PostFormData;
+  setFormData: React.Dispatch<React.SetStateAction<PostFormData>>;
+  addressData: Record<string, string[]>;
+  customFieldData: Record<string, any[]>;
+  onPrev: () => void;
+  onSubmit: () => void;
+  showMessage?: (msg: string) => void;
+};
+
 export default function CategoryForm({
   formData,
   setFormData,
@@ -9,7 +30,7 @@ export default function CategoryForm({
   onPrev,
   onSubmit,
   showMessage,
-}: any) {
+}: Props) {
   const [districts, setDistricts] = useState<string[]>([]);
 
   useEffect(() => {
@@ -21,7 +42,7 @@ export default function CategoryForm({
   const fields = customFieldData[formData.category_id] || [];
 
   function setFieldValue(name: string, value: any) {
-    setFormData((fd: any) => ({
+    setFormData((fd) => ({
       ...fd,
       custom_fields: { ...fd.custom_fields, [name]: value },
     }));
@@ -47,7 +68,7 @@ export default function CategoryForm({
           className={styles.select}
           value={formData.category_id}
           onChange={(e) =>
-            setFormData((fd: any) => ({ ...fd, category_id: e.target.value }))
+            setFormData((fd) => ({ ...fd, category_id: e.target.value }))
           }
           required
         >
@@ -129,7 +150,7 @@ export default function CategoryForm({
             className={styles.select}
             value={formData.location.province}
             onChange={(e) =>
-              setFormData((fd: any) => ({
+              setFormData((fd) => ({
                 ...fd,
                 location: {
                   ...fd.location,
@@ -154,7 +175,7 @@ export default function CategoryForm({
             className={styles.select}
             value={formData.location.district}
             onChange={(e) =>
-              setFormData((fd: any) => ({
+              setFormData((fd) => ({
                 ...fd,
                 location: { ...fd.location, district: e.target.value },
               }))
@@ -177,7 +198,7 @@ export default function CategoryForm({
             id="street-address"
             value={formData.location.street}
             onChange={(e) =>
-              setFormData((fd: any) => ({
+              setFormData((fd) => ({
                 ...fd,
                 location: { ...fd.location, street: e.target.value },
               }))

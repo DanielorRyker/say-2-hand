@@ -1,17 +1,20 @@
 import React, { useState, useRef, useEffect } from "react";
 import styles from "./BasicInfoForm.module.scss";
 
-type FormData = {
+type PostFormData = {
   title: string;
   description: string;
   condition: "used" | "new";
   transaction_type: "sell" | "exchange" | "donate";
-  price?: number | null;
+  price: number | null;
+  category_id: string;
+  location: { province: string; district: string; street: string };
+  custom_fields: Record<string, any>;
 };
 
 type Props = {
-  formData: FormData;
-  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
+  formData: PostFormData;
+  setFormData: React.Dispatch<React.SetStateAction<PostFormData>>;
   onPrev: () => void;
   onNext: () => void;
   showMessage?: (msg: string) => void;
@@ -431,7 +434,7 @@ export default function BasicInfoForm({
             onChange={(e) =>
               setFormData((fd) => ({
                 ...fd,
-                condition: e.target.value as FormData["condition"],
+                condition: e.target.value as PostFormData["condition"],
               }))
             }
           >
@@ -452,7 +455,7 @@ export default function BasicInfoForm({
               setFormData((fd) => ({
                 ...fd,
                 transaction_type: e.target
-                  .value as FormData["transaction_type"],
+                  .value as PostFormData["transaction_type"],
                 // clear price when switching away from sell to avoid stale value
                 price: e.target.value === "sell" ? fd.price : null,
               }))
