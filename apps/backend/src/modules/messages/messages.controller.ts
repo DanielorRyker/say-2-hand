@@ -27,7 +27,7 @@ export class MessagesController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.messagesService.findOne(+id);
+    return this.messagesService.findOne(id);
   }
 
   @Patch(':id')
@@ -37,7 +37,7 @@ export class MessagesController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.messagesService.remove(+id);
+    return this.messagesService.remove(id);
   }
 
   @Get('conversationId/:conversationId')

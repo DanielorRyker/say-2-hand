@@ -62,8 +62,11 @@ export class MessagesService {
     return `This action returns all messages`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} message`;
+  async findOne(id: string): Promise<Message | null> {
+    return this.messageModel
+      .findById(id)
+      .populate('sender_id', 'full_name avatar')
+      .exec();
   }
 
   async update(
@@ -76,7 +79,7 @@ export class MessagesService {
       .exec();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} message`;
+  async remove(id: string): Promise<Message | null> {
+    return this.messageModel.findByIdAndDelete(id).exec();
   }
 }
