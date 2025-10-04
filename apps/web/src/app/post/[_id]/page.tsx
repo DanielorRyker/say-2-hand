@@ -3,8 +3,18 @@ import { useEffect, useState } from "react";
 import styles from "./post.module.scss";
 import Image from "next/image";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
 const Home = () => {
+
+  const router = useRouter();
+    const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    setCurrentUser(userData ? JSON.parse(userData) : null);
+  }, []);
+
   interface Post {
     _id: string;
     title: string;
@@ -98,6 +108,64 @@ const Home = () => {
     }
   }
 
+
+// --- Conversation ---
+  const handleCreateConversation = async () => {
+    if (!post || !currentUser || !user?._id) return;
+
+    try {
+      const payload = {
+        post_id: post._id,
+        participants: [currentUser._id, user._id],
+      };
+
+      const res = await axios.post(
+        "http://localhost:8080/api/conversations",
+        payload
+      );
+
+      // Chuẩn hóa dữ liệu conversation trước khi lưu localStorage
+      const conversationToSave = {
+        ...res.data,
+        post_id: {
+          _id: post._id,
+          title: post.title,
+          image: post.image,
+          author_id: post.author_id._id,
+          category_id: post.category_id?.name || "",
+          price: post.price,
+          description: post.reputation || "",
+          condition: post.condition,
+          transaction_type: post.transaction_type,
+          status: post.status,
+          address: post.address,
+          createdAt: post.createdAt,
+          updatedAt: post.createdAt,
+        },
+        participants: [
+        {
+          _id: currentUser._id,
+          full_name: currentUser.full_name,
+          avatar: currentUser.avatar || "",
+        },
+        {
+          _id: user._id,
+          full_name: user.full_name,
+          avatar: user.avatar || "",
+        },
+      ],
+      };
+
+      localStorage.setItem("conversation", JSON.stringify(conversationToSave));
+
+      router.push(`/conversation/${res.data._id}`);
+    } catch (error) {
+      console.error("Error creating conversation:", error);
+    }
+  };
+
+
+
   return (
     <div className={styles.container}>
       <div className={styles.gradientBorder}>
@@ -174,16 +242,22 @@ const Home = () => {
                 <p>Hiện số</p>
                 {flagPN ? <p>{user?.phone_number}</p> : <p>**********</p>}
               </button>
-              <button className={`${styles.btnPN} ${styles.btnMesage}`}>
-                <Image
-                  src={"/image/post/chat.svg"}
-                  width={32}
-                  height={32}
-                  alt=""
-                  className={styles.imgBtn}
-                />
-                Chat
-              </button>
+              
+              {currentUser?._id !== user?._id && (
+                <button
+                  className={`${styles.btnPN} ${styles.btnMesage}`}
+                  onClick={handleCreateConversation}
+                >
+                  <Image
+                    src={"/image/post/chat.svg"}
+                    width={32}
+                    height={32}
+                    alt=""
+                    className={styles.imgBtn}
+                  />
+                  Chat
+                </button>
+              )}
             </div>
 
             <div className={styles.cardUser}>

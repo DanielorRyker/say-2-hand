@@ -20,32 +20,34 @@ export class ConversationsService {
   ) {}
 
   async create(createConversationDto: CreateConversationDto) {
-    const { post_id, participants } = createConversationDto;
+  const { post_id, participants } = createConversationDto;
 
-    // Đảm bảo participants có đúng 2 user
-    if (participants.length !== 2) {
-      throw new BadRequestException('Participants must be exactly 2 users');
-    }
+  // Đảm bảo participants có đúng 2 user
+  if (participants.length !== 2) {
+    throw new BadRequestException('Participants must be exactly 2 users');
+  }
 
-    const [a, b] = participants;
-    const conversationKey = `post:${post_id}|a:${a}|b:${b}`;
+  // Sắp xếp userId theo alphabet/hex string để đảm bảo thứ tự cố định
+  const sortedParticipants = [...participants].sort();
+  const conversationKey = `post:${post_id}|users:${sortedParticipants.join('-')}`;
 
-    // Kiểm tra nếu đã tồn tại
-    let conversation = await this.conversationModel.findOne({
+  // Kiểm tra nếu đã tồn tại
+  let conversation = await this.conversationModel.findOne({
+    conversation_key: conversationKey,
+  });
+
+  if (!conversation) {
+    conversation = new this.conversationModel({
+      post_id,
+      participants: sortedParticipants, // lưu luôn theo thứ tự
       conversation_key: conversationKey,
     });
-
-    if (!conversation) {
-      conversation = new this.conversationModel({
-        post_id,
-        participants,
-        conversation_key: conversationKey,
-      });
-      await conversation.save();
-    }
-
-    return conversation;
+    await conversation.save();
   }
+
+  return conversation;
+}
+
 
   async updateLastMessage(
     id: string,

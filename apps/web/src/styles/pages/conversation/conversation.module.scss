@@ -114,19 +114,41 @@
   word-wrap: break-word;
 }
 
-.me {
+.meText {
   background: #3b82f6;
   color: white;
   align-self: flex-end;
   border-bottom-right-radius: 5px;
 }
 
-.other {
+.otherText {
   background: #e5e7eb;
   color: #111827;
   align-self: flex-start;
   border-bottom-left-radius: 5px;
 }
+
+/* Tin nhắn ảnh chung */
+.messageImage {
+  max-width: 200px;
+  max-height: 200px;
+  border-radius: 12px;
+  object-fit: cover;
+  display: block;
+}
+
+/* Tin nhắn ảnh của mình */
+.meImage {
+  align-self: flex-end;
+  background: transparent; /* ảnh thì không cần nền */
+}
+
+/* Tin nhắn ảnh của người khác */
+.otherImage {
+  align-self: flex-start;
+  background: transparent;
+}
+
 
 /* Input */
 .chatInput {
@@ -135,7 +157,9 @@
   padding: 1rem;
   border-top: 1px solid #ddd;
   background: #fff;
+  height: 80px;
 }
+
 
 .input {
   flex: 1;
@@ -150,6 +174,47 @@
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
   }
 }
+.previewWrapper {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+}
+
+.previewImage {
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+/* Nút X nằm bên trong ảnh, góc trên phải */
+.removeBtn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(239, 68, 68, 0.7); /* đỏ nhưng có opacity */
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  opacity: 0; /* ẩn mặc định */
+  transition: opacity 0.2s ease, background 0.2s ease;
+}
+
+/* Khi hover vào ảnh wrapper thì nút hiện rõ */
+.previewWrapper:hover .removeBtn {
+  opacity: 1;
+  background: #ef4444; /* sáng đỏ */
+}
 
 .sendBtn {
   background: #3b82f6;
@@ -162,6 +227,19 @@
 
   &:hover {
     background: #2563eb;
+  }
+}
+
+.sendImgBtn {
+  background: #ffffff;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #3b82f6;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover {
+    background: #f3f4f6;
   }
 }
 

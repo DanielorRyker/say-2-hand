@@ -152,10 +152,12 @@ export default function ConversationsSidebar() {
 
         {/* Danh sách conversation */}
         <div className={cvstStyles.content}>
-          {conversationsData.map((c) => {
-            const otherUser = c.participants.find(
-              (p) => p._id !== currentUser?._id,
-            );
+          {conversationsData
+            .filter((c) => c.last_message) 
+            .map((c) => {
+              const otherUser = c.participants.find(
+                (p) => p._id !== currentUser?._id,
+              );
             return (
               <div
                 className={cvstStyles.card}

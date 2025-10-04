@@ -10,6 +10,15 @@ export default function ChatPage() {
   // user hiện tại
 
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [selectedImage, setSelectedImage] = useState<string | File | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+
+  // --- cleanup preview
+useEffect(() => {
+  return () => {
+    if (previewImage) URL.revokeObjectURL(previewImage);
+  };
+}, [previewImage]);
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -210,17 +219,31 @@ export default function ChatPage() {
   }, [socket, conversation?._id]);
 
   /// Gửi tin nhắn
+
+
+    
+
   const handleSendMessage = async () => {
-    if (!text.trim()) return;
+    if (!text.trim() && !selectedImage) return;
     if (!conversation?._id || !currentUser?._id) return;
 
     try {
-      const payload = {
-        conversation_id: conversation._id,
-        sender_id: currentUser._id,
-        type: "text",
-        text: text,
-      };
+       let finalText = text;
+    let type: "text" | "image" = "text";
+
+    // Nếu có ảnh thì upload
+    if (selectedImage && selectedImage instanceof File) {
+      const filename = await uploadImage(selectedImage);
+      finalText = filename; // BE trả về filename
+      type = "image";
+    }
+
+    const payload = {
+      conversation_id: conversation._id,
+      sender_id: currentUser._id,
+      type,
+      text: finalText,
+    };
 
       const res = await axios.post(
         "http://localhost:8080/api/messages",
@@ -235,6 +258,7 @@ export default function ChatPage() {
         });
       }
 
+      setSelectedImage(null);
       setText("");
     } catch (error) {
       console.error("Error sending message:", error);
@@ -250,61 +274,88 @@ export default function ChatPage() {
     }
   }, [messagesData]);
 
+  //Gửi ảnh
+    const uploadImage = async (file: File, bucket = "conversation") => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("bucket", bucket);
+
+    const res = await axios.post("http://localhost:8080/api/upload/img", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    return res.data.filename; // BE trả về filename
+  };
+  
+
   return (
     <div className={cvstStyles.container}>
       {/* Sidebar */}
       <aside className={cvstStyles.sidebar}>
         <div className={cvstStyles.sidebarHeader}>Tất cả tin nhắn</div>
         <div className={cvstStyles.conversationList}>
-          {conversationsData.map((i) => (
-            <div
-              key={i._id}
-              className={`${cvstStyles.conversationItem} ${conversation?._id === i._id ? cvstStyles.conversationItemActive : ""}`}
-              onClick={() => {
-                handleChangeConversation(i._id);
-              }}
-            >
-              <Image
-                src={
-                  i.post_id.image
-                    ? process.env.NEXT_PUBLIC_URL_GCS + i.post_id.image
-                    : "/image/header/carbon_user-avatar-filled-alt.svg"
-                }
-                alt="Post"
-                className={cvstStyles.squareImage}
-                width={80}
-                height={80}
-              />
-              {uniqueUsers.map((otherUser) => (
-                <div key={otherUser._id}>
-                  <p className={cvstStyles.title}>{i.post_id.title}</p>
+          {conversationsData
+            .filter((i) => i.last_message) // ✅ Chỉ lấy conversation có last_message
+            .map((i) => {
+              const otherUser = i.participants.find(
+                (p) => p._id !== currentUser?._id
+              );
 
-                  <div className={cvstStyles.conversationItemHeader}>
-                    <Image
-                      src={
-                        otherUser.avatar
-                          ? process.env.NEXT_PUBLIC_URL_GCS + otherUser.avatar
-                          : "/image/header/carbon_user-avatar-filled-alt.svg"
-                      }
-                      alt="Avatar"
-                      className={cvstStyles.avatar}
-                      width={40}
-                      height={40}
-                    />
-                    <p className={cvstStyles.name}>
-                      {otherUser.full_name || "Người dùng"}
-                    </p>
-                  </div>
+              return (
+                <div
+                  key={i._id}
+                  className={`${cvstStyles.conversationItem} ${
+                    conversation?._id === i._id
+                      ? cvstStyles.conversationItemActive
+                      : ""
+                  }`}
+                  onClick={() => {
+                    handleChangeConversation(i._id);
+                  }}
+                >
+                  <Image
+                    src={
+                      i.post_id.image
+                        ? process.env.NEXT_PUBLIC_URL_GCS + i.post_id.image
+                        : "/image/header/carbon_user-avatar-filled-alt.svg"
+                    }
+                    alt="Post"
+                    className={cvstStyles.squareImage}
+                    width={80}
+                    height={80}
+                  />
 
-                  <p className={cvstStyles.lastMessage}>
-                    {i.last_message?.sender_id?.full_name}:{" "}
-                    {i.last_message?.text}
-                  </p>
+                  {otherUser && (
+                    <div>
+                      <p className={cvstStyles.title}>{i.post_id.title}</p>
+
+                      <div className={cvstStyles.conversationItemHeader}>
+                        <Image
+                          src={
+                            otherUser.avatar
+                              ? process.env.NEXT_PUBLIC_URL_GCS + otherUser.avatar
+                              : "/image/header/carbon_user-avatar-filled-alt.svg"
+                          }
+                          alt="Avatar"
+                          className={cvstStyles.avatar}
+                          width={40}
+                          height={40}
+                        />
+                        <p className={cvstStyles.name}>
+                          {otherUser.full_name || "Người dùng"}
+                        </p>
+                      </div>
+
+                      <p className={cvstStyles.lastMessage}>
+                        {i.last_message?.sender_id?.full_name}: {i.last_message?.text}
+                      </p>
+                    </div>
+                  )}
                 </div>
-              ))}
-            </div>
-          ))}
+              );
+            })}
         </div>
+
       </aside>
 
       {/* Chat area */}
@@ -348,40 +399,114 @@ export default function ChatPage() {
           )}
         </div>
 
-        {/* Messages */}
+       {/* Messages */}
         <div className={cvstStyles.messages}>
-          {messagesData.map((msg) => (
-            <div
-              key={msg._id}
-              className={`${cvstStyles.message} ${
-                msg.sender_id._id === currentUser._id
-                  ? cvstStyles.me
-                  : cvstStyles.other
-              }`}
-            >
-              {msg.text}
-            </div>
-          ))}
-          {/* ref để scroll xuống cuối */}
-          <div ref={endRef} />
-        </div>
+          {messagesData.map((msg) => {
+            const isMe = msg.sender_id._id === currentUser._id;
+
+            return (
+              <div
+                key={msg._id}
+                className={`${cvstStyles.message} ${
+                  isMe
+                    ? msg.type === "text"
+                      ? cvstStyles.meText
+                      : cvstStyles.meImage
+                    : msg.type === "text"
+                    ? cvstStyles.otherText
+                    : cvstStyles.otherImage
+                }`}
+              >
+                {msg.type === "text" ? (
+                  msg.text
+                ) : (
+                  <Image
+                    width={200}
+                    height={200}
+                    src={msg.text ? process.env.NEXT_PUBLIC_URL_GCS + msg.text : ""} 
+                    alt="message"
+                    className={cvstStyles.messageImage}
+                  />
+                )}
+              </div>
+            );
+          })}
+
+        {/* ref để scroll xuống cuối */}
+        <div ref={endRef} />
+      </div>
+
 
         {/* Input */}
-        <div className={cvstStyles.chatInput}>
-          <input
-            type="text"
-            placeholder="Type a message..."
-            className={cvstStyles.input}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleSendMessage();
-            }}
-          />
-          <button className={cvstStyles.sendBtn} onClick={handleSendMessage}>
-            Send
-          </button>
-        </div>
+<div className={cvstStyles.chatInput}>
+  {/* Nếu chưa có ảnh thì hiển thị input chữ */}
+  {!previewImage ? (
+    <input
+      type="text"
+      placeholder="Type a message..."
+      className={cvstStyles.input}
+      value={text}
+      onChange={(e) => setText(e.target.value)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") handleSendMessage();
+      }}
+    />
+  ) : (
+    <div className={cvstStyles.previewWrapper}>
+      <img
+        src={previewImage}
+        alt="Preview"
+        className={cvstStyles.previewImage}
+      />
+      <button
+        className={cvstStyles.removeBtn}
+        onClick={() => {
+          URL.revokeObjectURL(previewImage);
+          setSelectedImage(null);
+          setPreviewImage(null);
+        }}
+      >
+        ✕
+      </button>
+    </div>
+  )}
+
+  {/* input file ẩn */}
+  <input
+    type="file"
+    accept="image/*"
+    style={{ display: "none" }}
+    id="fileInput"
+    onChange={(e) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        if (previewImage) URL.revokeObjectURL(previewImage);
+        const url = URL.createObjectURL(file);
+        setSelectedImage(file);
+        setPreviewImage(url);
+      }
+    }}
+  />
+
+  {/* Nút camera */}
+  <button
+    className={cvstStyles.sendImgBtn}
+    onClick={() => document.getElementById("fileInput")?.click()}
+  >
+    <Image
+      src={"/image/profile/camera.svg"}
+      alt="Attach"
+      width={24}
+      height={24}
+    />
+  </button>
+
+  <button className={cvstStyles.sendBtn} onClick={handleSendMessage}>
+    Send
+  </button>
+</div>
+
+        
       </main>
     </div>
   );
