@@ -85,12 +85,10 @@ export class UploadService {
     });
   }
 
-  async uploadImg(file: Express.Multer.File, name: string) {
+  async uploadImg(file: Express.Multer.File, folder: string) {
     const bucket = this.storage.bucket(this.bucketName);
-
-    // thêm "products/" vào trước tên file để phân folder
     const random = Math.floor(100000 + Math.random() * 900000).toString();
-    const fileName = `${name}/${Date.now()}-${random}`;
+    const fileName = `${folder}/${Date.now()}-${random}`;
     const blob = bucket.file(fileName);
 
     const blobStream = blob.createWriteStream({

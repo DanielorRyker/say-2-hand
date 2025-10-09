@@ -1,70 +1,95 @@
-import { Type } from 'class-transformer';
 import {
-  ArrayMinSize,
   IsArray,
   IsEnum,
   IsMongoId,
   IsNotEmpty,
   IsNumber,
+  IsObject,
   IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
-class LocationDto {
+class GeoPointDto {
   @IsEnum(['Point'])
-  @IsOptional()
-  type?: 'Point'; // <-- bỏ default ở đây
+  type: string;
 
   @IsArray()
-  @ArrayMinSize(2, { message: 'coordinates phải có đủ [lng, lat]' })
   @IsNumber({}, { each: true })
+  coordinates: [number, number]; // [lng, lat]
+}
+
+class LocationDto {
   @IsOptional()
-  coordinates?: [number, number];
+  @IsString()
+  address?: string;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => GeoPointDto)
+  geo?: GeoPointDto;
+}
+
+class ImageDto {
+  @IsString()
+  url: string;
+
+  @IsOptional()
+  @IsString()
+  alt?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  tags?: string[];
+
+  @IsOptional()
+  @IsNumber()
+  ai_score?: number;
 }
 
 export class CreatePostDto {
-  @IsNotEmpty()
   @IsMongoId()
   author_id: string;
 
-  @IsNotEmpty()
   @IsMongoId()
   category_id: string;
 
-  @IsNotEmpty()
   @IsString()
+  @IsNotEmpty()
   title: string;
 
-  @IsOptional()
-  @Type(() => Number) // 👈 ép kiểu
-  @IsNumber()
-  price?: number;
-
   @IsString()
+  @IsNotEmpty()
   description: string;
 
-  @IsString()
-  condition: string;
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ImageDto)
+  images: ImageDto[];
+
+  @IsEnum(['new', 'used'])
+  condition: 'new' | 'used';
+
+  @IsEnum(['sell', 'exchange', 'give away'])
+  transaction_type: 'sell' | 'exchange' | 'give away';
 
   @IsOptional()
-  @IsString()
-  transaction_type?: string;
-
-  @IsOptional()
-  @IsString()
-  status?: string;
-
-  @IsString()
-  @IsOptional()
-  image?: string;
-
-  @IsString()
-  @IsOptional()
-  address?: string;
+  @IsNumber()
+  price?: number | null;
 
   @IsOptional()
   @ValidateNested()
   @Type(() => LocationDto)
   location?: LocationDto;
+
+  @IsOptional()
+  @IsObject()
+  custom_fields?: Record<string, any>;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  tags?: string[];
 }

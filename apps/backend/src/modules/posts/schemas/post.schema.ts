@@ -59,7 +59,7 @@ export class Post {
   @Prop({ required: true, enum: ['new', 'used'] })
   condition: string;
 
-  @Prop({ required: true, enum: ['sell', 'exchange', 'donate'] })
+  @Prop({ required: true, enum: ['sell', 'exchange', 'give away'] })
   transaction_type: string;
 
   @Prop({ type: Number, default: null })
@@ -117,7 +117,7 @@ PostSchema.index({ category_id: 1 });
 PostSchema.index({ transaction_type: 1, condition: 1, price: 1 });
 PostSchema.index({ status: 1, createdAt: 1 });
 // location.geo as 2dsphere for proximity queries
-PostSchema.index({ 'location.geo': '2dsphere' });
+PostSchema.index({ 'location.geo': '2dsphere' }, { sparse: true });
 PostSchema.index({ tags: 1 });
 // text index for title, description and tags
 PostSchema.index({ title: 'text', description: 'text', tags: 'text' });
