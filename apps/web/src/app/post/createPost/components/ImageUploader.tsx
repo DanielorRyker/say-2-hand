@@ -6,11 +6,13 @@ import styles from "./ImageUploader.module.scss";
 
 type Props = {
   images: string[];
-  setImages: (imgs: string[] | ((prev: string[]) => string[])) => void;
+  setImages: React.Dispatch<React.SetStateAction<string[]>>;
+  setSelectedFiles?: React.Dispatch<React.SetStateAction<File[]>>; // thêm dòng này
   showMessage?: (msg: string) => void;
   coverIndexProp?: number | null;
   setCoverIndexProp?: (i: number) => void;
 };
+
 
 export default function ImageUploader({
   images,
@@ -59,25 +61,45 @@ export default function ImageUploader({
     };
   }, [images]);
 
-  function onFiles(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = e.target.files;
-    if (!files) return;
-    if (images.length + files.length > 10) {
-      showMessage?.("Chỉ được tải lên tối đa 10 ảnh!");
-      e.currentTarget.value = "";
-      return;
-    }
 
-    Array.from(files).forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        setImages((prev: string[]) => [...prev, ev.target?.result as string]);
-      };
-      reader.readAsDataURL(file);
-    });
+  function onFiles(e: React.ChangeEvent<HTMLInputElement>) {
+  const files = e.target.files;
+  if (!files) return;
+
+  // Giới hạn 10 ảnh
+  if (images.length + files.length > 10) {
+    showMessage?.("Chỉ được tải lên tối đa 10 ảnh!");
     e.currentTarget.value = "";
-    if (images.length === 0) setCoverIndex(0);
+    return;
   }
+
+  // Đọc file -> base64 -> cập nhật state + localStorage
+  const newFiles = Array.from(files);
+
+  const readers = newFiles.map(
+    (file) =>
+      new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      })
+  );
+
+  Promise.all(readers)
+    .then((base64Arr) => {
+      setImages((prev: string[]) => {
+        const updated = [...prev, ...base64Arr].slice(0, 10); // không vượt quá 10
+        localStorage.setItem("uploadedImages", JSON.stringify(updated)); // ✅ lưu vào localStorage
+        return updated;
+      });
+      if (images.length === 0) setCoverIndex(0);
+    })
+    .catch((err) => console.error("Error reading files:", err));
+
+  e.currentTarget.value = "";
+}
+
 
   function removeIndex(i: number) {
     setImages((prev: string[]) => prev.filter((_, idx) => idx !== i));
@@ -100,6 +122,13 @@ export default function ImageUploader({
     for (let idx = 0; idx < images.length; idx++)
       if (idx !== first) displayOrder.push(idx);
   }
+
+  //Lưu ảnh vào localStorage để tránh mất khi reload
+
+useEffect(() => {
+  localStorage.setItem("uploadedImages", JSON.stringify(images));
+}, [images]);
+
 
   return (
     <div>
@@ -222,5 +251,6 @@ export default function ImageUploader({
         Tối thiểu 1 ảnh, tối đa 10 ảnh. Cuộn ngang để xem tất cả.
       </p>
     </div>
+
   );
 }

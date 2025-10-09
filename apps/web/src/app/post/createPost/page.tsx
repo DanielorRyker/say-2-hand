@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styles from "./CreatePost.module.scss";
 import stylesBasicForm from "./components/BasicInfoForm.module.scss";
 import {
@@ -10,6 +10,8 @@ import {
   CategoryForm,
   FloatingMessage,
 } from "./components";
+import axios from "axios";
+
 
 type PostFormData = {
   title: string;
@@ -27,6 +29,17 @@ export default function Page() {
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [images, setImages] = useState<string[]>([]);
   const [message, setMessage] = useState<string | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+
+  //Lấy User
+const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    setCurrentUser(userData ? JSON.parse(userData) : null);
+  }, []);
+
+ 
 
   const [formData, setFormData] = useState<PostFormData>({
     title: "",
@@ -105,7 +118,74 @@ export default function Page() {
     setCurrentStep((s) => Math.max(s - 1, 1));
   }
 
-  function handleSubmit() {
+// ✅ Chuyển base64 → File
+  function base64ToFile(base64: string, filename: string) {
+    const arr = base64.split(",");
+    const mime = arr[0].match(/:(.*?);/)?.[1] || "image/png";
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], filename, { type: mime });
+  }
+
+  // ✅ Load ảnh từ localStorage (ở trang khác lưu base64)
+  
+  useEffect(() => {
+  const interval = setInterval(() => {
+    const savedImages = localStorage.getItem("uploadedImages");
+    if (savedImages) {
+      try {
+        const parsed = JSON.parse(savedImages);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const files = parsed.map((base64: string, i: number) =>
+            base64ToFile(base64, `image_${i + 1}.png`)
+          );
+          setSelectedFiles(files);
+          clearInterval(interval); // ✅ Dừng khi đã có ảnh
+        }
+      } catch (err) {
+        console.error("Error parsing saved images:", err);
+      }
+    }
+  }, 200);
+
+  return () => clearInterval(interval);
+}, []);
+
+
+  // Upload ảnh lên server (NestJS endpoint /upload/imgs)
+  const uploadImages = async (files: File[], title: string): Promise<string[]> => {
+    if (!files || files.length === 0)
+    {
+      console.warn("No files to upload.");
+      return [];
+    }
+
+    const formData = new FormData();
+    files.forEach((file) => formData.append("files", file));
+    formData.append("bucket", "posts/"+currentUser._id+"/"+title); 
+
+    try {
+      const res = await axios.post(
+        "http://localhost:8080/api/upload/imgs",
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+
+      console.log("Upload response:", res.data);
+      return res.data.filenames; // giả sử BE trả về { filenames: [...] }
+    } catch (err: any) {
+      console.error("Upload error:", err);
+      return [];
+    }
+  };
+
+  //Bấm nút đăng tin
+
+  async function handleSubmit() {
     if (images.length === 0) {
       showMessage("Vui lòng tải lên ít nhất 1 ảnh.");
       setCurrentStep(1);
@@ -123,8 +203,17 @@ export default function Page() {
     }
 
     console.log("Dữ liệu tin đăng:", { images, formData });
+
+    //Upload ảnh
+     await uploadImages(selectedFiles,formData.title);
     showMessage("Đăng tin thành công!");
   }
+
+  
+
+  
+
+
 
   return (
     <div className={styles.container}>

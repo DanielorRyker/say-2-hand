@@ -112,4 +112,33 @@ export class UploadService {
       blobStream.end(file.buffer);
     });
   }
+
+    //Upload nhiều ảnh
+    async uploadImgs(files: Express.Multer.File[], folder: string) {
+      const bucket = this.storage.bucket(this.bucketName);
+
+      const uploadPromises = files.map((file) => {
+        const random = Math.floor(100000 + Math.random() * 900000).toString();
+        const fileName = `${folder}/${Date.now()}-${random}-${file.originalname}`;
+        const blob = bucket.file(fileName);
+
+        const blobStream = blob.createWriteStream({
+          resumable: false,
+          contentType: file.mimetype,
+        });
+
+        return new Promise<string>((resolve, reject) => {
+          blobStream.on('finish', () => resolve(fileName));
+          blobStream.on('error', (err) =>
+            reject(new Error(`Unable to upload ${file.originalname}: ${err}`)),
+          );
+          blobStream.end(file.buffer);
+        });
+      });
+
+      const results = await Promise.all(uploadPromises);
+      return results; // Trả về mảng tên file
+    }
+
+
 }

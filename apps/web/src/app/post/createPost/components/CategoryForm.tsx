@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styles from "./CategoryForm.module.scss";
 import stylesBasicForm from "./BasicInfoForm.module.scss";
 import dynamic from "next/dynamic";
+import axios from "axios";
 
 // import MapPicker động để tránh vấn đề SSR
 const MapPicker = dynamic(() => import("./MapPicker"), { ssr: false });
@@ -66,6 +67,12 @@ export default function CategoryForm({
       return { ...fd, tags: next };
     });
   }
+
+ 
+   
+  
+
+  
 
   return (
     <form
@@ -274,3 +281,5 @@ export default function CategoryForm({
     </form>
   );
 }
+
+
