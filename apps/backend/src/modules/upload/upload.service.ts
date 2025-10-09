@@ -15,7 +15,6 @@ export class UploadService {
       projectId: 'say2hand', // ID project trên GCP (không phải bucket name)
     };
 
-    // Only add keyFilename if credentials path is provided
     if (credentialsPath) {
       storageConfig.keyFilename = path.join(process.cwd(), credentialsPath);
     }

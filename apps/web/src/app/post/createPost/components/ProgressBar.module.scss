@@ -4,11 +4,21 @@
   border-radius: 9999px;
   overflow: hidden;
 }
+
 .progress {
   height: 100%;
   background: linear-gradient(90deg, #3b82f6 0%, #a855f7 100%);
   transition: width 0.5s ease-in-out;
 }
-.p0 { width: 0%; }
-.p50 { width: 50%; }
-.p100 { width: 100%; }
+
+.p0 {
+  width: 0%;
+}
+
+.p50 {
+  width: 50%;
+}
+
+.p100 {
+  width: 100%;
+}

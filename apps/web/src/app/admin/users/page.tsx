@@ -43,7 +43,7 @@ const Home = () => {
   const totalPages = Math.ceil(usersData.length / pageSize);
   const paginatedUsers = usersData.slice(
     (currentPage - 1) * pageSize,
-    currentPage * pageSize,
+    currentPage * pageSize
   );
 
   //xóa user
@@ -100,12 +100,12 @@ const Home = () => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        },
+        }
       );
       setUsersData(
         usersData.map((u) =>
-          u._id === editingUserId ? { ...u, ...editForm } : u,
-        ),
+          u._id === editingUserId ? { ...u, ...editForm } : u
+        )
       );
       setEditingUserId(null);
       alert("Cập nhật thành công");
@@ -162,6 +162,9 @@ const Home = () => {
                       className={styleAdmin.tableInput}
                       value={editForm[field] || ""}
                       onChange={(e) => handleFieldChange(field, e.target.value)}
+                      placeholder={String(field)}
+                      title={`Edit ${String(field)}`}
+                      aria-label={`Edit ${String(field)}`}
                     />
                   ) : (
                     user[field] || ""

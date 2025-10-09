@@ -24,6 +24,7 @@
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
+    "@types/leaflet": "^1.9.20",
     "chalk": "^5.6.2",
     "prettier": "^3.6.2",
     "turbo": "^2.5.6",
@@ -71,6 +72,7 @@
     "ioredis": "^5.7.0",
     "joi": "^18.0.1",
     "jsonwebtoken": "^9.0.2",
+    "leaflet": "^1.9.4",
     "lucide-react": "^0.544.0",
     "mongoose": "^8.18.0",
     "multer": "^2.0.2",
@@ -78,6 +80,7 @@
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "react-bootstrap": "^2.10.10",
+    "react-leaflet": "^5.0.0",
     "react-number-format": "^5.4.4",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",

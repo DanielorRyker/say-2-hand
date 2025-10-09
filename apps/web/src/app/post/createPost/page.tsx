@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import styles from "./CreatePost.module.scss";
+import stylesBasicForm from "./components/BasicInfoForm.module.scss";
 import {
   ProgressBar,
   ImageUploader,
@@ -17,7 +18,8 @@ type PostFormData = {
   transaction_type: "sell" | "exchange" | "donate";
   price: number | null;
   category_id: string;
-  location: { province: string; district: string; street: string };
+  // một input địa chỉ đơn thay thế cho tỉnh/quận/đường
+  location: { address: string };
   custom_fields: Record<string, any>;
 };
 
@@ -33,7 +35,7 @@ export default function Page() {
     transaction_type: "sell",
     price: null,
     category_id: "",
-    location: { province: "", district: "", street: "" },
+    location: { address: "" },
     custom_fields: {},
   });
 
@@ -140,14 +142,14 @@ export default function Page() {
             />
             <div className={styles.actionsRow}>
               <button
-                className={styles.btnPrimary}
+                className={stylesBasicForm.btnPrimary}
                 onClick={() => {
                   if (images.length === 0)
                     return showMessage("Vui lòng tải lên ít nhất 1 ảnh.");
                   nextStep();
                 }}
               >
-                <p>Tiếp tục</p>
+                Tiếp tục
               </button>
             </div>
           </section>
@@ -156,7 +158,11 @@ export default function Page() {
         {currentStep === 2 && (
           <BasicInfoForm
             formData={formData}
-            setFormData={setFormData}
+            setFormData={
+              setFormData as unknown as React.Dispatch<
+                React.SetStateAction<any>
+              >
+            }
             onPrev={prevStep}
             onNext={nextStep}
             showMessage={showMessage}
@@ -166,7 +172,11 @@ export default function Page() {
         {currentStep === 3 && (
           <CategoryForm
             formData={formData}
-            setFormData={setFormData}
+            setFormData={
+              setFormData as unknown as React.Dispatch<
+                React.SetStateAction<any>
+              >
+            }
             addressData={addressData}
             customFieldData={customFieldData}
             onPrev={prevStep}

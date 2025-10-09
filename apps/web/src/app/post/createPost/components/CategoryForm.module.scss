@@ -1,14 +1,396 @@
-.form { display: flex; flex-direction: column; }
-.sectionTitle { font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; }
-.label { display: block; margin-bottom: 0.5rem; color: #374151; }
-.select, .input { width: 100%; padding: 0.6rem; border: 1px solid #d1d5db; border-radius: 0.5rem; }
-.customFields { border: 1px dashed #d1d5db; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; }
-.subHeading { font-weight: 600; margin-bottom: 0.5rem; }
-.fieldRow { margin-bottom: 0.75rem; }
-.labelSmall { display: block; margin-bottom: 0.25rem; }
-.addressBlock { display: grid; grid-template-columns: 1fr; gap: 0.75rem; margin-top: 0.75rem; }
-.actionsRow { display: flex; justify-content: space-between; margin-top: 1.25rem; }
-.btnSecondary { background: #e5e7eb; color: #374151; padding: 0.6rem 1.25rem; border-radius: 0.5rem; border: none; }
-.btnSuccess { background: linear-gradient(90deg,#22c55e 0%,#84cc16 100%); color: white; padding: 0.6rem 1.25rem; border-radius: 0.5rem; border: none; }
-.required { color: #ef4444; }
-.radioLabel { margin-right: 0.75rem; }
+.form {
+    display: flex;
+    flex-direction: column;
+}
+
+.sectionTitle {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #374151;
+}
+
+.select,
+.input {
+    width: 100%;
+    padding: 0.6rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+}
+
+.customFields {
+    border: 1px dashed #d1d5db;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.subHeading {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.fieldRow {
+    margin-bottom: 0.75rem;
+}
+
+.labelSmall {
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.addressBlock {
+    display: grid;
+    grid-template-columns: 1fr;
+
+    margin-top: 0.75rem;
+    max-width: 760px;
+}
+
+.mapPicker {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.searchRow {
+    position: relative;
+}
+
+.suggestions {
+    list-style: none;
+    margin: 0;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 6px 18px rgba(16, 24, 40, 0.06);
+    max-height: 220px;
+    overflow: auto;
+    background: white;
+    border-radius: 0.5rem;
+}
+
+.suggestions li {
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+}
+
+.suggestions li:hover {
+    background: #f3f4f6;
+}
+
+.mapWrap {
+    border: 1px solid #e6e6e6;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    position: relative;
+    /* làm cho các overlay được định vị bên trong container bản đồ */
+}
+
+/* hiển thị tọa độ lat/lon nhỏ, không tương tác đặt trên bản đồ (góc dưới-trái) */
+.mapLatLon {
+    position: absolute;
+    left: 12px;
+    bottom: 12px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 6px 8px;
+    border-radius: 6px;
+    box-shadow: 0 6px 18px rgba(16, 24, 40, 0.08);
+    font-size: 0.85rem;
+    color: #111827;
+    z-index: 800;
+    /* nằm trên các control của leaflet nhưng dưới các overlay toàn màn hình */
+    pointer-events: none;
+    /* make it non-interactive */
+}
+
+.mapLatLonLabel {
+    font-weight: 600;
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-bottom: 2px;
+}
+
+.mapLatLonValue {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono",
+        "Segoe UI Mono", "Noto Mono", monospace;
+    font-size: 0.85rem;
+    color: #111827;
+}
+
+/* Ẩn chỉ attribution/branding (văn bản Leaflet) nhưng giữ zoom và các control khác hiển thị */
+:global(.leaflet-control-attribution),
+:global(.leaflet-control .leaflet-control-attribution) {
+    display: none !important;
+}
+
+/* nếu bạn muốn map tiles vẫn tương tác được (kéo/thu phóng bằng cử chỉ), giữ pointer-events; điều này chỉ ẩn phần chrome UI */
+
+
+.activeSuggestion {
+    background: #eef2ff;
+}
+
+.geoButton {
+    margin-left: 8px;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    padding: 6px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.geoButton:hover {
+    background: #f8fafc;
+}
+
+.geoError {
+    color: #b91c1c;
+    margin-left: 8px;
+    font-size: 0.85rem;
+}
+
+.actionsRow {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1.25rem;
+}
+
+.btnSecondary {
+    background: #e5e7eb;
+    color: #374151;
+    padding: 0.6rem 1.25rem;
+    border-radius: 0.5rem;
+    border: none;
+}
+
+
+.required {
+    color: #ef4444;
+}
+
+.radioLabel {
+    margin-right: 0.75rem;
+}
+
+:global(.leaflet-control-zoom) {
+    border-radius: 10px !important;
+    overflow: hidden !important;
+    background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%) !important;
+    box-shadow: 0 6px 18px rgba(16, 24, 40, 0.06) !important;
+    border: 1px solid rgba(16, 24, 40, 0.06) !important;
+}
+
+:global(.leaflet-control-zoom a) {
+    width: 44px !important;
+    height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: #111827 !important;
+    font-weight: 700 !important;
+    font-size: 20px !important;
+    text-decoration: none !important;
+    background: transparent !important;
+}
+
+:global(.leaflet-control-zoom a.leaflet-disabled) {
+    opacity: 0.45 !important;
+}
+
+:global(.leaflet-control-zoom a:first-child) {
+    border-bottom: 1px solid rgba(16, 24, 40, 0.06) !important;
+}
+
+:global(.leaflet-control-zoom a:hover) {
+    background: #f0f6ff !important;
+    transform: translateY(-1px) !important;
+}
+
+:global(.leaflet-gps-btn) {
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 12px !important;
+    background: linear-gradient(180deg, #ffffff, #fbfbff) !important;
+    box-shadow: 0 6px 20px rgba(16, 24, 40, 0.08) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    // border: 1px solid rgba(16,24,40,0.06) !important;
+}
+
+:global(.leaflet-gps-btn img) {
+    filter: none !important;
+    width: 22px !important;
+    height: 22px !important;
+}
+
+:global(.leaflet-gps-btn:hover) {
+    background: linear-gradient(180deg, #f7fbff, #eef6ff) !important;
+}
+
+:global(.leaflet-control-zoom a) {
+    transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease !important;
+}
+
+:global(.leaflet-gps-btn) {
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 50% !important;
+    background: white !important;
+    width: 44px !important;
+    height: 44px !important;
+    padding: 6px !important;
+}
+
+:global(.leaflet-control .leaflet-bar a.leaflet-gps-btn),
+:global(.leaflet-control .leaflet-bar a[aria-label="Sử dụng vị trí của tôi"]) {
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 50% !important;
+}
+
+:global(.leaflet-gps-control) {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+:global(.leaflet-gps-control .leaflet-bar) {
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+:global(.leaflet-gps-btn.gps-watching) {
+    box-shadow: 0 8px 28px rgba(34, 197, 94, 0.12) !important;
+    background: linear-gradient(180deg, #ecfdf5 0%, #f0fdf4 100%) !important;
+}
+
+:global(.leaflet-gps-btn.gps-watching::after) {
+    content: "";
+    position: absolute;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(34, 197, 94, 0.06);
+    box-shadow: 0 8px 28px rgba(34, 197, 94, 0.08);
+    animation: gps-pulse 1600ms ease-out infinite;
+    pointer-events: none;
+    z-index: -1;
+}
+
+@keyframes gps-pulse {
+    0% {
+        transform: translate(-50%, -50%) scale(0.6);
+        opacity: 0.9;
+    }
+
+    70% {
+        transform: translate(-50%, -50%) scale(1.15);
+        opacity: 0.18;
+    }
+
+    100% {
+        transform: translate(-50%, -50%) scale(1.3);
+        opacity: 0;
+    }
+}
+
+:global(.leaflet-container .gps-accuracy-circle) {
+    pointer-events: none;
+}
+
+
+.tagsBlock {
+    margin-top: 0.75rem;
+    max-width: 760px;
+}
+
+.tagsInputRow {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.tagList {
+    margin-top: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.tagChip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #eef2ff;
+    color: #0f172a;
+    padding: 0.25rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.875rem;
+    max-width: 220px;
+    overflow: hidden;
+}
+
+.tagRemove {
+    background: transparent;
+    border: none;
+    color: #374151;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(15, 23, 42, 0.06);
+    margin-left: 4px;
+    line-height: 1;
+}
+
+.tagRemove svg {
+    width: 12px;
+    height: 12px;
+}
+
+.tagRemove {
+    transition: background 160ms ease, transform 120ms ease;
+}
+
+.tagRemove:hover {
+    background: linear-gradient(90deg, #EF4444 0%, #DC2626 100%);
+}
+
+.tagRemove:hover svg path {
+    stroke: #ffffff;
+}
+
+.tagChip>span:first-child {
+    display: inline-block;
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tagsInputRow .input {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 120px;
+}
+
+.tagsInputRow .geoButton {
+    padding: 6px 10px;
+    border-radius: 6px;
+}

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import styles from "./BasicInfoForm.module.scss";
+import stylesCategoryForm from "./CategoryForm.module.scss";
 
 type FormData = {
   title: string;
@@ -31,17 +32,15 @@ export default function BasicInfoForm({
   }>({});
   const titleRef = useRef<HTMLInputElement | null>(null);
   const descRef = useRef<HTMLTextAreaElement | null>(null);
-  // local display value for price so we can show thousand separators while
-  // keeping numeric value in formData.price
+  // giá hiển thị cục bộ để hiển thị dấu phân hàng nghìn trong khi
+  // vẫn giữ giá trị số trong formData.price
   const [priceInput, setPriceInput] = useState<string>(
-    formData.price != null
-      ? Number(formData.price).toLocaleString("vi-VN")
-      : "",
+    formData.price != null ? Number(formData.price).toLocaleString("vi-VN") : ""
   );
 
   const PRICE_STEP = 1000;
   const PRICE_MIN = 0;
-  // maximum allowed price: 1,000,000,000,000 VND (one thousand billion = one trillion)
+  // giá tối đa cho phép: 1.000.000.000.000 VND (một nghìn tỷ)
   const PRICE_MAX = 1_000_000_000_000;
   const BASE_MAX = Math.floor(PRICE_MAX / PRICE_STEP);
   const baseRef = useRef<number | null>(
@@ -49,21 +48,21 @@ export default function BasicInfoForm({
       if (formData.price == null) return null;
       const parsed = Number(formData.price);
       return Number.isFinite(parsed) ? Math.round(parsed / PRICE_STEP) : null;
-    })(),
+    })()
   );
   const prevRawRef = useRef<string>(
-    baseRef.current != null ? String(baseRef.current) : "",
+    baseRef.current != null ? String(baseRef.current) : ""
   );
 
   const [priceRaw, setPriceRaw] = useState<string>(
-    baseRef.current != null ? String(baseRef.current) : "",
+    baseRef.current != null ? String(baseRef.current) : ""
   );
-  // editingPrice not required now; caret handled directly
-  // priceBase intentionally not stored separately; baseRef and priceRaw track it
+  // không cần editingPrice hiện tại; caret được xử lý trực tiếp
+  // priceBase không lưu riêng; baseRef và priceRaw theo dõi giá trị
   const priceElRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    // sync base refs when parent formData.price changes externally
+    // đồng bộ base refs khi formData.price ở component cha thay đổi từ bên ngoài
     const parsed = formData.price != null ? Number(formData.price) : NaN;
     const base = Number.isFinite(parsed)
       ? Math.round(parsed / PRICE_STEP)
@@ -75,7 +74,7 @@ export default function BasicInfoForm({
   }, [formData.price]);
 
   function setBaseFromRaw(raw: string) {
-    // strip leading zeros
+    // loại bỏ số 0 dẫn đầu
     const cleaned = raw.replace(/^0+/, "");
     const finalRaw = cleaned === "" ? "" : cleaned;
     setPriceRaw(finalRaw);
@@ -89,11 +88,11 @@ export default function BasicInfoForm({
     baseRef.current = base;
     const value = base != null ? base * PRICE_STEP : null;
     setFormData((fd) => ({ ...fd, price: value }));
-    // while editing show formatted base + '.000' so user always sees the suffix
+    // khi edit, hiển thị base đã format + '.000' để người dùng luôn thấy hậu tố
     const formattedBase = base != null ? base.toLocaleString("vi-VN") : "";
     const display = formattedBase ? `${formattedBase}.000` : "";
     setPriceInput(display);
-    // restore caret to just before the '.000' suffix (next tick)
+    // khôi phục caret ngay trước hậu tố '.000' (ở tick tiếp theo)
     setTimeout(() => {
       const el = priceElRef.current;
       if (!el) return;
@@ -108,7 +107,7 @@ export default function BasicInfoForm({
 
   function handlePriceKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     const key = e.key;
-    // allow modifiers and navigation
+    // cho phép phím modifier và điều hướng
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (
       key === "Tab" ||
@@ -121,7 +120,7 @@ export default function BasicInfoForm({
       return;
     }
 
-    // Handle arrow up/down separately (step)
+    // Xử lý phím mũi tên lên/xuống riêng (bước tăng/giảm)
     if (key === "ArrowUp" || key === "ArrowDown") {
       e.preventDefault();
       const curParsed = formData.price != null ? Number(formData.price) : NaN;
@@ -145,7 +144,7 @@ export default function BasicInfoForm({
       return;
     }
 
-    // Digit input
+    // Nhập chữ số
     if (/^[0-9]$/.test(key)) {
       e.preventDefault();
       const el = priceElRef.current;
@@ -156,11 +155,11 @@ export default function BasicInfoForm({
       // count digits before start/end to map to raw indices
       const digitsBeforeStart = Math.min(
         (formatted.slice(0, start).match(/\d/g) || []).length,
-        (priceRaw || "").length,
+        (priceRaw || "").length
       );
       const digitsBeforeEnd = Math.min(
         (formatted.slice(0, end).match(/\d/g) || []).length,
-        (priceRaw || "").length,
+        (priceRaw || "").length
       );
       const cur = priceRaw || "";
       let newRaw =
@@ -171,7 +170,7 @@ export default function BasicInfoForm({
       return;
     }
 
-    // Backspace: remove selected digits or the digit before caret
+    // Backspace: xoá các chữ số đã chọn hoặc chữ số ngay trước caret
     if (key === "Backspace") {
       e.preventDefault();
       const el = priceElRef.current;
@@ -181,11 +180,11 @@ export default function BasicInfoForm({
       const formatted = priceInput || "";
       const digitsBeforeStart = Math.min(
         (formatted.slice(0, start).match(/\d/g) || []).length,
-        (priceRaw || "").length,
+        (priceRaw || "").length
       );
       const digitsBeforeEnd = Math.min(
         (formatted.slice(0, end).match(/\d/g) || []).length,
-        (priceRaw || "").length,
+        (priceRaw || "").length
       );
       const cur = priceRaw || "";
       if (start !== end) {
@@ -206,7 +205,7 @@ export default function BasicInfoForm({
       return;
     }
 
-    // Delete: remove selected digits or the digit at caret
+    // Delete: xoá các chữ số đã chọn hoặc chữ số tại vị trí caret
     if (key === "Delete") {
       e.preventDefault();
       const el = priceElRef.current;
@@ -216,11 +215,11 @@ export default function BasicInfoForm({
       const formatted = priceInput || "";
       const digitsBeforeStart = Math.min(
         (formatted.slice(0, start).match(/\d/g) || []).length,
-        (priceRaw || "").length,
+        (priceRaw || "").length
       );
       const digitsBeforeEnd = Math.min(
         (formatted.slice(0, end).match(/\d/g) || []).length,
-        (priceRaw || "").length,
+        (priceRaw || "").length
       );
       const cur = priceRaw || "";
       if (start !== end) {
@@ -237,7 +236,7 @@ export default function BasicInfoForm({
       return;
     }
 
-    // prevent any other key
+    // chặn các phím khác
     e.preventDefault();
   }
 
@@ -254,11 +253,11 @@ export default function BasicInfoForm({
     const formatted = priceInput || "";
     const digitsBeforeStart = Math.min(
       (formatted.slice(0, start).match(/\d/g) || []).length,
-      (priceRaw || "").length,
+      (priceRaw || "").length
     );
     const digitsBeforeEnd = Math.min(
       (formatted.slice(0, end).match(/\d/g) || []).length,
-      (priceRaw || "").length,
+      (priceRaw || "").length
     );
     const newRaw =
       cur.slice(0, digitsBeforeStart) + digits + cur.slice(digitsBeforeEnd);
@@ -332,7 +331,7 @@ export default function BasicInfoForm({
       else if (result.errors.price) {
         // focus price input if present
         const priceEl = document.getElementById(
-          "price",
+          "price"
         ) as HTMLInputElement | null;
         priceEl?.focus();
       }
@@ -519,7 +518,7 @@ export default function BasicInfoForm({
                   if (!el) return;
                   const pos = Math.max(
                     0,
-                    (value != null ? formatVnd(value) : "").length - 4,
+                    (value != null ? formatVnd(value) : "").length - 4
                   );
                   el.setSelectionRange(pos, pos);
                 }, 0);
@@ -560,7 +559,7 @@ export default function BasicInfoForm({
         </>
       )}
 
-      <div className={styles.actionsRow}>
+      <div className={stylesCategoryForm.actionsRow}>
         <button type="button" className={styles.btnSecondary} onClick={onPrev}>
           Quay lại
         </button>
