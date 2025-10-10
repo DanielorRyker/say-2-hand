@@ -62,18 +62,17 @@ export default function ImageUploader({
   }, [images]);
 
 
-  function onFiles(e: React.ChangeEvent<HTMLInputElement>) {
+  // Khi upload ảnh
+function onFiles(e: React.ChangeEvent<HTMLInputElement>) {
   const files = e.target.files;
   if (!files) return;
 
-  // Giới hạn 10 ảnh
   if (images.length + files.length > 10) {
     showMessage?.("Chỉ được tải lên tối đa 10 ảnh!");
     e.currentTarget.value = "";
     return;
   }
 
-  // Đọc file -> base64 -> cập nhật state + localStorage
   const newFiles = Array.from(files);
 
   const readers = newFiles.map(
@@ -88,27 +87,40 @@ export default function ImageUploader({
 
   Promise.all(readers)
     .then((base64Arr) => {
-      setImages((prev: string[]) => {
-        const updated = [...prev, ...base64Arr].slice(0, 10); // không vượt quá 10
-        localStorage.setItem("uploadedImages", JSON.stringify(updated)); // ✅ lưu vào localStorage
+      setImages((prev) => {
+        const updated = [...prev, ...base64Arr].slice(0, 10);
         return updated;
       });
-      if (images.length === 0) setCoverIndex(0);
     })
-    .catch((err) => console.error("Error reading files:", err));
+    .catch((err) => console.error(err));
 
   e.currentTarget.value = "";
 }
 
 
-  function removeIndex(i: number) {
-    setImages((prev: string[]) => prev.filter((_, idx) => idx !== i));
-    setCoverIndex((prev) => {
-      if (i === prev) return 0;
-      if (i < prev) return Math.max(0, prev - 1);
-      return prev;
-    });
-  }
+  // Khi xóa ảnh
+function removeIndex(i: number) {
+  setImages((prev) => {
+    const newImages = prev.filter((_, idx) => idx !== i);
+    // Nếu ảnh bìa bị xóa, reset về đầu
+    if (effectiveCover === i) setEffectiveCover(0);
+    else if (i < effectiveCover) setEffectiveCover(effectiveCover - 1);
+    return newImages;
+  });
+}
+
+
+// Khi đặt ảnh bìa
+function makeCover(idx: number) {
+  setImages((prev) => {
+    const newArr = [...prev];
+    const [selected] = newArr.splice(idx, 1);
+    newArr.unshift(selected);
+    return newArr;
+  });
+  setEffectiveCover(0); // cover luôn là đầu
+}
+
 
   useEffect(() => {
     if (images.length === 0) setCoverIndex(0);
@@ -121,10 +133,11 @@ export default function ImageUploader({
     displayOrder.push(first);
     for (let idx = 0; idx < images.length; idx++)
       if (idx !== first) displayOrder.push(idx);
+
+  
   }
 
-  //Lưu ảnh vào localStorage để tránh mất khi reload
-
+// Effect đồng bộ localStorage
 useEffect(() => {
   localStorage.setItem("uploadedImages", JSON.stringify(images));
 }, [images]);
@@ -221,12 +234,13 @@ useEffect(() => {
                   </div>
                 ) : (
                   <button
-                    className={styles.makeCoverBtn}
-                    aria-label={`Đặt ảnh ${idx + 1} làm ảnh bìa`}
-                    onClick={() => setEffectiveCover(idx)}
-                  >
-                    Đặt bìa
-                  </button>
+                  className={styles.makeCoverBtn}
+                  aria-label={`Đặt ảnh ${idx + 1} làm ảnh bìa`}
+                  onClick={() => makeCover(idx)} // <-- gọi hàm đã định nghĩa
+                >
+                  Đặt bìa
+                </button>
+
                 )}
 
                 <button
@@ -245,6 +259,7 @@ useEffect(() => {
               </div>
             );
           })}
+
         </div>
       </div>
       <p className={styles.hint}>

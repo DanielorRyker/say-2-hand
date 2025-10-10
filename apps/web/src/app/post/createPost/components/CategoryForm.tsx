@@ -19,6 +19,23 @@ export default function CategoryForm({
   // giờ hợp nhất thành một input địa chỉ dạng free-text tại
   // `formData.location.address` nên không cần state districts nữa.
 
+    //lấy dữ liệu Category từ BE
+  interface Category {
+    _id: string;
+    name?: string;
+    slug?: string;
+    image?: string;
+  }
+  const [categoriesData, setCategoriesData] = useState<Category[]>([]);
+  
+    useEffect(() => {
+      async function fetchCategories() {
+        const res = await axios.get("http://localhost:8080/api/categories/");
+        setCategoriesData(res.data); // res.data là danh sách categories
+      }
+      fetchCategories();
+    }, []);
+
   const fields = customFieldData[formData.category_id] || [];
 
   function setFieldValue(name: string, value: any) {
@@ -103,11 +120,11 @@ export default function CategoryForm({
           required
         >
           <option value="">-- Chọn danh mục --</option>
-          <option value="1">Đồ điện tử</option>
-          <option value="2">Thời trang</option>
-          <option value="3">Sách</option>
-          <option value="4">Đồ gia dụng</option>
-          <option value="5">Đồ trẻ em</option>
+           {categoriesData.map((cate) => (
+            <option key={cate._id} value={cate._id}>
+              {cate.name}
+            </option>
+          ))}
         </select>
       </label>
 

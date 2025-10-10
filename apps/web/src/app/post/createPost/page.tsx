@@ -21,7 +21,11 @@ type PostFormData = {
   price: number | null;
   category_id: string;
   // một input địa chỉ đơn thay thế cho tỉnh/quận/đường
-  location: { address: string };
+  location: {
+    address: string;
+    coords?: { lat: number; lon: number }; // ✅ Thêm dòng này
+  };
+  tags?: string[];
   custom_fields: Record<string, any>;
 };
 
@@ -48,7 +52,8 @@ const [currentUser, setCurrentUser] = useState<any>(null);
     transaction_type: "sell",
     price: null,
     category_id: "",
-    location: { address: "" },
+    location: { address: ""},
+    tags: [],
     custom_fields: {},
   });
 
@@ -119,6 +124,35 @@ const [currentUser, setCurrentUser] = useState<any>(null);
   }
 
 // ✅ Chuyển base64 → File
+
+useEffect(() => {
+  // Load từ localStorage khi mount
+  const savedImages = localStorage.getItem("uploadedImages");
+  if (savedImages) {
+    try {
+      const parsed = JSON.parse(savedImages);
+      if (Array.isArray(parsed)) setImages(parsed);
+    } catch (err) {
+      console.error("Error parsing saved images:", err);
+    }
+  }
+}, []);
+
+// Đồng bộ images → selectedFiles
+useEffect(() => {
+  if (!images || images.length === 0) {
+    setSelectedFiles([]);
+    return;
+  }
+
+  const files = images.map((base64, i) =>
+    base64ToFile(base64, `image_${i + 1}.png`)
+  );
+  setSelectedFiles(files);
+}, [images]);
+
+
+
   function base64ToFile(base64: string, filename: string) {
     const arr = base64.split(",");
     const mime = arr[0].match(/:(.*?);/)?.[1] || "image/png";
@@ -205,7 +239,46 @@ const [currentUser, setCurrentUser] = useState<any>(null);
     console.log("Dữ liệu tin đăng:", { images, formData });
 
     //Upload ảnh
-     await uploadImages(selectedFiles,formData.title);
+    const uploadedUrls = await uploadImages(selectedFiles,formData.title);
+     if (!uploadedUrls || uploadedUrls.length === 0) {
+      showMessage("Không thể tải ảnh lên, vui lòng thử lại.");
+      return;
+    }
+
+    //Format lại dữ liệu
+
+    const payload = {
+      author_id: currentUser._id, // ObjectId người đăng
+      category_id: formData.category_id, // ObjectId danh mục
+      title: formData.title,
+      description: formData.description,
+      images: uploadedUrls.map((url: string, i: number) => ({
+        url,
+        alt: `image_${i + 1}`,
+      })),
+      condition: formData.condition,
+      transaction_type: formData.transaction_type === "donate" ? "give away" : formData.transaction_type, // Map lại nếu FE dùng "donate"
+      price: formData.price ?? null,
+      location: formData.location && formData.location.coords
+        ? {
+            address: formData.location.address,
+            geo: {
+              type: "Point",
+              coordinates: [
+                formData.location.coords.lon,
+                formData.location.coords.lat,
+              ],
+            },
+          }
+        : null,
+      custom_fields: formData.custom_fields || {},
+      tags: formData.tags?.length ? formData.tags : [],
+    };
+    console.log("📦 Dữ liệu gửi BE:", payload);
+
+    const res = await axios.post("http://localhost:8080/api/posts", payload, {
+      headers: { "Content-Type": "application/json" },
+    });
     showMessage("Đăng tin thành công!");
   }
 
