@@ -56,7 +56,10 @@ export class Post {
     ai_score?: number;
   }>;
 
-  @Prop({ required: true, enum: ['new', 'used'] })
+  @Prop({
+    required: true,
+    enum: ['new', 'like_new', 'used', 'minor_flaw', 'for_repair', 'for_parts'],
+  })
   condition: string;
 
   @Prop({ required: true, enum: ['sell', 'exchange', 'give away'] })

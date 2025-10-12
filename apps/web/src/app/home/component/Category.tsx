@@ -1,5 +1,5 @@
 "use client";
-import styles from "@/styles/pages/home/category.module.scss";
+import styles from "./category.module.scss";
 import axios from "axios";
 import { API_BASE, URL_GCS } from "@/lib/constants";
 import Image from "next/image";

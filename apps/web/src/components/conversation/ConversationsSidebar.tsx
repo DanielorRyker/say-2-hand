@@ -42,7 +42,7 @@ export default function ConversationsSidebar() {
   }
 
   const [conversationsData, setConversationsData] = useState<IConversation[]>(
-    [],
+    []
   );
   const [socket, setSocket] = useState<Socket | null>(null);
 
@@ -51,7 +51,7 @@ export default function ConversationsSidebar() {
     if (!currentUser) return;
     try {
       const res = await axios.get(
-        `http://localhost:8080/api/conversations/conversations/${currentUser._id}`,
+        `http://localhost:8080/api/conversations/conversations/${currentUser._id}`
       );
       setConversationsData(res.data);
     } catch (err) {
@@ -153,64 +153,73 @@ export default function ConversationsSidebar() {
         {/* Danh sách conversation */}
         <div className={cvstStyles.content}>
           {conversationsData
-            .filter((c) => c.last_message) 
+            .filter((c) => c.last_message)
             .map((c) => {
+              // defensive guards: post_id may be null/undefined from API
+              const postId = c.post_id || { title: "(Tin rỗng)", image: "" };
               const otherUser = c.participants.find(
-                (p) => p._id !== currentUser?._id,
+                (p) => p._id !== currentUser?._id
               );
-            return (
-              <div
-                className={cvstStyles.card}
-                key={c._id}
-                onClick={() => handleMessage(c)}
-              >
-                <Image
-                  src={
-                    c.post_id.image
-                      ? process.env.NEXT_PUBLIC_URL_GCS + c.post_id.image
-                      : "/image/header/carbon_user-avatar-filled-alt.svg"
-                  }
-                  alt="Post"
-                  className={cvstStyles.squareImage}
-                  width={80}
-                  height={80}
-                />
 
-                <div className={cvstStyles.contentItem}>
-                  <p className={cvstStyles.titleItem}>{c.post_id.title}</p>
+              // choose image fallback safely
+              const postImage =
+                postId && postId.image
+                  ? process.env.NEXT_PUBLIC_URL_GCS + postId.image
+                  : "/image/header/carbon_user-avatar-filled-alt.svg";
 
-                  {otherUser && (
-                    <div className={cvstStyles.headerItem}>
-                      <Image
-                        src={
-                          otherUser.avatar
-                            ? process.env.NEXT_PUBLIC_URL_GCS + otherUser.avatar
-                            : "/image/header/carbon_user-avatar-filled-alt.svg"
-                        }
-                        alt="Avatar"
-                        className={cvstStyles.avatar}
-                        width={40}
-                        height={40}
-                      />
-                      <span className={cvstStyles.titleName}>
-                        {otherUser.full_name || "Người dùng"}
-                      </span>
-                    </div>
-                  )}
+              const postTitle =
+                postId && postId.title ? postId.title : "(Tin rỗng)";
 
-                  <p className={cvstStyles.text}>
-                    {c.last_message?.sender_id?.full_name}: &nbsp;
-                    {c.last_message?.text}
-                  </p>
-                  <p className={cvstStyles.time}>
-                    {c.last_message?.created_at
-                      ? getRelativeTime(c.last_message?.created_at)
-                      : ""}
-                  </p>
+              return (
+                <div
+                  className={cvstStyles.card}
+                  key={c._id}
+                  onClick={() => handleMessage(c)}
+                >
+                  <Image
+                    src={postImage}
+                    alt={postTitle}
+                    className={cvstStyles.squareImage}
+                    width={80}
+                    height={80}
+                  />
+
+                  <div className={cvstStyles.contentItem}>
+                    <p className={cvstStyles.titleItem}>{postTitle}</p>
+
+                    {otherUser && (
+                      <div className={cvstStyles.headerItem}>
+                        <Image
+                          src={
+                            otherUser.avatar
+                              ? process.env.NEXT_PUBLIC_URL_GCS +
+                                otherUser.avatar
+                              : "/image/header/carbon_user-avatar-filled-alt.svg"
+                          }
+                          alt="Avatar"
+                          className={cvstStyles.avatar}
+                          width={40}
+                          height={40}
+                        />
+                        <span className={cvstStyles.titleName}>
+                          {otherUser.full_name || "Người dùng"}
+                        </span>
+                      </div>
+                    )}
+
+                    <p className={cvstStyles.text}>
+                      {c.last_message?.sender_id?.full_name}: &nbsp;
+                      {c.last_message?.text}
+                    </p>
+                    <p className={cvstStyles.time}>
+                      {c.last_message?.created_at
+                        ? getRelativeTime(c.last_message?.created_at)
+                        : ""}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
         </div>
       </div>
     </div>

@@ -1,7 +1,7 @@
 "use client";
 import styles from "@/app/home/home.module.scss";
-import Category from "@/components/pages/home/Category";
-import ListPost from "@/components/pages/home/ListPost";
+import Category from "@/app/home/component/Category";
+import ListPost from "@/app/home/component/ListPost";
 
 export default function HomePage() {
   return (
