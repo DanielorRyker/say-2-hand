@@ -1,0 +1,651 @@
+/* styles extracted from testUI/styles.module.scss and adapted for ListPost component */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+/* Using Iconify SVG icons (material-symbols:star) instead of font-based Material Symbols */
+
+:root {
+	--primary-gradient: linear-gradient(90deg, #ef4444 0%, #b91c1c 100%);
+	--condition-new: #10b981;
+	--condition-like-new: #06b6d4;
+	--condition-used: #3b82f6;
+	--condition-minor-flaw: #f97316;
+	--condition-for-repair: #8b5cf6;
+	--condition-for-parts: #ef4444;
+}
+
+body {
+	font-family: 'Inter', sans-serif;
+	background-color: #f7fafc;
+}
+
+.item-card {
+	transition: transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 260ms ease, filter 260ms ease;
+	position: relative;
+	display: block;
+	width: 100%;
+	max-width: 100%;
+	margin-top: 20px;
+	margin-bottom: 0;
+	/* remove fixed min-width here to avoid overflow; grid controls minimum column size */
+	min-width: 0;
+	/* grid's column min will enforce the 340px minimum so cards wrap instead of overlapping */
+}
+
+.item-card:hover {
+	/* More subtle lift */
+	transform: translateY(-3px);
+	/* Softer shadow for a modern, less heavy look */
+	box-shadow: 0 10px 20px rgba(16, 24, 40, 0.06), 0 4px 8px rgba(16, 24, 40, 0.04);
+	/* Slight contrast boost */
+	filter: saturate(1.02) contrast(1.01);
+}
+
+.image-wrapper {
+	padding-bottom: 80%;
+	position: relative;
+	overflow: hidden;
+	border-radius: 0.75rem 0.75rem 0 0;
+}
+
+.item-image {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transition: transform 360ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 260ms ease;
+	will-change: transform;
+}
+
+.item-card:hover .item-image {
+	transform: scale(1.03);
+}
+
+/* gentle overlay to make hover feel intentional without darkening too much */
+.image-wrapper::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.04) 100%);
+	opacity: 0;
+	transition: opacity 260ms ease;
+	pointer-events: none;
+}
+
+.item-card:hover .image-wrapper::after {
+	opacity: 1;
+}
+
+.price-gradient {
+	background: var(--primary-gradient);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
+}
+
+.ripple-target {
+	position: relative;
+	overflow: hidden;
+	cursor: pointer;
+	-webkit-user-select: none;
+	user-select: none;
+}
+
+@keyframes ripple {
+	to {
+		transform: scale(4);
+		opacity: 0;
+	}
+}
+
+.card-carousel {
+	display: grid;
+	/* ensure each column is at least 340px so cards will wrap instead of overlapping */
+	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+	justify-content: stretch;
+	gap: 24px;
+	width: 70%;
+	max-width: 1400px;
+	margin-left: auto;
+	margin-right: auto;
+	padding-bottom: 20px;
+	/* allow vertical wrapping; hide horizontal overflow just in case */
+	overflow-x: hidden;
+}
+
+/* On small screens, let the list expand to full width for readability */
+@media (max-width: 768px) {
+	.card-carousel {
+		width: 100%;
+		padding-left: 12px;
+		padding-right: 12px;
+	}
+}
+
+.ripple-span {
+	position: absolute;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.35);
+	transform: scale(0);
+	animation: ripple 0.6s linear;
+	pointer-events: none;
+}
+
+.card {
+	background: #ffffff;
+	border-radius: 1rem;
+	box-shadow: 0 8px 18px rgba(16, 24, 40, 0.04);
+	transition: box-shadow 240ms ease, transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.card:hover {
+	transform: translateY(-3px);
+	box-shadow: 0 12px 30px rgba(16, 24, 40, 0.06);
+}
+
+.post-type-badge {
+	position: absolute;
+	top: 12px;
+	left: 12px;
+	z-index: 30;
+	padding: 0.35rem 0.9rem;
+	border-radius: 9999px;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: #fff;
+
+}
+
+/* Badge variants (match top-level styles.module.scss) */
+.post-badge-ban {
+	/* BÁN - muted warm orange */
+	background: linear-gradient(90deg, #F59E0B 0%, #D97706 100%)
+}
+
+.post-badge-trao {
+	/* TRAO ĐỔI - muted teal -> soft blue */
+	background: linear-gradient(90deg, #6366F1 0%, #8B5CF6 100%);
+}
+
+.post-badge-tang {
+	/* TẶNG - softer success green */
+	background: linear-gradient(90deg, #10B981 0%, #059669 100%);
+}
+
+/* Fallback textual transaction type */
+.transaction-type-text {
+	position: absolute;
+	top: 12px;
+	left: 12px;
+	z-index: 11;
+	padding: 0.25rem 0.75rem;
+	border-radius: 9999px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: #fff;
+
+	box-shadow: 0 6px 10px -6px rgba(0, 0, 0, 0.25);
+	display: inline-block;
+}
+
+/* Hide textual fallback when styled badge exists */
+.post-type-badge+.transaction-type-text,
+.post-type-badge.transaction-type-text {
+	display: none;
+}
+
+.quick-actions {
+	display: flex;
+	gap: 0.5rem;
+}
+
+.quick-action-btn {
+	position: relative;
+	padding: 0.5rem;
+	background: rgba(255, 255, 255, 0.5);
+	border-radius: 9999px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border: none;
+	cursor: pointer;
+	transition: background-color 0.15s ease, color 0.15s ease;
+	box-shadow: 0 6px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+.quick-action-btn:focus {
+	outline: none;
+}
+
+.quick-action-btn--red {
+	color: #dc2626;
+}
+
+.quick-action-btn--indigo {
+	color: #4f46e5;
+}
+
+.quick-action-btn--indigo:hover {
+	color: #fff;
+}
+
+
+.heartIcon {
+	--heart-top: #333333;
+	--heart-bottom: #ffffff;
+	--heart-top-opacity: 0.3;
+
+	display: inline-block;
+	vertical-align: middle;
+
+	/* smooth color transitions */
+	svg,
+	svg * {
+		transition: fill 160ms ease, opacity 160ms ease;
+	}
+
+	/* direct path children — most two-tone icons have two top-level paths */
+	svg path:first-child {
+		fill: var(--heart-top) !important;
+		opacity: var(--heart-top-opacity, 0.3) !important;
+	}
+
+	svg path:nth-child(2) {
+		fill: var(--heart-bottom) !important;
+	}
+
+	/* nested in groups (some icon SVGs wrap paths in <g>) */
+	svg g path:first-child {
+		fill: var(--heart-top) !important;
+		opacity: var(--heart-top-opacity, 0.3) !important;
+	}
+
+	svg g path:nth-child(2) {
+		fill: var(--heart-bottom) !important;
+	}
+}
+
+.heartIconActive {
+	/* when active (favorited), make both fills red */
+	--heart-top: #ef4444;
+	--heart-bottom: #ef4444;
+	--heart-top-opacity: 1;
+	color: #ef4444;
+}
+
+.card-body {
+	padding: 1rem;
+}
+
+.card-body--md {
+	padding: 1.25rem;
+}
+
+.price {
+	font-size: 1.875rem;
+	font-weight: 800;
+	line-height: 1;
+}
+
+.price small {
+	font-size: 0.875rem;
+	font-weight: 700;
+	margin-left: 0.25rem;
+}
+
+.title {
+	font-size: 1.125rem;
+	font-weight: 700;
+	color: #1f2937;
+	margin: 0.25rem 0;
+	min-height: 50px;
+}
+
+.description {
+	font-size: 0.875rem;
+	color: #4b5563;
+	min-height: 80px;
+	margin: 0;
+}
+
+.line-clamp-2,
+.line-clamp-4 {
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+.line-clamp-2 {
+	-webkit-line-clamp: 2;
+	line-clamp: 2;
+}
+
+.line-clamp-4 {
+	-webkit-line-clamp: 4;
+	line-clamp: 4;
+}
+
+.meta-row {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	margin-top: 0.5rem;
+	color: #6b7280;
+	font-size: 0.875rem;
+}
+
+.meta-row .tag {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.author-row {
+	padding: 0.75rem 1rem;
+	border-top: 1px solid #f3f4f6;
+}
+
+.author-info {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+}
+
+.avatar {
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	object-fit: cover;
+	border: 2px solid rgba(250, 204, 21, 0.3);
+}
+
+.author-name {
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: #111827;
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+}
+
+.reputation {
+	font-size: 0.75rem;
+	color: #6b7280;
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+}
+
+
+/* Container for the star layers */
+.starContainer {
+	position: relative;
+	display: inline-block;
+	line-height: 1;
+}
+
+/* Overlay layer that will be clipped to show colored stars */
+.starsOverlay {
+	position: absolute;
+	left: 0;
+	top: 0;
+	height: 100%;
+	overflow: hidden;
+	white-space: nowrap;
+	pointer-events: none;
+	/* smooth width transition for nicer tuột màu */
+	transition: width 360ms cubic-bezier(0.2, 0.8, 0.2, 1);
+	/* gentle fade on the right edge to make the gradient feel natural */
+	-webkit-mask-image: linear-gradient(to right, black 0%, black 85%, transparent 100%);
+	mask-image: linear-gradient(to right, black 0%, black 85%, transparent 100%);
+}
+
+/* When overlay is full (100%), disable the fade mask so stars appear fully filled */
+.starsOverlayFull {
+	-webkit-mask-image: none;
+	mask-image: none;
+}
+
+/* When overlay is full (100%), don't apply the fade mask so stars appear fully filled */
+.starsOverlay.starFill-100,
+.starFill-100.starsOverlay {
+	-webkit-mask-image: none;
+	mask-image: none;
+}
+
+/* Concrete color helpers so JSX doesn't need inline styles */
+.starsFlex {
+	display: inline-flex;
+	gap: 6px;
+	align-items: center;
+}
+
+.iconStarBase {
+	color: #d1d5db;
+	display: inline-flex;
+}
+
+.iconStarColored {
+	color: #ffa200;
+	display: inline-flex;
+}
+
+/* discrete fill classes (0% .. 100% by 10%) */
+.starFill-0 {
+	--star-fill: 0%;
+}
+
+.starFill-10 {
+	--star-fill: 10%;
+}
+
+.starFill-20 {
+	--star-fill: 20%;
+}
+
+.starFill-30 {
+	--star-fill: 30%;
+}
+
+.starFill-40 {
+	--star-fill: 40%;
+}
+
+.starFill-50 {
+	--star-fill: 50%;
+}
+
+.starFill-60 {
+	--star-fill: 60%;
+}
+
+.starFill-70 {
+	--star-fill: 70%;
+}
+
+.starFill-80 {
+	--star-fill: 80%;
+}
+
+.starFill-90 {
+	--star-fill: 90%;
+}
+
+.starFill-100 {
+	--star-fill: 100%;
+}
+
+.starsOverlay {
+	/* width is controlled by --star-fill when a fill class is applied on the same element */
+	width: var(--star-fill, 0%);
+}
+
+.verified-badge {
+	margin-left: 6px;
+}
+
+.stats-row {
+	margin-top: -1rem;
+	padding: 0.75rem 1rem;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	border-top: 1px solid transparent;
+	color: #6b7280;
+}
+
+.location {
+	display: flex;
+	align-items: center;
+	gap: 0.375rem;
+	min-width: 0;
+}
+
+.small-stats {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+}
+
+.text-xs {
+	font-size: 0.75rem;
+}
+
+.rounded-full {
+	border-radius: 9999px;
+}
+
+@media (min-width: 768px) {
+	.card-body {
+		padding: 1.25rem;
+	}
+}
+
+.quick-actions--absolute {
+	position: absolute;
+	top: 12px;
+	right: 12px;
+	z-index: 10;
+	display: flex;
+	gap: 0.5rem;
+}
+
+.time-badge {
+	position: absolute;
+	left: 12px;
+	bottom: 12px;
+	background: rgba(0, 0, 0, 0.5);
+	color: #fff;
+	padding: 0.25rem 0.75rem;
+	border-radius: 9999px;
+	font-size: 0.75rem;
+}
+
+.image-count-badge {
+	position: absolute;
+	right: 12px;
+	bottom: 12px;
+	background: rgba(0, 0, 0, 0.5);
+	color: #fff;
+	padding: 0.25rem 0.75rem;
+	border-radius: 9999px;
+	font-size: 0.75rem;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.unavailable-overlay {
+	position: absolute;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	pointer-events: none;
+}
+
+.unavailable-label {
+	color: #fff;
+	font-size: 1.125rem;
+	font-weight: 800;
+	background: rgba(220, 38, 38, 0.8);
+	padding: 0.5rem 1rem;
+	border-radius: 8px;
+	transform: rotate(-15deg);
+}
+
+.condition-tag {
+	color: #fff;
+	padding: 0.25rem 0.5rem;
+	border-radius: 9999px;
+	font-weight: 700;
+	display: inline-block;
+}
+
+.condition-new {
+	background-color: var(--condition-new);
+}
+
+.condition-like_new {
+	background-color: var(--condition-like-new);
+}
+
+.condition-used {
+	background-color: var(--condition-used);
+}
+
+.condition-minor_flaw {
+	background-color: var(--condition-minor-flaw);
+}
+
+.condition-for_repair {
+	background-color: var(--condition-for-repair);
+}
+
+.condition-for_parts {
+	background-color: var(--condition-for-parts);
+}
+
+.tag {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	color: #6b7280;
+}
+
+.author-row .avatar {
+	width: 40px;
+	height: 40px;
+}
+
+.reputation .stars {
+	color: #f59e0b;
+	font-size: medium;
+}
+
+.map-pin {
+	color: #ef4444;
+}
+
+.location-text {
+	display: flex;
+	align-items: baseline;
+	font-size: 0.875rem;
+}
+
+.location-name {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.proximity {
+	color: #9ca3af;
+	margin-left: 6px;
+}
+
+.stat-fav {
+	margin-left: 8px;
+}
