@@ -1,11 +1,9 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ConversationsService } from './conversations.service';
 import { ConversationsController } from './conversations.controller';
 import { MongooseModule } from '@nestjs/mongoose';
-import {
-  ConversationSchema,
-  Conversation,
-} from './schemas/conversation.schema';
+import { Conversation, ConversationSchema } from './schemas/conversation.schema';
+import { PostsModule } from '../posts/posts.module'; // nếu Conversations có dùng PostsService
 
 @Module({
   imports: [
@@ -16,9 +14,13 @@ import {
         collection: 'conversations',
       },
     ]),
+    forwardRef(() => PostsModule), // chỉ cần nếu có dùng PostsService
   ],
   controllers: [ConversationsController],
   providers: [ConversationsService],
-  exports: [ConversationsService],
+  exports: [
+    ConversationsService, // ✅ phải có
+    MongooseModule,        // ✅ để module khác dùng ConversationModel
+  ],
 })
 export class ConversationsModule {}

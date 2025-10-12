@@ -75,26 +75,13 @@ const Home = () => {
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<User>>({});
 
-  const handleEdit = (user: User) => {
-    setEditingUserId(user._id);
-    setEditForm(user);
-  };
-
-  const handleFieldChange = (field: keyof User, value: string) => {
-    setEditForm((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  const handleSave = async () => {
-    if (!editingUserId) return;
+   const handleActive = async (userId: string) => {
     try {
       await axios.patch(
         "http://localhost:8080/api/users",
         {
-          _id: editingUserId,
-          ...editForm,
+          _id: userId,
+          status: "active",
         },
         {
           headers: {
@@ -102,11 +89,11 @@ const Home = () => {
           },
         }
       );
-      setUsersData(
-        usersData.map((u) =>
-          u._id === editingUserId ? { ...u, ...editForm } : u
-        )
-      );
+     setUsersData((prev) =>
+      prev.map((u) =>
+        u._id === userId ? { ...u, status: "active" } : u
+      )
+    );
       setEditingUserId(null);
       alert("Cập nhật thành công");
     } catch (error: any) {
@@ -119,6 +106,8 @@ const Home = () => {
       }
     }
   };
+
+  
 
   const userFields: (keyof User)[] = [
     "email",
@@ -154,8 +143,17 @@ const Home = () => {
               <td className={styleAdmin.tbrow}>
                 {(currentPage - 1) * pageSize + idx + 1}
               </td>
-
-              {userFields.map((field) => (
+            <td className={styleAdmin.tbrow}>{user.email}</td>
+            <td className={styleAdmin.tbrow}>{user.full_name}</td>
+            <td className={styleAdmin.tbrow}>{user.role}</td>
+            <td className={styleAdmin.tbrow}>{user.status}</td>
+            <td className={styleAdmin.tbrow}>
+              <img className={styleAdmin.postIMG} src={user.avatar?process.env.NEXT_PUBLIC_URL_GCS + user.avatar: '/image/header/carbon_user-avatar-filled-alt.svg'} alt={user.full_name} />
+            </td>
+            <td className={styleAdmin.tbrow}>{user.description}</td>
+            <td className={styleAdmin.tbrow}>{user.phone_number}</td>
+            <td className={styleAdmin.tbrow}>{user.address}</td>
+              {/* {userFields.map((field) => (
                 <td key={field} className={styleAdmin.tbrow}>
                   {editingUserId === user._id ? (
                     <input
@@ -170,7 +168,7 @@ const Home = () => {
                     user[field] || ""
                   )}
                 </td>
-              ))}
+              ))} */}
 
               <td className={styleAdmin.tbrow}>
                 {user.role === "admin" ? (
@@ -190,28 +188,13 @@ const Home = () => {
                       Remove
                     </button>
                   </>
-                ) : editingUserId === user._id ? (
-                  <>
-                    <button className={styleAdmin.btnEdit} onClick={handleSave}>
-                      Save
-                    </button>
-                    <button
-                      className={styleAdmin.btnEdit}
-                      onClick={() => {
-                        setEditingUserId(null);
-                        setEditForm({});
-                      }}
-                    >
-                      Cancel
-                    </button>
-                  </>
                 ) : (
                   <>
                     <button
                       className={styleAdmin.btnEdit}
-                      onClick={() => handleEdit(user)}
+                      onClick={() => handleActive(user._id)}
                     >
-                      Edit
+                      Active
                     </button>
                     <button
                       className={styleAdmin.btnRemove}

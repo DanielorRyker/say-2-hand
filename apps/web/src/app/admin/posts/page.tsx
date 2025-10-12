@@ -6,18 +6,55 @@ import { useState, useEffect } from "react";
 const Home = () => {
   //lấy dữ liệu
   interface Post {
+  _id: string;
+  title: string;
+  description: string;
+  images: {
     _id: string;
-    title?: string;
-    author_id?: string;
-    category_id?: string;
-    description?: string;
-    price?: number;
-    condition?: string;
-    address?: string;
-    status?: string;
-    createdAt?: number;
-    updatedAt?: number;
-  }
+    url: string;
+    alt?: string;
+    tags: string[];
+  }[];
+  condition: string;
+  transaction_type: string;
+  price: number;
+  location: {
+    address: string;
+    geo?: {
+      type: string;
+      coordinates: [number, number];
+    };
+  };
+  custom_fields?: Record<string, string>; // ví dụ: { "màu sắc": "đen", "bộ nhớ": "128GB" }
+  tags?: string[];
+  status: string;
+  stats?: {
+    _id?: string;
+    view_count: number;
+    favorite_count: number;
+    chat_count?: number;
+  };
+  moderation?: {
+    _id: string;
+  };
+  author_id: {
+    _id: string;
+    full_name: string;
+    avatar: string;
+  };
+  category_id?: {
+    _id?: string;
+    name?: string;
+  } | null;
+  createdAt: string;
+  updatedAt: string;
+  __v?: number;
+  reputation?: {
+    average_score: number;
+    total_ratings: number;
+  };
+  distance_km?: number;
+}
 
   const [postsData, setPostsData] = useState<Post[]>([]);
 
@@ -29,55 +66,9 @@ const Home = () => {
     fetchPosts();
   }, []);
 
-  //lấy user
-  interface User {
-    _id: string;
-    email?: string;
-    full_name?: string;
-    role?: string;
-    status?: string;
-    phone_number?: string;
-    address?: string;
-    description?: string;
-    avatar?: string;
-  }
 
-  const [usersData, setUsersData] = useState<User[]>([]);
-  useEffect(() => {
-    async function fetchUsers() {
-      const res = await axios.get("http://localhost:8080/api/users/");
-      setUsersData(res.data); // res.data là danh sách users
-    }
-    fetchUsers();
-  }, []);
 
-  const getAuthorName = (author_id: string) => {
-    const user = usersData.find((u) => u._id === author_id);
-    return user ? user.full_name : author_id;
-  };
 
-  // Lấy tên danh mục
-  interface Category {
-    _id: string;
-    name?: string;
-    slug?: string;
-    image?: string;
-  }
-
-  const [categoriesData, setCategoriesData] = useState<Category[]>([]);
-
-  useEffect(() => {
-    async function fetchCategories() {
-      const res = await axios.get("http://localhost:8080/api/categories/");
-      setCategoriesData(res.data); // res.data là danh sách categories
-    }
-    fetchCategories();
-  }, []);
-
-  const getCategoryName = (category_id: string) => {
-    const category = categoriesData.find((c) => c._id === category_id);
-    return category ? category.name : category_id;
-  };
 
   // Phân trang
   const pageSize = 10;
@@ -173,6 +164,7 @@ const Home = () => {
           <tr>
             <th className={styleAdmin.tbheader}>#</th>
             <th className={styleAdmin.tbheader}>Title</th>
+            <th className={styleAdmin.tbheader}>Images</th>
             <th className={styleAdmin.tbheader}>Author</th>
             <th className={styleAdmin.tbheader}>Category</th>
             <th className={styleAdmin.tbheader}>Description</th>
@@ -191,18 +183,18 @@ const Home = () => {
               </td>
               <td className={styleAdmin.tbrow}>{post.title}</td>
               <td className={styleAdmin.tbrow}>
-                {getAuthorName(post.author_id ?? "")}
+                <img className={styleAdmin.postIMG} src={process.env.NEXT_PUBLIC_URL_GCS + post.images[0]?.url} alt={post.images[0]?.alt} />
+              
               </td>
-              <td className={styleAdmin.tbrow}>
-                {getCategoryName(post.category_id ?? "")}
-              </td>
+              <td className={styleAdmin.tbrow}>{post.author_id.full_name}</td>
+              <td className={styleAdmin.tbrow}>{post.category_id?.name}</td>
               <td className={styleAdmin.tbrow}>{post.description}</td>
               <td className={styleAdmin.tbrow}>{post.price}</td>
               <td className={styleAdmin.tbrow}>{post.condition}</td>
-              <td className={styleAdmin.tbrow}>{post.address}</td>
+              <td className={styleAdmin.tbrow}>{post.location.address}</td>
               <td className={styleAdmin.tbrow}>{post.status}</td>
               <td className={styleAdmin.tbrow}>
-                {post.status === "active" || post.status === "rejected" ? (
+                {post.status === "active" || post.status === "rejected" || post.status === "completed" ? (
                   <>
                     <button
                       className={styleAdmin.btnEdit}

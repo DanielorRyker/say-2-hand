@@ -31,7 +31,7 @@ type Author = {
 
 type ItemData = {
   id: number;
-  isAvailable: boolean;
+  isAvailable: boolean; //là trạng thái status completed
   postType: "BÁN" | "TRAO ĐỔI" | "TẶNG" | string;
   title: string;
   description: string;
@@ -44,6 +44,8 @@ type ItemData = {
   author: Author;
   timePosted: string;
   location: string;
+
+  //Chưa có
   proximity: string;
   views: number;
   favorites: number;
@@ -281,7 +283,7 @@ useEffect(() => {
 
 //dữ liệu tạm thời
 const isFavorited = false;
-const isAvailable = false
+
 
 
 ////Tính thời gian
@@ -434,14 +436,14 @@ const getRelativeTime = (isoString: string) => {
                   <img src={ICONS.share} alt="Chia sẻ" width={25} height={25} />
                 </button> */}
               </div>
-              <div className={styles["time-badge"]}>{getRelativeTime(data.createdAt)}</div>
+              <div className={styles["time-badge"]}>{getRelativeTime(data.updatedAt)}</div>
 
               <div className={styles["image-count-badge"]}>
                 <img src={ICONS.image} alt="Ảnh" width={14} height={14} />{" "}
                 {data.images.length} Ảnh
               </div>
 
-              {isAvailable && (
+              {data.status === "completed" && (
                 <div className={styles["unavailable-overlay"]}>
                   <span className={styles["unavailable-label"]}>
                     ĐÃ THANH LÝ

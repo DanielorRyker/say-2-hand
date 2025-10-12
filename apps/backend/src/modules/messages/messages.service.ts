@@ -82,4 +82,8 @@ export class MessagesService {
   async remove(id: string): Promise<Message | null> {
     return this.messageModel.findByIdAndDelete(id).exec();
   }
+
+  async removeByConversationIds(conversationIds: Types.ObjectId[]) {
+  return this.messageModel.deleteMany({ conversation_id: { $in: conversationIds } }).exec();
+  }
 }

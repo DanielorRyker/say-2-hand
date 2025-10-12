@@ -90,6 +90,17 @@ export class ConversationsService {
       .exec();
   }
 
+  async findByPostId(postId: string){
+    return this.conversationModel.find({ post_id: postId }).exec();
+  }
+
+  async removeByIds(conversationIds: Types.ObjectId[]) {
+    return this.conversationModel
+      .deleteMany({ _id: { $in: conversationIds } })
+      .exec();
+  }
+
+
   findAll() {
     return `This action returns all conversations`;
   }
