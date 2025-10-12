@@ -39,7 +39,12 @@ useEffect(() => {
       condition: "new" | "used";
       transaction_type: "sell" | "buy";
       status: "active" | "inactive";
-      image: string;
+       images: {
+          _id: string;
+          url: string;
+          alt?: string;
+          tags: string[];
+        }[];
       address: string;
       createdAt: string;
       updatedAt: string;
@@ -315,8 +320,8 @@ useEffect(() => {
                 >
                   <Image
                     src={
-                      i.post_id.image
-                        ? process.env.NEXT_PUBLIC_URL_GCS + i.post_id.image
+                      i.post_id.images[0].url
+                        ? process.env.NEXT_PUBLIC_URL_GCS + i.post_id.images[0].url
                         : "/image/header/carbon_user-avatar-filled-alt.svg"
                     }
                     alt="Post"
@@ -365,8 +370,8 @@ useEffect(() => {
           <div>
             <Image
               src={
-                conversation?.post_id.image
-                  ? process.env.NEXT_PUBLIC_URL_GCS + conversation.post_id.image
+                conversation?.post_id.images[0].url
+                  ? process.env.NEXT_PUBLIC_URL_GCS + conversation.post_id.images[0].url
                   : "/image/header/carbon_user-avatar-filled-alt.svg"
               }
               alt="Post"

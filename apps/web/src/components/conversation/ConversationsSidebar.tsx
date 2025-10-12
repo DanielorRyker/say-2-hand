@@ -22,7 +22,12 @@ export default function ConversationsSidebar() {
     post_id: {
       _id: string;
       title: string;
-      image: string;
+      images: {
+        _id: string;
+        url: string;
+        alt?: string;
+        tags: string[];
+      }[];
     };
     participants: {
       _id: string;
@@ -163,8 +168,8 @@ export default function ConversationsSidebar() {
 
               // choose image fallback safely
               const postImage =
-                postId && postId.image
-                  ? process.env.NEXT_PUBLIC_URL_GCS + postId.image
+                postId && postId.images[0].url
+                  ? process.env.NEXT_PUBLIC_URL_GCS + postId.images[0].url
                   : "/image/header/carbon_user-avatar-filled-alt.svg";
 
               const postTitle =

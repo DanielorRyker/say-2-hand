@@ -1,10 +1,12 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styles from "./postList.module.scss";
 // Iconify import (replace HeartSVG with this icon)
 import { Icon } from "@iconify/react";
+import axios from "axios";
+
 
 // Local SVG icons (matching files in public/image/feed)
 const ICONS = {
@@ -212,6 +214,95 @@ const itemsData: ItemData[] = [
 ];
 
 export const ListPost: React.FC = () => {
+
+  //Lấy dữ liệu từ database
+
+ interface Post {
+  _id: string;
+  title: string;
+  description: string;
+  images: {
+    _id: string;
+    url: string;
+    alt?: string;
+    tags: string[];
+  }[];
+  condition: string;
+  transaction_type: string;
+  price: number;
+  location: {
+    address: string;
+    geo?: {
+      type: string;
+      coordinates: [number, number];
+    };
+  };
+  custom_fields?: Record<string, string>; // ví dụ: { "màu sắc": "đen", "bộ nhớ": "128GB" }
+  tags?: string[];
+  status: string;
+  stats?: {
+    _id?: string;
+    view_count: number;
+    favorite_count: number;
+    chat_count?: number;
+  };
+  moderation?: {
+    _id: string;
+  };
+  author_id: {
+    _id: string;
+    full_name: string;
+    avatar: string;
+  };
+  category_id?: {
+    _id?: string;
+    name?: string;
+  } | null;
+  createdAt: string;
+  updatedAt: string;
+  __v?: number;
+  reputation?: {
+    average_score: number;
+    total_ratings: number;
+  };
+  distance_km?: number;
+}
+
+ const [postsData, setPostsData] = useState<Post[]>([]);
+
+useEffect(() => {
+        async function fetchPosts() {
+            const res = await axios.get("http://localhost:8080/api/posts/postmap");
+            setPostsData(res.data); // res.data là danh sách posts
+            console.log("posts", res.data);
+        }
+        fetchPosts();
+        }, []);
+
+//dữ liệu tạm thời
+const isFavorited = false;
+const isAvailable = false
+
+
+////Tính thời gian
+const getRelativeTime = (isoString: string) => {
+    const date = new Date(isoString);
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (seconds < 60) return "Vừa xong";
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes} phút trước`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} giờ trước`;
+    const days = Math.floor(hours / 24);
+    if (days < 30) return `${days} ngày trước`;
+    const months = Math.floor(days / 30);
+    if (months < 12) return `${months} tháng trước`;
+    const years = Math.floor(months / 12);
+    return `${years} năm trước`;
+  };
+
   const [items, setItems] =
     React.useState<(ItemData & { isFavorited?: boolean })[]>(itemsData);
 
@@ -275,39 +366,39 @@ export const ListPost: React.FC = () => {
 
   const badgeClassFor = React.useCallback((postType: string) => {
     switch (postType) {
-      case "BÁN":
+      case "sell":
         return styles["post-badge-ban"];
-      case "TRAO ĐỔI":
+      case "give away":
         return styles["post-badge-trao"];
-      case "TẶNG":
+      case "trade":
         return styles["post-badge-tang"];
     }
   }, []);
 
   return (
     <div className={styles["card-carousel"]} id="cardCarousel">
-      {items.map((data) => {
-        const conditionInfo = CONDITION_MAP[data.conditionKey] || {
+      {postsData.map((data) => {
+        const conditionInfo = CONDITION_MAP[data.condition] || {
           text: "Không rõ",
           colorKey: "for_parts",
         };
         return (
           <div
-            key={data.id}
-            id={`itemCard-${data.id}`}
+            key={data._id}
+            id={`itemCard-${data._id}`}
             className={`${styles["item-card"]} ${styles.card}`}
           >
             <div className={styles["image-wrapper"]}>
               <img
                 className={styles["item-image"]}
-                src={data.imageUrl}
+                src={data.images && data.images.length > 0 ? process.env.NEXT_PUBLIC_URL_GCS +data.images[0].url : 'https://placehold.co/600x450/9ca3af/ffffff?text=No+Image'}
                 alt={data.title}
               />
 
               <div
-                className={`${styles["post-type-badge"]} ${badgeClassFor(data.postType)}`}
+                className={`${styles["post-type-badge"]} ${badgeClassFor(data.transaction_type)}`}
               >
-                {data.postType}
+                {data.transaction_type}
               </div>
 
               <div className={styles["quick-actions--absolute"]}>
@@ -316,15 +407,16 @@ export const ListPost: React.FC = () => {
                   className={`${styles["quick-action-btn"]} ${styles["ripple-target"]} ${styles["quick-action-btn--red"]}`}
                   onClick={(e) => {
                     handleRippleClick(e);
-                    toggleFavorite(data.id);
+                    toggleFavorite(data._id as unknown as number);
                   }}
                 >
+                  {/* chưa có Yêu thích*/}
                   <span
-                    className={`${styles.heartIcon} ${data.isFavorited ? styles.heartIconActive : ""}`}
+                    className={`${styles.heartIcon} ${isFavorited ? styles.heartIconActive : ""}`}
                   >
                     <Icon
                       icon={
-                        data.isFavorited
+                        isFavorited
                           ? "ic:sharp-favorite"
                           : "ic:twotone-favorite"
                       }
@@ -333,6 +425,7 @@ export const ListPost: React.FC = () => {
                     />
                   </span>
                 </button>
+
                 {/* <button
                   title="Chia sẻ"
                   className={`${styles["quick-action-btn"]} ${styles["ripple-target"]} ${styles["quick-action-btn--indigo"]}`}
@@ -341,14 +434,14 @@ export const ListPost: React.FC = () => {
                   <img src={ICONS.share} alt="Chia sẻ" width={25} height={25} />
                 </button> */}
               </div>
-              <div className={styles["time-badge"]}>{data.timePosted}</div>
+              <div className={styles["time-badge"]}>{getRelativeTime(data.createdAt)}</div>
 
               <div className={styles["image-count-badge"]}>
                 <img src={ICONS.image} alt="Ảnh" width={14} height={14} />{" "}
-                {data.imageCount} Ảnh
+                {data.images.length} Ảnh
               </div>
 
-              {!data.isAvailable && (
+              {isAvailable && (
                 <div className={styles["unavailable-overlay"]}>
                   <span className={styles["unavailable-label"]}>
                     ĐÃ THANH LÝ
@@ -361,11 +454,11 @@ export const ListPost: React.FC = () => {
               className={`${styles["card-body"]} ${styles["card-body--md"]}`}
             >
               <div className={styles.price}>
-                {data.price === "#FREE" ? (
+                {data.price == null ? (
                   <h2 className={styles["price-gradient"]}>#FREE</h2>
                 ) : (
                   <h2 className={styles["price-gradient"]}>
-                    {data.price} <small>{data.currency}</small>
+                    {data.price} <small>VND</small>
                   </h2>
                 )}
               </div>
@@ -398,7 +491,7 @@ export const ListPost: React.FC = () => {
                 </span>
                 <span className={styles.tag}>
                   <img src={ICONS.tag} alt="Tag" width={16} height={16} />{" "}
-                  {data.category}
+                  {data.category_id?.name}
                 </span>
               </div>
             </div>
@@ -407,13 +500,17 @@ export const ListPost: React.FC = () => {
               <div className={styles["author-info"]}>
                 <img
                   className={styles.avatar}
-                  src={`https://placehold.co/40x40/facc15/333333?text=${data.author.name.charAt(0)}`}
+                  src={
+                        data.author_id?.avatar
+                          ? process.env.NEXT_PUBLIC_URL_GCS + data.author_id.avatar
+                          : '/image/header/carbon_user-avatar-filled-alt.svg'
+                      }
                   alt="Avatar Người đăng"
                 />
                 <div>
                   <div className={styles["author-name"]}>
-                    {data.author.name}
-                    {data.author.isVerified && (
+                    {data.author_id.full_name}
+                    {/* {data.author.isVerified && ( */}
                       <img
                         src={ICONS.badge}
                         alt="Đã xác thực"
@@ -421,10 +518,11 @@ export const ListPost: React.FC = () => {
                         height={16}
                         className={styles["verified-badge"]}
                       />
-                    )}
+                    {/* )} */}
                   </div>
+                  
                   <div className={styles.reputation}>
-                    {/* Render stars using Iconify SVG icons for reliable SVG clipping */}
+                 
                     <span
                       className={`${styles.starContainer} ${styles.stars} ${styles.starsFlex}`}
                       aria-hidden
@@ -443,9 +541,10 @@ export const ListPost: React.FC = () => {
                       {(() => {
                         const rawScore = Math.max(
                           1,
-                          data.author.reputationScore
+                          5 // data.author.reputationScore
+                          
                         );
-                        // exact percent (1% granularity) so .5 and .2 are visible
+                       
                         const pct = Math.round((rawScore / 5) * 100);
                         return (
                           <span
@@ -461,7 +560,7 @@ export const ListPost: React.FC = () => {
                                   el.classList.remove(styles.starsOverlayFull);
                                 }
                               } catch {
-                                /* ignore in SSR or non-DOM contexts */
+                                
                               }
                             }}
                           >
@@ -479,11 +578,12 @@ export const ListPost: React.FC = () => {
                         );
                       })()}
                     </span>
-                    <strong>{data.author.reputationScore}/5</strong>{" "}
+                    <strong>5/5</strong>{" "}
                     <span className={styles.reviews}>
-                      ({data.author.reviewCount} đánh giá)
+                      ( đánh giá)
                     </span>
                   </div>
+
                 </div>
               </div>
             </div>
@@ -499,16 +599,16 @@ export const ListPost: React.FC = () => {
                 />
                 <div className={styles["location-text"]}>
                   <span className={styles["location-name"]}>
-                    {data.location}
+                    {data.location.address}
                   </span>
-                  <span className={styles.proximity}>({data.proximity})</span>
+                  <span className={styles.proximity}>.</span>
                 </div>
               </div>
 
               <div className={styles["small-stats"]}>
                 <span className={styles["text-xs"]}>
                   <img src={ICONS.eye} alt="Lượt xem" width={15} height={15} />
-                  {data.views}
+                  {/* {data.views} */}#
                 </span>
                 <span className={`${styles["text-xs"]} ${styles["stat-fav"]}`}>
                   <img
@@ -517,7 +617,7 @@ export const ListPost: React.FC = () => {
                     width={15}
                     height={15}
                   />
-                  {data.favorites}
+                  {/* {data.favorites} */}#
                 </span>
               </div>
             </div>
@@ -528,4 +628,4 @@ export const ListPost: React.FC = () => {
   );
 };
 
-export default ListPost;
+export default  ListPost;
