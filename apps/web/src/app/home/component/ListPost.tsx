@@ -282,9 +282,16 @@ useEffect(() => {
         }, []);
 
 //dữ liệu tạm thời
-const isFavorited = false;
+const [isFavorited, setIsFavorited] = useState(false);
 
-
+const handleSetFavorite = (value: boolean) => {
+  // Cập nhật trạng thái yêu thích
+  if(value === true){
+    setIsFavorited(false);
+  }else{
+    setIsFavorited(true);
+  }
+};
 
 ////Tính thời gian
 const getRelativeTime = (isoString: string) => {
@@ -370,13 +377,26 @@ const getRelativeTime = (isoString: string) => {
     switch (postType) {
       case "sell":
         return styles["post-badge-ban"];
-      case "give away":
-        return styles["post-badge-trao"];
       case "trade":
+        return styles["post-badge-trao"];
+      case "give away":
         return styles["post-badge-tang"];
     }
   }, []);
 
+  const setTransactionType = (type: string) => {
+    switch (type) {
+      case "sell":
+        return "BÁN";
+      case "give away":
+        return "TẶNG";
+      case "trade":
+        return "TRAO ĐỔI";
+      default:
+        return type;
+    }
+  };
+ let priceHtml;
   return (
     <div className={styles["card-carousel"]} id="cardCarousel">
       {postsData.map((data) => {
@@ -400,7 +420,7 @@ const getRelativeTime = (isoString: string) => {
               <div
                 className={`${styles["post-type-badge"]} ${badgeClassFor(data.transaction_type)}`}
               >
-                {data.transaction_type}
+                {setTransactionType(data.transaction_type)}
               </div>
 
               <div className={styles["quick-actions--absolute"]}>
@@ -410,6 +430,7 @@ const getRelativeTime = (isoString: string) => {
                   onClick={(e) => {
                     handleRippleClick(e);
                     toggleFavorite(data._id as unknown as number);
+                    handleSetFavorite(isFavorited)
                   }}
                 >
                   {/* chưa có Yêu thích*/}
@@ -418,7 +439,7 @@ const getRelativeTime = (isoString: string) => {
                   >
                     <Icon
                       icon={
-                        isFavorited
+                         isFavorited
                           ? "ic:sharp-favorite"
                           : "ic:twotone-favorite"
                       }
@@ -457,10 +478,12 @@ const getRelativeTime = (isoString: string) => {
             >
               <div className={styles.price}>
                 {data.price == null ? (
-                  <h2 className={styles["price-gradient"]}>#FREE</h2>
+                  <h2 className={styles["price-gradient"]}>Miễn Phí</h2>
                 ) : (
                   <h2 className={styles["price-gradient"]}>
-                    {data.price} <small>VND</small>
+                     
+                        {`${new Intl.NumberFormat("vi-VN").format(data.price!)} VNĐ`}
+                      
                   </h2>
                 )}
               </div>
@@ -610,7 +633,7 @@ const getRelativeTime = (isoString: string) => {
               <div className={styles["small-stats"]}>
                 <span className={styles["text-xs"]}>
                   <img src={ICONS.eye} alt="Lượt xem" width={15} height={15} />
-                  {/* {data.views} */}#
+                  {/* {data.views} */}0
                 </span>
                 <span className={`${styles["text-xs"]} ${styles["stat-fav"]}`}>
                   <img
@@ -619,7 +642,7 @@ const getRelativeTime = (isoString: string) => {
                     width={15}
                     height={15}
                   />
-                  {/* {data.favorites} */}#
+                  {/* {data.favorites} */}0
                 </span>
               </div>
             </div>
