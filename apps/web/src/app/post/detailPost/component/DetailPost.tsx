@@ -355,7 +355,7 @@ export const DetailPost: React.FC = () => {
 
                 return [];
               })(),
-
+              
               status: parsed.status,
               views: parsed.views || mockData.post.views,
               updatedAt: parsed.updatedAt,
@@ -363,9 +363,9 @@ export const DetailPost: React.FC = () => {
               author_id: parsed.author_id?._id,
             },
             user: {
-              author_id: parsed.author_id?._id,
-              avatar_url: parsed.author_id?.avatar,
-              name: parsed.author_id?.full_name,
+              _id: parsed.author_id?._id,
+              avatar: parsed.author_id?.avatar,
+              full_name: parsed.author_id?.full_name,
               reputation_score:
                 parsed.author?.reputationScore ||
                 mockData.user.reputation_score,
@@ -558,8 +558,9 @@ export const DetailPost: React.FC = () => {
     try {
       const payload = {
         post_id: postData.post._id,
-        participants: [currentUser._id, postData.user.author_id],
+        participants: [currentUser._id, postData.user._id],
       };
+      console.log("Creating conversation with payload:", payload);
       const res = await axios.post(
         "http://localhost:8080/api/conversations",
         payload
@@ -589,9 +590,9 @@ export const DetailPost: React.FC = () => {
             avatar: currentUser.avatar || "",
           },
           {
-            _id: postData.user.author_id,
-            full_name: postData.user.name,
-            avatar: postData.user.avatar_url || "",
+            _id: postData.user._id,
+            full_name: postData.user.full_name,
+            avatar: postData.user.avatar || "",
           },
         ],
       };
@@ -881,8 +882,8 @@ export const DetailPost: React.FC = () => {
                   <div className={`${styles["comment-input-row"]}`}>
                     <img
                       src={
-                        postData.user.avatar_url
-                          ? base + postData.user.avatar_url
+                        postData.user.avatar
+                          ? base + postData.user.avatar
                           : "/image/header/carbon_user-avatar-filled-alt.svg"
                       }
                       alt="Your Avatar"
@@ -978,15 +979,15 @@ export const DetailPost: React.FC = () => {
                     <div className={`${styles["seller-head"]}`}>
                       <img
                         src={
-                          postData.user.avatar_url
-                            ? base + postData.user.avatar_url
+                          postData.user.avata
+                            ? base + postData.user.avatar
                             : "/image/header/carbon_user-avatar-filled-alt.svg"
                         }
                         alt="seller"
                       />
                       <div>
                         <div className={`${styles["seller-name"]}`}>
-                          {postData.user.name}{" "}
+                          {postData.user.full_name}{" "}
                           {postData.user.is_verified ? (
                             <Icon
                               icon="lucide:badge-check"

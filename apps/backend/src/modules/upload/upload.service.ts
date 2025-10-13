@@ -115,9 +115,10 @@ export class UploadService {
     async uploadImgs(files: Express.Multer.File[], folder: string) {
       const bucket = this.storage.bucket(this.bucketName);
 
+      const path = this.slugify(folder);
       const uploadPromises = files.map((file) => {
         const random = Math.floor(100000 + Math.random() * 900000).toString();
-        const fileName = `${folder}/${Date.now()}-${random}-${file.originalname}`;
+        const fileName = `${path}/${Date.now()}-${random}-${file.originalname}`;
         const blob = bucket.file(fileName);
 
         const blobStream = blob.createWriteStream({
@@ -138,5 +139,18 @@ export class UploadService {
       return results; // Trả về mảng tên file
     }
 
+     slugify(input: string): string {
+        return input
+          .normalize('NFD') // tách dấu
+          .replace(/[\u0300-\u036f]/g, '') // xoá dấu tổ hợp
+          .replace(/đ/g, 'd') // xử lý chữ đ
+          .replace(/Đ/g, 'd') // xử lý chữ Đ
+          .toLowerCase()
+          .trim()
+          .replace(/\s+/g, '-') // space -> -
+          .replace(/[^a-z0-9-]/g, '') // loại ký tự đặc biệt
+          .replace(/-+/g, '-'); // gộp nhiều -
+      }
 
 }
+
