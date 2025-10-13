@@ -310,7 +310,7 @@ export const DetailPost: React.FC = () => {
                   : parsed.price && !isNaN(Number(parsed.price)),
               transaction_type: parsed.transaction_type ,
               condition: parsed.condition ,
-
+              category_id: parsed.category_id,
               image_urls: (() => {
                 // Ưu tiên parsed.images nếu có
                 if (Array.isArray(parsed.images)) {
@@ -445,7 +445,7 @@ export const DetailPost: React.FC = () => {
 
   const openLightbox = (index: number) => {
     setCurrentImageIndex(index);
-    setLightboxSrc(postData.post.image_urls[index]);
+    setLightboxSrc(base + postData.post.image_urls[index].url);
     setIsLightboxOpen(true);
   };
 
@@ -643,6 +643,19 @@ export const DetailPost: React.FC = () => {
             return type;
       }
     }
+    //tách chuỗi
+    const extractStringAfterLastComma = (fullString: string): string => {
+  if (!fullString || typeof fullString !== 'string') {
+    return "";
+  }
+
+  const lastCommaIndex = fullString.lastIndexOf(',');
+  if (lastCommaIndex === -1) {
+    return ""; 
+  }
+  const result = fullString.slice(lastCommaIndex + 1);
+  return result.trim();
+};
   return (
     <div className={`${styles["detail-post"]}`}>
       <div className={`${styles["container"]}`}>
@@ -689,7 +702,9 @@ export const DetailPost: React.FC = () => {
             </div>
           </div>
         ) : (
+          
           <div id="main-content">
+            <p>Say2hand &gt; {postData.post.category_id.name} &gt; {extractStringAfterLastComma(postData.location.address_text)}</p>
             <article className={`${styles["main-article"]}`}>
               <div className={`${styles["left-col"]}`}>
                 <div className={`${styles["header-row"]}`}>
@@ -1307,7 +1322,7 @@ export const DetailPost: React.FC = () => {
               <Icon icon="lucide:chevron-left" width={24} height={24} />
             </button>
             <img
-              src={lightboxSrc}
+              src={base + postData.post.image_urls[currentImageIndex].url}
               alt="lightbox"
               onClick={(e) => e.stopPropagation()}
             />

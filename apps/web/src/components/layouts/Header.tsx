@@ -207,6 +207,10 @@ const Header = () => {
                   Cài đặt tài khoản
                 </NavDropdown.Item>
                 <NavDropdown.Divider />
+                <NavDropdown.Item onClick={handleProfile}>
+                  Bài đăng của tôi
+                </NavDropdown.Item>
+                <NavDropdown.Divider />
                 <NavDropdown.Item onClick={handleLogout}>
                   Đăng xuất
                 </NavDropdown.Item>
@@ -214,6 +218,10 @@ const Header = () => {
             )}
             {user && user.role === "admin" && (
               <>
+                <NavDropdown.Item onClick={handleProfile}>
+                  Cài đặt tài khoản
+                </NavDropdown.Item>
+                  <NavDropdown.Divider />
                 <NavDropdown.Item onClick={() => router.push("/admin/users")}>
                   Quản lý tài khoản
                 </NavDropdown.Item>
