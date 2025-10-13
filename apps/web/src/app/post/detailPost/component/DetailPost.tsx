@@ -263,8 +263,8 @@ export const DetailPost: React.FC = () => {
   );
 
   //Lấy user hiện tại
-   const [currentUser, setCurrentUser] = useState<any>(null);
-    useEffect(() => {
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  useEffect(() => {
     const userData = localStorage.getItem("user");
     setCurrentUser(userData ? JSON.parse(userData) : null);
   }, []);
@@ -291,12 +291,12 @@ export const DetailPost: React.FC = () => {
   // Attempt to hydrate post data from sessionStorage if navigated from list
   useEffect(() => {
     try {
-       const params = new URLSearchParams(window.location.search);
+      const params = new URLSearchParams(window.location.search);
       const postId = params.get("postId");
       if (postId) {
         const key = `selectedPost_${postId}`;
         const raw = sessionStorage.getItem(key);
-          if (raw) {
+        if (raw) {
           const parsed = JSON.parse(raw);
           // map fields from ListPost shape to DetailPost expected shape when possible
           const mapped = {
@@ -312,83 +312,87 @@ export const DetailPost: React.FC = () => {
               condition: parsed.condition ,
 
               image_urls: (() => {
-              
+                // Ưu tiên parsed.images nếu có
+                if (Array.isArray(parsed.images)) {
+                  return parsed.images
+                    .map((img: any, i: number) => {
+                      const rawUrl = img?.url || img; // phòng trường hợp chỉ là chuỗi
+                      if (!rawUrl) return null;
 
-              // Ưu tiên parsed.images nếu có
-              if (Array.isArray(parsed.images)) {
-                return parsed.images
-                  .map((img: any, i: number) => {
-                    const rawUrl = img?.url || img; // phòng trường hợp chỉ là chuỗi
-                    if (!rawUrl) return null;
+                      // Nếu là đường dẫn tương đối → thêm prefix GCS
+                      const fullUrl =
+                        rawUrl.startsWith("/") || !/^https?:\/\//i.test(rawUrl)
+                          ? `${rawUrl}`
+                          : rawUrl;
 
-                    // Nếu là đường dẫn tương đối → thêm prefix GCS
-                    const fullUrl =
-                      rawUrl.startsWith("/") || !/^https?:\/\//i.test(rawUrl)
-                        ? `${rawUrl}`
-                        : rawUrl;
+                      return {
+                        _id: img?._id || `img_${i}`,
+                        url: fullUrl,
+                        alt: img?.alt || `image_${i + 1}`,
+                        tags: Array.isArray(img?.tags) ? img.tags : [],
+                      };
+                    })
+                    .filter(Boolean);
+                }
 
-                    return {
-                      _id: img?._id || `img_${i}`,
+                // Nếu chỉ có 1 ảnh đơn lẻ imageUrl
+                if (parsed.imageUrl) {
+                  const rawUrl = parsed.imageUrl;
+                  const fullUrl =
+                    rawUrl.startsWith("/") || !/^https?:\/\//i.test(rawUrl)
+                      ? `${rawUrl}`
+                      : rawUrl;
+
+                  return [
+                    {
+                      _id: "img_0",
                       url: fullUrl,
-                      alt: img?.alt || `image_${i + 1}`,
-                      tags: Array.isArray(img?.tags) ? img.tags : [],
-                    };
-                  })
-                  .filter(Boolean);
-              }
+                      alt: "image_1",
+                      tags: [],
+                    },
+                  ];
+                }
 
-              // Nếu chỉ có 1 ảnh đơn lẻ imageUrl
-              if (parsed.imageUrl) {
-                const rawUrl = parsed.imageUrl;
-                const fullUrl =
-                  rawUrl.startsWith("/") || !/^https?:\/\//i.test(rawUrl)
-                    ? `${rawUrl}`
-                    : rawUrl;
+                return [];
+              })(),
 
-                return [
-                  {
-                    _id: "img_0",
-                    url: fullUrl,
-                    alt: "image_1",
-                    tags: [],
-                  },
-                ];
-              }
-
-              return [];
-            })(),
-
-              status: parsed.status ,
+              status: parsed.status,
               views: parsed.views || mockData.post.views,
-              updatedAt: parsed.updatedAt ,
-              createdAt: parsed.createdAt ,
+              updatedAt: parsed.updatedAt,
+              createdAt: parsed.createdAt,
               author_id: parsed.author_id?._id,
             },
             user: {
-              author_id: parsed.author_id?._id ,
-              avatar_url:
-                parsed.author_id?.avatar ,
-              name: parsed.author_id?.full_name ,
+              author_id: parsed.author_id?._id,
+              avatar_url: parsed.author_id?.avatar,
+              name: parsed.author_id?.full_name,
               reputation_score:
-                parsed.author?.reputationScore || mockData.user.reputation_score,
-              review_count: parsed.author?.reviewCount || mockData.user.review_count,
+                parsed.author?.reputationScore ||
+                mockData.user.reputation_score,
+              review_count:
+                parsed.author?.reviewCount || mockData.user.review_count,
               post_count: parsed.author?.post_count || mockData.user.post_count,
               is_verified: parsed.author?.email_verified || true,
             },
             location: {
               address_text: (() => {
                 try {
-                  if (typeof parsed.location === "string") return parsed.location;
+                  if (typeof parsed.location === "string")
+                    return parsed.location;
                   const addr = parsed.location?.address;
                   if (typeof addr === "string") return addr;
                   if (addr && typeof addr === "object") {
-                    return addr.address || addr.formattedAddress || addr.label || JSON.stringify(addr);
+                    return (
+                      addr.address ||
+                      addr.formattedAddress ||
+                      addr.label ||
+                      JSON.stringify(addr)
+                    );
                   }
-                  if (typeof parsed.location?.formattedAddress === "string") return parsed.location.formattedAddress;
+                  if (typeof parsed.location?.formattedAddress === "string")
+                    return parsed.location.formattedAddress;
                 } catch {}
-          
               })(),
-             
             },
             similar_products: mockData.similar_products,
             comments: mockData.comments,
@@ -396,7 +400,11 @@ export const DetailPost: React.FC = () => {
           // debug: if image_urls is empty, log parsed images for troubleshooting
           if (!mapped.post.image_urls || mapped.post.image_urls.length === 0) {
             try {
-              console.warn("DetailPost hydration: no images mapped", parsed.images, parsed.imageUrl);
+              console.warn(
+                "DetailPost hydration: no images mapped",
+                parsed.images,
+                parsed.imageUrl
+              );
             } catch {}
           }
           setPostData(mapped);
@@ -525,7 +533,7 @@ export const DetailPost: React.FC = () => {
   };
 
   ////Tính thời gian
-const getRelativeTime = (isoString: string) => {
+  const getRelativeTime = (isoString: string) => {
     const date = new Date(isoString);
     const now = new Date();
     const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
@@ -546,13 +554,12 @@ const getRelativeTime = (isoString: string) => {
   // --- Conversation ---
   const handleCreateConversation = async () => {
     // if (!post || !currentUser || !user?._id) return;
-    
+
     try {
       const payload = {
         post_id: postData.post._id,
         participants: [currentUser._id, postData.user.author_id],
       };
-      console.log("Created payload:", postData);
       const res = await axios.post(
         "http://localhost:8080/api/conversations",
         payload
@@ -576,22 +583,22 @@ const getRelativeTime = (isoString: string) => {
           updatedAt: postData.post.updatedAt,
         },
         participants: [
-        {
-          _id: currentUser._id,
-          full_name: currentUser.full_name,
-          avatar: currentUser.avatar || "",
-        },
-        {
-          _id: postData.user.author_id,
-          full_name: postData.user.name,
-          avatar: postData.user.avatar_url || "",
-        },
-      ],
+          {
+            _id: currentUser._id,
+            full_name: currentUser.full_name,
+            avatar: currentUser.avatar || "",
+          },
+          {
+            _id: postData.user.author_id,
+            full_name: postData.user.name,
+            avatar: postData.user.avatar_url || "",
+          },
+        ],
       };
 
       console.log("Created conversation:", conversationToSave);
       localStorage.setItem("conversation", JSON.stringify(conversationToSave));
-      
+
       router.push(`/conversation/${res.data._id}`);
     } catch (error) {
       console.error("Error creating conversation:", error);
@@ -706,7 +713,9 @@ const getRelativeTime = (isoString: string) => {
                   >
                     <img
                       id="main-image"
-                      src={base + postData.post.image_urls[currentImageIndex].url}
+                      src={
+                        base + postData.post.image_urls[currentImageIndex].url
+                      }
                       alt="main"
                     />
                     <div
@@ -746,18 +755,22 @@ const getRelativeTime = (isoString: string) => {
                     className={`${styles["thumbs"]}`}
                     ref={thumbsRef}
                   >
-                    {postData.post.image_urls.map((imageUrl: any, idx: number) => (
-                      <div
-                        key={idx}
-                        data-thumb-index={idx}
-                        className={`${styles["thumb"]} ${
-                          idx === currentImageIndex ? `${styles["active"]}` : ""
-                        }`}
-                        onClick={() => handleSetImage(idx)}
-                      >
-                            <img src={base + imageUrl.url} alt={`thumb-${idx}`} />
-                      </div>
-                    ))}
+                    {postData.post.image_urls.map(
+                      (imageUrl: any, idx: number) => (
+                        <div
+                          key={idx}
+                          data-thumb-index={idx}
+                          className={`${styles["thumb"]} ${
+                            idx === currentImageIndex
+                              ? `${styles["active"]}`
+                              : ""
+                          }`}
+                          onClick={() => handleSetImage(idx)}
+                        >
+                          <img src={base + imageUrl.url} alt={`thumb-${idx}`} />
+                        </div>
+                      )
+                    )}
                   </div>
                 </div>
 
@@ -783,14 +796,32 @@ const getRelativeTime = (isoString: string) => {
                       <Icon icon="lucide:repeat" width={14} height={14} />
                       &nbsp;<strong>Hình thức:</strong>&nbsp;
                       <span id="post-type">
-                        {postData.post.transaction_type==='give away' ? "Miễn phí" : postData.post.transaction_type==='trade' ? "Trao đổi" : postData.post.transaction_type==='sell' ? "Bán" : "Khác"}
+                        {postData.post.transaction_type === "give away"
+                          ? "Miễn phí"
+                          : postData.post.transaction_type === "trade"
+                            ? "Trao đổi"
+                            : postData.post.transaction_type === "sell"
+                              ? "Bán"
+                              : "Khác"}
                       </span>
                     </div>
                     <div className={`${styles["meta-item"]}`}>
                       <Icon icon="lucide:package" width={14} height={14} />
                       &nbsp;<strong>Tình trạng:</strong>&nbsp;
                       <span id="post-condition">
-                        {postData.post.condition=== "new"? "Mới " : postData.post.condition==="like new" ? "Gần như mới" : postData.post.condition=== "used" ? "Đã sử dụng" : postData.post.condition==="minor flow" ? "Hư nhẹ" : postData.post.condition==="for repair" ? "Cần sửa chữa" : postData.post.condition==="not working" ? "Không hoạt động":"Khác"}
+                        {postData.post.condition === "new"
+                          ? "Mới "
+                          : postData.post.condition === "like new"
+                            ? "Gần như mới"
+                            : postData.post.condition === "used"
+                              ? "Đã sử dụng"
+                              : postData.post.condition === "minor flow"
+                                ? "Hư nhẹ"
+                                : postData.post.condition === "for repair"
+                                  ? "Cần sửa chữa"
+                                  : postData.post.condition === "not working"
+                                    ? "Không hoạt động"
+                                    : "Khác"}
                       </span>
                     </div>
                     <div className={`${styles["meta-item"]}`}>
@@ -805,7 +836,6 @@ const getRelativeTime = (isoString: string) => {
                       &nbsp;<strong>Đăng lúc:</strong>&nbsp;
                       <span id="post-created-at">
                         {getRelativeTime(postData.post.updatedAt)}
-                        
                       </span>
                     </div>
                   </div>
@@ -849,7 +879,14 @@ const getRelativeTime = (isoString: string) => {
                     <div className={`${styles["skeleton-line"]}`} />
                   )}
                   <div className={`${styles["comment-input-row"]}`}>
-                    <img src={postData.user.avatar_url ? base + postData.user.avatar_url : '/image/header/carbon_user-avatar-filled-alt.svg'} alt="Your Avatar" />
+                    <img
+                      src={
+                        postData.user.avatar_url
+                          ? base + postData.user.avatar_url
+                          : "/image/header/carbon_user-avatar-filled-alt.svg"
+                      }
+                      alt="Your Avatar"
+                    />
                     <form
                       className={`${styles["comment-form"]}`}
                       onSubmit={handleSubmitComment}
@@ -939,7 +976,14 @@ const getRelativeTime = (isoString: string) => {
                 <div className={`${styles["desktop-sticky-sidebar"]}`}>
                   <div className={`${styles["seller-card"]}`}>
                     <div className={`${styles["seller-head"]}`}>
-                      <img src={postData.user.avatar_url ? base + postData.user.avatar_url : '/image/header/carbon_user-avatar-filled-alt.svg'} alt="seller" />
+                      <img
+                        src={
+                          postData.user.avatar_url
+                            ? base + postData.user.avatar_url
+                            : "/image/header/carbon_user-avatar-filled-alt.svg"
+                        }
+                        alt="seller"
+                      />
                       <div>
                         <div className={`${styles["seller-name"]}`}>
                           {postData.user.name}{" "}
