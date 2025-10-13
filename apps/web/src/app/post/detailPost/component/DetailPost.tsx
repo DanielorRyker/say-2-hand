@@ -197,7 +197,7 @@ const formatCurrency = (n: number) =>
   );
 
 export const DetailPost: React.FC = () => {
-  const [postData] = useState(mockData);
+  const [postData, setPostData] = useState<any>(mockData);
   // track favorites per similar product by id
   const [cardFavorites, setCardFavorites] = useState<Record<number, boolean>>(
     {}
@@ -274,6 +274,92 @@ export const DetailPost: React.FC = () => {
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 500);
     return () => clearTimeout(timer);
+  }, []);
+
+  // Attempt to hydrate post data from sessionStorage if navigated from list
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const postId = params.get("postId");
+      if (postId) {
+        const key = `selectedPost_${postId}`;
+        const raw = sessionStorage.getItem(key);
+          if (raw) {
+          const parsed = JSON.parse(raw);
+          // map fields from ListPost shape to DetailPost expected shape when possible
+          const mapped = {
+            post: {
+              title: parsed.title || mockData.post.title,
+              description: parsed.description || mockData.post.description,
+              price:
+                typeof parsed.price === "number"
+                  ? parsed.price
+                  : parsed.price && !isNaN(Number(parsed.price))
+                  ? Number(parsed.price)
+                  : mockData.post.price,
+              exchange_type: parsed.postType || mockData.post.exchange_type,
+              condition: parsed.conditionKey || mockData.post.condition,
+              image_urls: parsed.images
+                ? (parsed.images as Array<{ url: string }>).map((img) => {
+                    const url = img.url;
+                    if (!url) return url;
+                    // if relative path (starts with '/') or doesn't look like http(s), prefix with GCS base
+                    if (url.startsWith("/") || !/^https?:\/\//i.test(url)) {
+                      return `${process.env.NEXT_PUBLIC_URL_GCS || ""}${url}`;
+                    }
+                    return url;
+                  })
+                : parsed.imageUrl
+                ? [parsed.imageUrl]
+                : mockData.post.image_urls,
+              status: parsed.status || mockData.post.status,
+              views: parsed.views || mockData.post.views,
+              created_at: parsed.timePosted || mockData.post.created_at,
+              user_id: parsed.author_id?._id || mockData.post.user_id,
+            },
+            user: {
+              user_id: parsed.author_id?._id || mockData.user.user_id,
+              avatar_url:
+                parsed.author_id?.avatar || mockData.user.avatar_url,
+              name: parsed.author_id?.full_name || mockData.user.name,
+              reputation_score:
+                parsed.author?.reputationScore || mockData.user.reputation_score,
+              review_count: parsed.author?.reviewCount || mockData.user.review_count,
+              post_count: parsed.author?.post_count || mockData.user.post_count,
+              is_verified: parsed.author?.isVerified || mockData.user.is_verified,
+            },
+            location: {
+              address_text: (() => {
+                try {
+                  if (typeof parsed.location === "string") return parsed.location;
+                  const addr = parsed.location?.address;
+                  if (typeof addr === "string") return addr;
+                  if (addr && typeof addr === "object") {
+                    return addr.address || addr.formattedAddress || addr.label || JSON.stringify(addr);
+                  }
+                  if (typeof parsed.location?.formattedAddress === "string") return parsed.location.formattedAddress;
+                } catch {}
+                return mockData.location.address_text;
+              })(),
+              city: mockData.location.city,
+              lat: mockData.location.lat,
+              lng: mockData.location.lng,
+            },
+            similar_products: mockData.similar_products,
+            comments: mockData.comments,
+          };
+          // debug: if image_urls is empty, log parsed images for troubleshooting
+          if (!mapped.post.image_urls || mapped.post.image_urls.length === 0) {
+            try {
+              console.warn("DetailPost hydration: no images mapped", parsed.images, parsed.imageUrl);
+            } catch {}
+          }
+          setPostData(mapped);
+        }
+      }
+    } catch {
+      // ignore
+    }
   }, []);
 
   // Auto-scroll thumbnail into view when current image changes
@@ -504,7 +590,7 @@ export const DetailPost: React.FC = () => {
                     className={`${styles["thumbs"]}`}
                     ref={thumbsRef}
                   >
-                    {postData.post.image_urls.map((imageUrl, idx) => (
+                    {postData.post.image_urls.map((imageUrl: string, idx: number) => (
                       <div
                         key={idx}
                         data-thumb-index={idx}
@@ -513,7 +599,7 @@ export const DetailPost: React.FC = () => {
                         }`}
                         onClick={() => handleSetImage(idx)}
                       >
-                        <img src={imageUrl} alt={`thumb-${idx}`} />
+                            <img src={imageUrl} alt={`thumb-${idx}`} />
                       </div>
                     ))}
                   </div>

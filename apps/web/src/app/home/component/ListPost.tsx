@@ -412,7 +412,15 @@ const getRelativeTime = (isoString: string) => {
             key={data._id}
             id={`itemCard-${data._id}`}
             className={`${styles["item-card"]} ${styles.card}`}
-            onClick={() => router.push(`/post/detailPost?postId=${encodeURIComponent(data._id)}`)}
+            onClick={() => {
+              try {
+                sessionStorage.setItem(
+                  `selectedPost_${data._id}`,
+                  JSON.stringify(data)
+                );
+              } catch {}
+              router.push(`/post/detailPost?postId=${encodeURIComponent(data._id)}`);
+            }}
           >
             <div className={styles["image-wrapper"]}>
               <img
