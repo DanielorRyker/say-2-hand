@@ -86,6 +86,7 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "sass": "^1.91.0",
+    "say-2-hand": ".",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",
     "swagger-ui-express": "^5.0.1",
