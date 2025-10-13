@@ -1323,7 +1323,6 @@ export const DetailPost: React.FC = () => {
             </button>
           </div>
         )}
-
         {/* Mobile sticky footer CTA */}
         <div className={`${styles["mobile-footer"]}`}>
           <div className={`${styles["mobile-footer-inner"]}`}>
