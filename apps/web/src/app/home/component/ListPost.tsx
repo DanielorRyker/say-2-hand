@@ -8,7 +8,6 @@ import styles from "./postList.module.scss";
 import { Icon } from "@iconify/react";
 import axios from "axios";
 
-
 // Local SVG icons (matching files in public/image/feed)
 const ICONS = {
   heart: "/image/feed/favorite-active.svg",
@@ -217,87 +216,86 @@ const itemsData: ItemData[] = [
 ];
 
 export const ListPost: React.FC = () => {
-
   const router = useRouter();
 
   //Lấy dữ liệu từ database
 
- interface Post {
-  _id: string;
-  title: string;
-  description: string;
-  images: {
+  interface Post {
     _id: string;
-    url: string;
-    alt?: string;
-    tags: string[];
-  }[];
-  condition: string;
-  transaction_type: string;
-  price: number;
-  location: {
-    address: string;
-    geo?: {
-      type: string;
-      coordinates: [number, number];
+    title: string;
+    description: string;
+    images: {
+      _id: string;
+      url: string;
+      alt?: string;
+      tags: string[];
+    }[];
+    condition: string;
+    transaction_type: string;
+    price: number;
+    location: {
+      address: string;
+      geo?: {
+        type: string;
+        coordinates: [number, number];
+      };
     };
-  };
-  custom_fields?: Record<string, string>; // ví dụ: { "màu sắc": "đen", "bộ nhớ": "128GB" }
-  tags?: string[];
-  status: string;
-  stats?: {
-    _id?: string;
-    view_count: number;
-    favorite_count: number;
-    chat_count?: number;
-  };
-  moderation?: {
-    _id: string;
-  };
-  author_id: {
-    _id: string;
-    full_name: string;
-    avatar: string;
-  };
-  category_id?: {
-    _id?: string;
-    name?: string;
-  } | null;
-  createdAt: string;
-  updatedAt: string;
-  __v?: number;
-  reputation?: {
-    average_score: number;
-    total_ratings: number;
-  };
-  distance_km?: number;
-}
-
- const [postsData, setPostsData] = useState<Post[]>([]);
-
-useEffect(() => {
-        async function fetchPosts() {
-            const res = await axios.get("http://localhost:8080/api/posts/postmap");
-            setPostsData(res.data); // res.data là danh sách posts
-            console.log("posts", res.data);
-        }
-        fetchPosts();
-        }, []);
-
-//dữ liệu tạm thời
-const [isFavorited, setIsFavorited] = useState(false);
-
-const handleSetFavorite = (value: boolean) => {
-  // Cập nhật trạng thái yêu thích
-  if(value === true){
-    setIsFavorited(false);
-  }else{
-    setIsFavorited(true);
+    custom_fields?: Record<string, string>; // ví dụ: { "màu sắc": "đen", "bộ nhớ": "128GB" }
+    tags?: string[];
+    status: string;
+    stats?: {
+      _id?: string;
+      view_count: number;
+      favorite_count: number;
+      chat_count?: number;
+    };
+    moderation?: {
+      _id: string;
+    };
+    author_id: {
+      _id: string;
+      full_name: string;
+      avatar: string;
+    };
+    category_id?: {
+      _id?: string;
+      name?: string;
+    } | null;
+    createdAt: string;
+    updatedAt: string;
+    __v?: number;
+    reputation?: {
+      average_score: number;
+      total_ratings: number;
+    };
+    distance_km?: number;
   }
-};
 
-////Tính thời gian
-const getRelativeTime = (isoString: string) => {
+  const [postsData, setPostsData] = useState<Post[]>([]);
+
+  useEffect(() => {
+    async function fetchPosts() {
+      const res = await axios.get("http://localhost:8080/api/posts/postmap");
+      setPostsData(res.data); // res.data là danh sách posts
+      console.log("posts", res.data);
+    }
+    fetchPosts();
+  }, []);
+
+  //dữ liệu tạm thời
+  const [isFavorited, setIsFavorited] = useState(false);
+
+  const handleSetFavorite = (value: boolean) => {
+    // Cập nhật trạng thái yêu thích
+    if (value === true) {
+      setIsFavorited(false);
+    } else {
+      setIsFavorited(true);
+    }
+  };
+
+  ////Tính thời gian
+  const getRelativeTime = (isoString: string) => {
     const date = new Date(isoString);
     const now = new Date();
     const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
@@ -399,7 +397,7 @@ const getRelativeTime = (isoString: string) => {
         return type;
     }
   };
- let priceHtml;
+  let priceHtml;
   return (
     <div className={styles["card-carousel"]} id="cardCarousel">
       {postsData.map((data) => {
@@ -419,13 +417,19 @@ const getRelativeTime = (isoString: string) => {
                   JSON.stringify(data)
                 );
               } catch {}
-              router.push(`/post/detailPost?postId=${encodeURIComponent(data._id)}`);
+              router.push(
+                `/post/detailPost?postId=${encodeURIComponent(data._id)}`
+              );
             }}
           >
             <div className={styles["image-wrapper"]}>
               <img
                 className={styles["item-image"]}
-                src={data.images && data.images.length > 0 ? process.env.NEXT_PUBLIC_URL_GCS +data.images[0].url : 'https://placehold.co/600x450/9ca3af/ffffff?text=No+Image'}
+                src={
+                  data.images && data.images.length > 0
+                    ? process.env.NEXT_PUBLIC_URL_GCS + data.images[0].url
+                    : "https://placehold.co/600x450/9ca3af/ffffff?text=No+Image"
+                }
                 alt={data.title}
               />
 
@@ -443,7 +447,7 @@ const getRelativeTime = (isoString: string) => {
                     e.stopPropagation();
                     handleRippleClick(e);
                     toggleFavorite(data._id as unknown as number);
-                    handleSetFavorite(isFavorited)
+                    handleSetFavorite(isFavorited);
                   }}
                   onKeyDown={(e) => e.stopPropagation()}
                 >
@@ -453,7 +457,7 @@ const getRelativeTime = (isoString: string) => {
                   >
                     <Icon
                       icon={
-                         isFavorited
+                        isFavorited
                           ? "ic:sharp-favorite"
                           : "ic:twotone-favorite"
                       }
@@ -471,7 +475,9 @@ const getRelativeTime = (isoString: string) => {
                   <img src={ICONS.share} alt="Chia sẻ" width={25} height={25} />
                 </button> */}
               </div>
-              <div className={styles["time-badge"]}>{getRelativeTime(data.updatedAt)}</div>
+              <div className={styles["time-badge"]}>
+                {getRelativeTime(data.updatedAt)}
+              </div>
 
               <div className={styles["image-count-badge"]}>
                 <img src={ICONS.image} alt="Ảnh" width={14} height={14} />{" "}
@@ -495,9 +501,7 @@ const getRelativeTime = (isoString: string) => {
                   <h2 className={styles["price-gradient"]}>Miễn Phí</h2>
                 ) : (
                   <h2 className={styles["price-gradient"]}>
-                     
-                        {`${new Intl.NumberFormat("vi-VN").format(data.price!)} VNĐ`}
-                      
+                    {`${new Intl.NumberFormat("vi-VN").format(data.price!)} VNĐ`}
                   </h2>
                 )}
               </div>
@@ -540,28 +544,27 @@ const getRelativeTime = (isoString: string) => {
                 <img
                   className={styles.avatar}
                   src={
-                        data.author_id?.avatar
-                          ? process.env.NEXT_PUBLIC_URL_GCS + data.author_id.avatar
-                          : '/image/header/carbon_user-avatar-filled-alt.svg'
-                      }
+                    data.author_id?.avatar
+                      ? process.env.NEXT_PUBLIC_URL_GCS + data.author_id.avatar
+                      : "/image/header/carbon_user-avatar-filled-alt.svg"
+                  }
                   alt="Avatar Người đăng"
                 />
                 <div>
                   <div className={styles["author-name"]}>
                     {data.author_id.full_name}
                     {/* {data.author.isVerified && ( */}
-                      <img
-                        src={ICONS.badge}
-                        alt="Đã xác thực"
-                        width={16}
-                        height={16}
-                        className={styles["verified-badge"]}
-                      />
+                    <img
+                      src={ICONS.badge}
+                      alt="Đã xác thực"
+                      width={16}
+                      height={16}
+                      className={styles["verified-badge"]}
+                    />
                     {/* )} */}
                   </div>
-                  
+
                   <div className={styles.reputation}>
-                 
                     <span
                       className={`${styles.starContainer} ${styles.stars} ${styles.starsFlex}`}
                       aria-hidden
@@ -581,9 +584,8 @@ const getRelativeTime = (isoString: string) => {
                         const rawScore = Math.max(
                           1,
                           5 // data.author.reputationScore
-                          
                         );
-                       
+
                         const pct = Math.round((rawScore / 5) * 100);
                         return (
                           <span
@@ -598,9 +600,7 @@ const getRelativeTime = (isoString: string) => {
                                 } else {
                                   el.classList.remove(styles.starsOverlayFull);
                                 }
-                              } catch {
-                                
-                              }
+                              } catch {}
                             }}
                           >
                             <span className={styles.iconStarColored}>
@@ -618,11 +618,8 @@ const getRelativeTime = (isoString: string) => {
                       })()}
                     </span>
                     <strong>5/5</strong>{" "}
-                    <span className={styles.reviews}>
-                      ( đánh giá)
-                    </span>
+                    <span className={styles.reviews}>( đánh giá)</span>
                   </div>
-
                 </div>
               </div>
             </div>
@@ -667,4 +664,4 @@ const getRelativeTime = (isoString: string) => {
   );
 };
 
-export default  ListPost;
+export default ListPost;

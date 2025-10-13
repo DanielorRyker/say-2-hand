@@ -284,7 +284,7 @@ export const DetailPost: React.FC = () => {
       if (postId) {
         const key = `selectedPost_${postId}`;
         const raw = sessionStorage.getItem(key);
-          if (raw) {
+        if (raw) {
           const parsed = JSON.parse(raw);
           // map fields from ListPost shape to DetailPost expected shape when possible
           const mapped = {
@@ -295,8 +295,8 @@ export const DetailPost: React.FC = () => {
                 typeof parsed.price === "number"
                   ? parsed.price
                   : parsed.price && !isNaN(Number(parsed.price))
-                  ? Number(parsed.price)
-                  : mockData.post.price,
+                    ? Number(parsed.price)
+                    : mockData.post.price,
               exchange_type: parsed.postType || mockData.post.exchange_type,
               condition: parsed.conditionKey || mockData.post.condition,
               image_urls: parsed.images
@@ -310,8 +310,8 @@ export const DetailPost: React.FC = () => {
                     return url;
                   })
                 : parsed.imageUrl
-                ? [parsed.imageUrl]
-                : mockData.post.image_urls,
+                  ? [parsed.imageUrl]
+                  : mockData.post.image_urls,
               status: parsed.status || mockData.post.status,
               views: parsed.views || mockData.post.views,
               created_at: parsed.timePosted || mockData.post.created_at,
@@ -319,25 +319,34 @@ export const DetailPost: React.FC = () => {
             },
             user: {
               user_id: parsed.author_id?._id || mockData.user.user_id,
-              avatar_url:
-                parsed.author_id?.avatar || mockData.user.avatar_url,
+              avatar_url: parsed.author_id?.avatar || mockData.user.avatar_url,
               name: parsed.author_id?.full_name || mockData.user.name,
               reputation_score:
-                parsed.author?.reputationScore || mockData.user.reputation_score,
-              review_count: parsed.author?.reviewCount || mockData.user.review_count,
+                parsed.author?.reputationScore ||
+                mockData.user.reputation_score,
+              review_count:
+                parsed.author?.reviewCount || mockData.user.review_count,
               post_count: parsed.author?.post_count || mockData.user.post_count,
-              is_verified: parsed.author?.isVerified || mockData.user.is_verified,
+              is_verified:
+                parsed.author?.isVerified || mockData.user.is_verified,
             },
             location: {
               address_text: (() => {
                 try {
-                  if (typeof parsed.location === "string") return parsed.location;
+                  if (typeof parsed.location === "string")
+                    return parsed.location;
                   const addr = parsed.location?.address;
                   if (typeof addr === "string") return addr;
                   if (addr && typeof addr === "object") {
-                    return addr.address || addr.formattedAddress || addr.label || JSON.stringify(addr);
+                    return (
+                      addr.address ||
+                      addr.formattedAddress ||
+                      addr.label ||
+                      JSON.stringify(addr)
+                    );
                   }
-                  if (typeof parsed.location?.formattedAddress === "string") return parsed.location.formattedAddress;
+                  if (typeof parsed.location?.formattedAddress === "string")
+                    return parsed.location.formattedAddress;
                 } catch {}
                 return mockData.location.address_text;
               })(),
@@ -351,7 +360,11 @@ export const DetailPost: React.FC = () => {
           // debug: if image_urls is empty, log parsed images for troubleshooting
           if (!mapped.post.image_urls || mapped.post.image_urls.length === 0) {
             try {
-              console.warn("DetailPost hydration: no images mapped", parsed.images, parsed.imageUrl);
+              console.warn(
+                "DetailPost hydration: no images mapped",
+                parsed.images,
+                parsed.imageUrl
+              );
             } catch {}
           }
           setPostData(mapped);
@@ -590,18 +603,22 @@ export const DetailPost: React.FC = () => {
                     className={`${styles["thumbs"]}`}
                     ref={thumbsRef}
                   >
-                    {postData.post.image_urls.map((imageUrl: string, idx: number) => (
-                      <div
-                        key={idx}
-                        data-thumb-index={idx}
-                        className={`${styles["thumb"]} ${
-                          idx === currentImageIndex ? `${styles["active"]}` : ""
-                        }`}
-                        onClick={() => handleSetImage(idx)}
-                      >
-                            <img src={imageUrl} alt={`thumb-${idx}`} />
-                      </div>
-                    ))}
+                    {postData.post.image_urls.map(
+                      (imageUrl: string, idx: number) => (
+                        <div
+                          key={idx}
+                          data-thumb-index={idx}
+                          className={`${styles["thumb"]} ${
+                            idx === currentImageIndex
+                              ? `${styles["active"]}`
+                              : ""
+                          }`}
+                          onClick={() => handleSetImage(idx)}
+                        >
+                          <img src={imageUrl} alt={`thumb-${idx}`} />
+                        </div>
+                      )
+                    )}
                   </div>
                 </div>
 
