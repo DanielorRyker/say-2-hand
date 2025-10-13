@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import styles from "./DetailPost.module.scss";
 import { Icon } from "@iconify/react";
+import { useRouter } from "next/navigation";
 
 // Helper to create a ripple span on a button. Call from button onClick: createRipple(e)
 export function createRipple(
@@ -197,6 +198,7 @@ const formatCurrency = (n: number) =>
   );
 
 export const DetailPost: React.FC = () => {
+  const router = useRouter();
   const [postData, setPostData] = useState<any>(mockData);
   // track favorites per similar product by id
   const [cardFavorites, setCardFavorites] = useState<Record<number, boolean>>(
@@ -258,6 +260,13 @@ export const DetailPost: React.FC = () => {
     [currentImageIndex, postData.post.image_urls.length]
   );
 
+  //Lấy user hiện tại
+   const [currentUser, setCurrentUser] = useState<any>(null);
+    useEffect(() => {
+    const userData = localStorage.getItem("user");
+    setCurrentUser(userData ? JSON.parse(userData) : null);
+  }, []);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setIsLightboxOpen(false);
@@ -276,11 +285,12 @@ export const DetailPost: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
+       const params = new URLSearchParams(window.location.search);
+      const postId = params.get("postId");
   // Attempt to hydrate post data from sessionStorage if navigated from list
   useEffect(() => {
     try {
-      const params = new URLSearchParams(window.location.search);
-      const postId = params.get("postId");
+
       if (postId) {
         const key = `selectedPost_${postId}`;
         const raw = sessionStorage.getItem(key);
@@ -295,10 +305,9 @@ export const DetailPost: React.FC = () => {
                 typeof parsed.price === "number"
                   ? parsed.price
                   : parsed.price && !isNaN(Number(parsed.price))
-                  ? Number(parsed.price)
-                  : mockData.post.price,
-              exchange_type: parsed.postType || mockData.post.exchange_type,
-              condition: parsed.conditionKey || mockData.post.condition,
+,
+              transaction_type: parsed.transaction_type ,
+              condition: parsed.condition ,
               image_urls: parsed.images
                 ? (parsed.images as Array<{ url: string }>).map((img) => {
                     const url = img.url;
@@ -311,22 +320,22 @@ export const DetailPost: React.FC = () => {
                   })
                 : parsed.imageUrl
                 ? [parsed.imageUrl]
-                : mockData.post.image_urls,
-              status: parsed.status || mockData.post.status,
+                : [],
+              status: parsed.status ,
               views: parsed.views || mockData.post.views,
-              created_at: parsed.timePosted || mockData.post.created_at,
-              user_id: parsed.author_id?._id || mockData.post.user_id,
+              updatedAt: parsed.updatedAt ,
+              author_id: parsed.author_id?._id,
             },
             user: {
-              user_id: parsed.author_id?._id || mockData.user.user_id,
+              author_id: parsed.author_id?._id ,
               avatar_url:
-                parsed.author_id?.avatar || mockData.user.avatar_url,
-              name: parsed.author_id?.full_name || mockData.user.name,
+                parsed.author_id?.avatar || '/image/header/carbon_user-avatar-filled-alt.svg',
+              name: parsed.author_id?.full_name ,
               reputation_score:
                 parsed.author?.reputationScore || mockData.user.reputation_score,
               review_count: parsed.author?.reviewCount || mockData.user.review_count,
               post_count: parsed.author?.post_count || mockData.user.post_count,
-              is_verified: parsed.author?.isVerified || mockData.user.is_verified,
+              is_verified: parsed.author?.email_verified || true,
             },
             location: {
               address_text: (() => {
@@ -339,15 +348,14 @@ export const DetailPost: React.FC = () => {
                   }
                   if (typeof parsed.location?.formattedAddress === "string") return parsed.location.formattedAddress;
                 } catch {}
-                return mockData.location.address_text;
+          
               })(),
-              city: mockData.location.city,
-              lat: mockData.location.lat,
-              lng: mockData.location.lng,
+             
             },
             similar_products: mockData.similar_products,
             comments: mockData.comments,
           };
+          console.log("DetailPost hydration: mapped post data", postId);
           // debug: if image_urls is empty, log parsed images for troubleshooting
           if (!mapped.post.image_urls || mapped.post.image_urls.length === 0) {
             try {
@@ -479,6 +487,80 @@ export const DetailPost: React.FC = () => {
     return <div className={`${styles["rating-stars"]}`}>{items}</div>;
   };
 
+  ////Tính thời gian
+const getRelativeTime = (isoString: string) => {
+    const date = new Date(isoString);
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (seconds < 60) return "Vừa xong";
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes} phút trước`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} giờ trước`;
+    const days = Math.floor(hours / 24);
+    if (days < 30) return `${days} ngày trước`;
+    const months = Math.floor(days / 30);
+    if (months < 12) return `${months} tháng trước`;
+    const years = Math.floor(months / 12);
+    return `${years} năm trước`;
+  };
+
+  // // --- Conversation ---
+  // const handleCreateConversation = async () => {
+  //   if (!post || !currentUser || !user?._id) return;
+
+  //   try {
+  //     const payload = {
+  //       post_id: postData.post._id,
+  //       participants: [currentUser._id, user._id],
+  //     };
+
+  //     const res = await axios.post(
+  //       "http://localhost:8080/api/conversations",
+  //       payload
+  //     );
+
+  //     // Chuẩn hóa dữ liệu conversation trước khi lưu localStorage
+  //     const conversationToSave = {
+  //       ...res.data,
+  //       post_id: {
+  //         _id: post._id,
+  //         title: post.title,
+  //         image: post.image,
+  //         author_id: post.author_id._id,
+  //         category_id: post.category_id?.name || "",
+  //         price: post.price,
+  //         description: post.reputation || "",
+  //         condition: post.condition,
+  //         transaction_type: post.transaction_type,
+  //         status: post.status,
+  //         address: post.address,
+  //         createdAt: post.createdAt,
+  //         updatedAt: post.createdAt,
+  //       },
+  //       participants: [
+  //       {
+  //         _id: currentUser._id,
+  //         full_name: currentUser.full_name,
+  //         avatar: currentUser.avatar || "",
+  //       },
+  //       {
+  //         _id: user._id,
+  //         full_name: user.full_name,
+  //         avatar: user.avatar || "",
+  //       },
+  //     ],
+  //     };
+
+  //     localStorage.setItem("conversation", JSON.stringify(conversationToSave));
+
+  //     router.push(`/conversation/${res.data._id}`);
+  //   } catch (error) {
+  //     console.error("Error creating conversation:", error);
+  //   }
+  // };
+
   return (
     <div className={`${styles["detail-post"]}`}>
       <div className={`${styles["container"]}`}>
@@ -608,13 +690,15 @@ export const DetailPost: React.FC = () => {
                 <div className={`${styles["info-card"]}`}>
                   <div className={`${styles["price-row"]}`}>
                     <div id="post-price" className={`${styles["price"]}`}>
-                      {price}
+                      {
+                        postData.post.price === null ? "Miễn phí" : price
+                      }
                     </div>
                     <div
                       id="post-status"
                       className={`${styles["status-badge"]}`}
                     >
-                      {postData.post.status === "Active"
+                      {postData.post.status === "active"
                         ? "Đang Bán"
                         : "Đã Bán"}
                     </div>
@@ -624,12 +708,16 @@ export const DetailPost: React.FC = () => {
                     <div className={`${styles["meta-item"]}`}>
                       <Icon icon="lucide:repeat" width={14} height={14} />
                       &nbsp;<strong>Hình thức:</strong>&nbsp;
-                      <span id="post-type">{postData.post.exchange_type}</span>
+                      <span id="post-type">
+                        {postData.post.transaction_type==='give away' ? "Miễn phí" : postData.post.transaction_type==='trade' ? "Trao đổi" : postData.post.transaction_type==='sell' ? "Bán" : "Khác"}
+                      </span>
                     </div>
                     <div className={`${styles["meta-item"]}`}>
                       <Icon icon="lucide:package" width={14} height={14} />
                       &nbsp;<strong>Tình trạng:</strong>&nbsp;
-                      <span id="post-condition">{postData.post.condition}</span>
+                      <span id="post-condition">
+                        {postData.post.condition=== "new"? "Mới " : postData.post.condition==="like new" ? "Gần như mới" : postData.post.condition=== "used" ? "Đã sử dụng" : postData.post.condition==="minor flow" ? "Hư nhẹ" : postData.post.condition==="for repair" ? "Cần sửa chữa" : postData.post.condition==="not working" ? "Không hoạt động":"Khác"}
+                      </span>
                     </div>
                     <div className={`${styles["meta-item"]}`}>
                       <Icon icon="lucide:eye" width={14} height={14} />
@@ -642,7 +730,8 @@ export const DetailPost: React.FC = () => {
                       <Icon icon="lucide:clock" width={14} height={14} />
                       &nbsp;<strong>Đăng lúc:</strong>&nbsp;
                       <span id="post-created-at">
-                        {postData.post.created_at}
+                        {getRelativeTime(postData.post.updatedAt)}
+                        
                       </span>
                     </div>
                   </div>
@@ -820,7 +909,10 @@ export const DetailPost: React.FC = () => {
                   <div className={`${styles["spacer-sm"]}`} />
 
                   <div className={`${styles["cta-box"]}`}>
-                    <button
+
+                   {
+                   postData.post.author_id !== currentUser._id ? (
+                     <button
                       type="button"
                       className={`${styles["chat-btn"]} ${styles["ripple-target"]}`}
                       onClick={(e) => {
@@ -834,7 +926,25 @@ export const DetailPost: React.FC = () => {
                         height={16}
                       />
                       &nbsp; Chat Ngay / Liên Hệ
-                    </button>
+                    </button>) 
+                    : 
+                        <button
+                          type="button"
+                          className={`${styles["chat-btn"]} ${styles["ripple-target"]}`}
+                          onClick={(e) => {
+                            createRipple(e as any);
+                            /* TODO: open chat modal */
+                          }}
+                        >
+                          <Icon
+                            icon="lucide:message-square"
+                            width={16}
+                            height={16}
+                          />
+                          &nbsp; Xác nhận đã thanh lý
+                      </button> 
+                   }
+
                     <button
                       type="button"
                       className={`${styles["fav-btn"]} ${isFavorite ? styles["active"] : ""} ${styles["ripple-target"]}`}
@@ -880,8 +990,8 @@ export const DetailPost: React.FC = () => {
                 id="similar-products"
               >
                 {postData.similar_products.map((product: any) => {
-                  const isFree = product.exchange_type === "Miễn phí";
-                  const isTrade = product.exchange_type === "Trao đổi";
+                  const isFree = product.transaction_type === "Miễn phí";
+                  const isTrade = product.transaction_type === "Trao đổi";
                   const isNewCond = /99%|100%|Mới/.test(
                     product.condition || ""
                   );

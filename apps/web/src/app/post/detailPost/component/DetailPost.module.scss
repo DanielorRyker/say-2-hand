@@ -1,8 +1,9 @@
+@use '@/styles/abstracts/variables' ;
 .detail-post {
     --color-primary: #3b82f6;
     --color-secondary: #10b981;
     font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
-    background: #f8fafc;
+     background: var(--background-light);
     color: #0f172a;
 }
 
