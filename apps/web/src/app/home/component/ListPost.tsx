@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import styles from "./postList.module.scss";
 // Iconify import (replace HeartSVG with this icon)
 import { Icon } from "@iconify/react";
@@ -217,6 +218,8 @@ const itemsData: ItemData[] = [
 
 export const ListPost: React.FC = () => {
 
+  const router = useRouter();
+
   //Lấy dữ liệu từ database
 
  interface Post {
@@ -409,6 +412,7 @@ const getRelativeTime = (isoString: string) => {
             key={data._id}
             id={`itemCard-${data._id}`}
             className={`${styles["item-card"]} ${styles.card}`}
+            onClick={() => router.push(`/post/detailPost?postId=${encodeURIComponent(data._id)}`)}
           >
             <div className={styles["image-wrapper"]}>
               <img
@@ -428,10 +432,12 @@ const getRelativeTime = (isoString: string) => {
                   title="Yêu thích"
                   className={`${styles["quick-action-btn"]} ${styles["ripple-target"]} ${styles["quick-action-btn--red"]}`}
                   onClick={(e) => {
+                    e.stopPropagation();
                     handleRippleClick(e);
                     toggleFavorite(data._id as unknown as number);
                     handleSetFavorite(isFavorited)
                   }}
+                  onKeyDown={(e) => e.stopPropagation()}
                 >
                   {/* chưa có Yêu thích*/}
                   <span
