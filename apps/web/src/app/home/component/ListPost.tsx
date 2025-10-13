@@ -220,59 +220,66 @@ export const ListPost: React.FC = () => {
 
   //Lấy dữ liệu từ database
 
-  interface Post {
+ interface Post {
+  _id: string;
+  title: string;
+  description: string;
+  images: {
     _id: string;
-    title: string;
-    description: string;
-    images: {
-      _id: string;
-      url: string;
-      alt?: string;
-      tags: string[];
-    }[];
-    condition: string;
-    transaction_type: string;
-    price: number;
-    location: {
-      address: string;
-      geo?: {
-        type: string;
-        coordinates: [number, number];
-      };
+    url: string;
+    alt?: string;
+    tags: string[];
+  }[];
+  condition: string;
+  transaction_type: string;
+  price: number;
+  location: {
+    address: string;
+    geo?: {
+      type: string;
+      coordinates: [number, number];
     };
-    custom_fields?: Record<string, string>; // ví dụ: { "màu sắc": "đen", "bộ nhớ": "128GB" }
-    tags?: string[];
-    status: string;
-    stats?: {
-      _id?: string;
-      view_count: number;
-      favorite_count: number;
-      chat_count?: number;
-    };
-    moderation?: {
-      _id: string;
-    };
-    author_id: {
-      _id: string;
-      full_name: string;
-      avatar: string;
-    };
-    category_id?: {
-      _id?: string;
-      name?: string;
-    } | null;
-    createdAt: string;
-    updatedAt: string;
-    __v?: number;
-    reputation?: {
-      average_score: number;
-      total_ratings: number;
-    };
-    distance_km?: number;
-  }
+  };
+  custom_fields?: Record<string, string>; // ví dụ: { "màu sắc": "đen", "bộ nhớ": "128GB" }
+  tags?: string[];
+  status: string;
+  stats?: {
+    _id?: string;
+    view_count: number;
+    favorite_count: number;
+    chat_count?: number;
+  };
+  moderation?: {
+    _id: string;
+  };
+  author_id: {
+    _id: string;
+    full_name: string;
+    avatar: string;
+  };
+  category_id?: {
+    _id?: string;
+    name?: string;
+  } | null;
+  createdAt: string;
+  updatedAt: string;
+  __v?: number;
+  reputation?: {
+    average_score: number;
+    total_ratings: number;
+  };
+  distance_km?: number;
+}
 
   const [postsData, setPostsData] = useState<Post[]>([]);
 
+useEffect(() => {
+        async function fetchPosts() {
+            const res = await axios.get("http://localhost:8080/api/posts/postmap");
+            setPostsData(res.data); // res.data là danh sách posts
+        }
+        fetchPosts();
+        }, []);
   useEffect(() => {
     async function fetchPosts() {
       const res = await axios.get("http://localhost:8080/api/posts/postmap");
@@ -282,17 +289,17 @@ export const ListPost: React.FC = () => {
     fetchPosts();
   }, []);
 
-  //dữ liệu tạm thời
-  const [isFavorited, setIsFavorited] = useState(false);
+//dữ liệu tạm thời
+const [isFavorited, setIsFavorited] = useState(false);
 
-  const handleSetFavorite = (value: boolean) => {
-    // Cập nhật trạng thái yêu thích
-    if (value === true) {
-      setIsFavorited(false);
-    } else {
-      setIsFavorited(true);
-    }
-  };
+const handleSetFavorite = (value: boolean) => {
+  // Cập nhật trạng thái yêu thích
+  if(value === true){
+    setIsFavorited(false);
+  }else{
+    setIsFavorited(true);
+  }
+};
 
   ////Tính thời gian
   const getRelativeTime = (isoString: string) => {
@@ -378,7 +385,7 @@ export const ListPost: React.FC = () => {
     switch (postType) {
       case "sell":
         return styles["post-badge-ban"];
-      case "trade":
+      case "exchange":
         return styles["post-badge-trao"];
       case "give away":
         return styles["post-badge-tang"];
@@ -391,13 +398,18 @@ export const ListPost: React.FC = () => {
         return "BÁN";
       case "give away":
         return "TẶNG";
-      case "trade":
+      case "exchange":
         return "TRAO ĐỔI";
       default:
         return type;
     }
   };
-  let priceHtml;
+  const formatCurrency = (n: number) =>
+  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
+    n
+  );
+
+ 
   return (
     <div className={styles["card-carousel"]} id="cardCarousel">
       {postsData.map((data) => {
@@ -496,15 +508,12 @@ export const ListPost: React.FC = () => {
             <div
               className={`${styles["card-body"]} ${styles["card-body--md"]}`}
             >
-              <div className={styles.price}>
-                {data.price == null ? (
-                  <h2 className={styles["price-gradient"]}>Miễn Phí</h2>
-                ) : (
-                  <h2 className={styles["price-gradient"]}>
-                    {`${new Intl.NumberFormat("vi-VN").format(data.price!)} VNĐ`}
-                  </h2>
-                )}
-              </div>
+ 
+                    <div id="post-price" className={`${styles["price"]}`}>
+                      {
+                        data.transaction_type === "give away" ? "Miễn phí" : data.transaction_type === "exchange" ? "Trao đổi" : formatCurrency(data.price)
+                      }
+                    </div>
 
               <h3
                 className={`${styles["title"]} ${styles["line-clamp-2"]}`}

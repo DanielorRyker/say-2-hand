@@ -81,10 +81,14 @@ body {
 }
 
 .price-gradient {
-	background: var(--primary-gradient);
-	-webkit-background-clip: text;
+	
 	-webkit-text-fill-color: transparent;
-	background-clip: text;
+	font-size: 28px;
+    font-weight: 800;
+    background: linear-gradient(90deg, #2563eb, #10b981);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
 }
 
 .ripple-target {
@@ -286,10 +290,16 @@ body {
 }
 
 .price {
-	font-size: 1.875rem;
-	font-weight: 800;
-	line-height: 1;
+  font-size: 28px;
+  font-weight: 800;
+  display: inline-block; /* ✅ giúp background bọc đúng chữ */
+  background: linear-gradient(90deg, #2563eb, #10b981);
+  background-size: 100%; /* có thể điều chỉnh để trải đều màu */
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
+
 
 .price small {
 	font-size: 0.875rem;

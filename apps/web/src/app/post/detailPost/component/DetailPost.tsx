@@ -308,8 +308,8 @@ export const DetailPost: React.FC = () => {
                 typeof parsed.price === "number"
                   ? parsed.price
                   : parsed.price && !isNaN(Number(parsed.price)),
-              transaction_type: parsed.transaction_type,
-              condition: parsed.condition,
+              transaction_type: parsed.transaction_type ,
+              condition: parsed.condition ,
 
               image_urls: (() => {
                 // Ưu tiên parsed.images nếu có
@@ -560,7 +560,6 @@ export const DetailPost: React.FC = () => {
         post_id: postData.post._id,
         participants: [currentUser._id, postData.user.author_id],
       };
-
       const res = await axios.post(
         "http://localhost:8080/api/conversations",
         payload
@@ -572,15 +571,14 @@ export const DetailPost: React.FC = () => {
         post_id: {
           _id: postData.post._id,
           title: postData.post.title,
-          images: postData.post.image_urls,
-          author_id: postData.post.author_id,
+          images: postData.post.image_urls ,
+          author_id: postData.user,
           category_id: postData.post.category_id?.name || "",
           price: postData.post.price,
           description: postData.post.description || "",
           condition: postData.post.condition,
           transaction_type: postData.post.transaction_type,
           status: postData.post.status,
-          // address: postData.post.address,
           createdAt: postData.post.createdAt,
           updatedAt: postData.post.updatedAt,
         },
@@ -607,6 +605,43 @@ export const DetailPost: React.FC = () => {
     }
   };
 
+ //button sell,give away, exchange
+   const badgeClassFor = React.useCallback((postType: string) => {
+    switch (postType) {
+      case "sell":
+        return styles["post-badge-ban"];
+      case "exchange":
+        return styles["post-badge-trao"];
+      case "give away":
+        return styles["post-badge-tang"];
+    }
+  }, []);
+
+    const setTransactionType = (type: string) => {
+        switch (type) {
+          case "sell":
+            return " Mua Ngay";
+          case "give away":
+            return "Nhận Miễn Phí";
+          case "exchange":
+            return "Đổi Sản Phẩm";
+          default:
+            return type;
+        }
+      };
+
+    const setTransactionIcon = (type: string) => {
+      switch (type) {
+          case "sell":
+            return "icon-park-outline:buy";
+          case "give away":
+            return "mdi:gift-outline";
+          case "exchange":
+            return "mdi:briefcase-exchange-outline";
+          default:
+            return type;
+      }
+    }
   return (
     <div className={`${styles["detail-post"]}`}>
       <div className={`${styles["container"]}`}>
@@ -742,7 +777,9 @@ export const DetailPost: React.FC = () => {
                 <div className={`${styles["info-card"]}`}>
                   <div className={`${styles["price-row"]}`}>
                     <div id="post-price" className={`${styles["price"]}`}>
-                      {postData.post.price === null ? "Miễn phí" : price}
+                      {
+                        postData.post.transaction_type === "give away" ? "Miễn phí" : postData.post.transaction_type === "exchange" ? "Trao đổi" : price
+                      }
                     </div>
                     <div
                       id="post-status"
@@ -990,42 +1027,74 @@ export const DetailPost: React.FC = () => {
                   <div className={`${styles["spacer-sm"]}`} />
 
                   <div className={`${styles["cta-box"]}`}>
-                    {postData.post.author_id !== currentUser._id ? (
-                      <button
-                        type="button"
-                        className={`${styles["chat-btn"]} ${styles["ripple-target"]}`}
-                        onClick={(e) => {
-                          createRipple(e as any);
-                          handleCreateConversation();
-                          /* TODO: open chat modal */
-                        }}
-                      >
-                        <Icon
-                          icon="lucide:message-square"
-                          width={16}
-                          height={16}
-                        />
-                        &nbsp; Chat Ngay / Liên Hệ
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        className={`${styles["chat-btn"]} ${styles["ripple-target"]}`}
-                        onClick={(e) => {
-                          createRipple(e as any);
-                          /* TODO: open chat modal */
-                        }}
-                      >
-                        <Icon
-                          icon="lucide:message-square"
-                          width={16}
-                          height={16}
-                        />
-                        &nbsp; Xác nhận đã thanh lý
-                      </button>
-                    )}
 
-                    <button
+                   {
+                   postData.post.author_id !== currentUser._id ? 
+                     <>
+                            <button
+                              type="button"
+                              className={`${styles["post-type-badge"]} ${badgeClassFor(postData.post.transaction_type)}`}
+                              onClick={(e) => {
+                                createRipple(e as any);
+                                /* TODO: open chat modal */
+                              }}
+                            >
+                              <Icon
+                                icon={setTransactionIcon(postData.post.transaction_type)}
+                                width={18}
+                                height={18}
+                              />
+                              &nbsp; {setTransactionType(postData.post.transaction_type)}
+                          </button> 
+                        <button
+                            type="button"
+                            className={`${styles["chat-btn"]} ${styles["ripple-target"]}`}
+                            onClick={(e) => {
+                              createRipple(e as any);
+                              handleCreateConversation();
+                              /* TODO: open chat modal */
+                            } }
+                          >
+                            <Icon
+                              icon="lucide:message-square"
+                              width={16}
+                              height={16} />
+                            &nbsp; Chat Ngay / Liên Hệ
+                          </button>
+                          <button
+                            type="button"
+                            className={`${styles["fav-btn"]} ${isFavorite ? styles["active"] : ""} ${styles["ripple-target"]}`}
+                            onClick={(e) => {
+                              createRipple(e as any);
+                              toggleFavorite();
+                            } }
+                          >
+                              <Icon icon="lucide:heart" width={16} height={16} />
+                              &nbsp; {isFavorite ? "Đã Lưu Yêu Thích" : "Lưu Yêu Thích"}
+                            </button>
+
+                            </>
+                            
+                     
+                    : 
+                        <button
+                          type="button"
+                          className={`${styles["chat-btn"]} ${styles["ripple-target"]}`}
+                          onClick={(e) => {
+                            createRipple(e as any);
+                            /* TODO: open chat modal */
+                          }}
+                        >
+                          <Icon
+                            icon="lucide:message-square"
+                            width={16}
+                            height={16}
+                          />
+                          &nbsp; Xác nhận đã thanh lý
+                      </button> 
+                   }
+
+                    {/* <button
                       type="button"
                       className={`${styles["fav-btn"]} ${isFavorite ? styles["active"] : ""} ${styles["ripple-target"]}`}
                       onClick={(e) => {
@@ -1035,7 +1104,7 @@ export const DetailPost: React.FC = () => {
                     >
                       <Icon icon="lucide:heart" width={16} height={16} />
                       &nbsp; {isFavorite ? "Đã Lưu Yêu Thích" : "Lưu Yêu Thích"}
-                    </button>
+                    </button> */}
                   </div>
 
                   <div className={`${styles["spacer-sm"]}`} />
