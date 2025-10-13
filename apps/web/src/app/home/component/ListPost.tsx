@@ -279,7 +279,6 @@ useEffect(() => {
         async function fetchPosts() {
             const res = await axios.get("http://localhost:8080/api/posts/postmap");
             setPostsData(res.data); // res.data là danh sách posts
-            console.log("posts", res.data);
         }
         fetchPosts();
         }, []);
@@ -380,7 +379,7 @@ const getRelativeTime = (isoString: string) => {
     switch (postType) {
       case "sell":
         return styles["post-badge-ban"];
-      case "trade":
+      case "exchange":
         return styles["post-badge-trao"];
       case "give away":
         return styles["post-badge-tang"];
@@ -393,13 +392,18 @@ const getRelativeTime = (isoString: string) => {
         return "BÁN";
       case "give away":
         return "TẶNG";
-      case "trade":
+      case "exchange":
         return "TRAO ĐỔI";
       default:
         return type;
     }
   };
- let priceHtml;
+  const formatCurrency = (n: number) =>
+  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
+    n
+  );
+
+ 
   return (
     <div className={styles["card-carousel"]} id="cardCarousel">
       {postsData.map((data) => {
@@ -490,17 +494,12 @@ const getRelativeTime = (isoString: string) => {
             <div
               className={`${styles["card-body"]} ${styles["card-body--md"]}`}
             >
-              <div className={styles.price}>
-                {data.price == null ? (
-                  <h2 className={styles["price-gradient"]}>Miễn Phí</h2>
-                ) : (
-                  <h2 className={styles["price-gradient"]}>
-                     
-                        {`${new Intl.NumberFormat("vi-VN").format(data.price!)} VNĐ`}
-                      
-                  </h2>
-                )}
-              </div>
+ 
+                    <div id="post-price" className={`${styles["price"]}`}>
+                      {
+                        data.transaction_type === "give away" ? "Miễn phí" : data.transaction_type === "exchange" ? "Trao đổi" : formatCurrency(data.price)
+                      }
+                    </div>
 
               <h3
                 className={`${styles["title"]} ${styles["line-clamp-2"]}`}

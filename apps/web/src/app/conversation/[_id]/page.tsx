@@ -5,8 +5,10 @@ import cvstStyles from "@/styles/pages/conversation/conversation.module.scss";
 import Image from "next/image";
 import axios from "axios";
 import { io, Socket } from "socket.io-client";
+import { useRouter } from "next/navigation";
 
 export default function ChatPage() {
+   const router = useRouter();
   // user hiện tại
 
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -31,7 +33,11 @@ useEffect(() => {
     // post đã populate
     post_id: {
       _id: string;
-      author_id: string;
+      author_id: {
+        _id: string;
+        full_name: string;
+        avatar: string;
+      };
       category_id: string;
       title: string;
       price: number;
@@ -378,6 +384,17 @@ useEffect(() => {
               className={cvstStyles.squareImage}
               width={80}
               height={80}
+               onClick={() => {
+              const postId = conversation?.post_id?._id;
+              if (!postId) return;
+              try {
+                sessionStorage.setItem(
+                  `selectedPost_${postId}`,
+                  JSON.stringify(conversation?.post_id)
+                );
+              } catch {}
+              router.push(`/post/detailPost?postId=${encodeURIComponent(postId)}`);
+            }}
             />
           </div>
 
