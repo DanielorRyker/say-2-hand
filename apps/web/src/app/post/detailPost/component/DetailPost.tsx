@@ -3,6 +3,8 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import styles from "./DetailPost.module.scss";
 import { Icon } from "@iconify/react";
 import { useRouter } from "next/navigation";
+import axios from "axios";
+import { create } from "domain";
 
 // Helper to create a ripple span on a button. Call from button onClick: createRipple(e)
 export function createRipple(
@@ -285,11 +287,12 @@ export const DetailPost: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  const params = new URLSearchParams(window.location.search);
-  const postId = params.get("postId");
+  const base = process.env.NEXT_PUBLIC_URL_GCS || "";
   // Attempt to hydrate post data from sessionStorage if navigated from list
   useEffect(() => {
     try {
+      const params = new URLSearchParams(window.location.search);
+      const postId = params.get("postId");
       if (postId) {
         const key = `selectedPost_${postId}`;
         const raw = sessionStorage.getItem(key);
@@ -298,6 +301,7 @@ export const DetailPost: React.FC = () => {
           // map fields from ListPost shape to DetailPost expected shape when possible
           const mapped = {
             post: {
+              _id: postId,
               title: parsed.title || mockData.post.title,
               description: parsed.description || mockData.post.description,
               price:
@@ -306,29 +310,61 @@ export const DetailPost: React.FC = () => {
                   : parsed.price && !isNaN(Number(parsed.price)),
               transaction_type: parsed.transaction_type,
               condition: parsed.condition,
-              image_urls: parsed.images
-                ? (parsed.images as Array<{ url: string }>).map((img) => {
-                    const url = img.url;
-                    if (!url) return url;
-                    // if relative path (starts with '/') or doesn't look like http(s), prefix with GCS base
-                    if (url.startsWith("/") || !/^https?:\/\//i.test(url)) {
-                      return `${process.env.NEXT_PUBLIC_URL_GCS || ""}${url}`;
-                    }
-                    return url;
-                  })
-                : parsed.imageUrl
-                  ? [parsed.imageUrl]
-                  : [],
+
+              image_urls: (() => {
+                // Ưu tiên parsed.images nếu có
+                if (Array.isArray(parsed.images)) {
+                  return parsed.images
+                    .map((img: any, i: number) => {
+                      const rawUrl = img?.url || img; // phòng trường hợp chỉ là chuỗi
+                      if (!rawUrl) return null;
+
+                      // Nếu là đường dẫn tương đối → thêm prefix GCS
+                      const fullUrl =
+                        rawUrl.startsWith("/") || !/^https?:\/\//i.test(rawUrl)
+                          ? `${rawUrl}`
+                          : rawUrl;
+
+                      return {
+                        _id: img?._id || `img_${i}`,
+                        url: fullUrl,
+                        alt: img?.alt || `image_${i + 1}`,
+                        tags: Array.isArray(img?.tags) ? img.tags : [],
+                      };
+                    })
+                    .filter(Boolean);
+                }
+
+                // Nếu chỉ có 1 ảnh đơn lẻ imageUrl
+                if (parsed.imageUrl) {
+                  const rawUrl = parsed.imageUrl;
+                  const fullUrl =
+                    rawUrl.startsWith("/") || !/^https?:\/\//i.test(rawUrl)
+                      ? `${rawUrl}`
+                      : rawUrl;
+
+                  return [
+                    {
+                      _id: "img_0",
+                      url: fullUrl,
+                      alt: "image_1",
+                      tags: [],
+                    },
+                  ];
+                }
+
+                return [];
+              })(),
+
               status: parsed.status,
               views: parsed.views || mockData.post.views,
               updatedAt: parsed.updatedAt,
+              createdAt: parsed.createdAt,
               author_id: parsed.author_id?._id,
             },
             user: {
               author_id: parsed.author_id?._id,
-              avatar_url:
-                parsed.author_id?.avatar ||
-                "/image/header/carbon_user-avatar-filled-alt.svg",
+              avatar_url: parsed.author_id?.avatar,
               name: parsed.author_id?.full_name,
               reputation_score:
                 parsed.author?.reputationScore ||
@@ -361,7 +397,6 @@ export const DetailPost: React.FC = () => {
             similar_products: mockData.similar_products,
             comments: mockData.comments,
           };
-          console.log("DetailPost hydration: mapped post data", postId);
           // debug: if image_urls is empty, log parsed images for troubleshooting
           if (!mapped.post.image_urls || mapped.post.image_urls.length === 0) {
             try {
@@ -516,60 +551,61 @@ export const DetailPost: React.FC = () => {
     return `${years} năm trước`;
   };
 
-  // // --- Conversation ---
-  // const handleCreateConversation = async () => {
-  //   if (!post || !currentUser || !user?._id) return;
+  // --- Conversation ---
+  const handleCreateConversation = async () => {
+    // if (!post || !currentUser || !user?._id) return;
 
-  //   try {
-  //     const payload = {
-  //       post_id: postData.post._id,
-  //       participants: [currentUser._id, user._id],
-  //     };
+    try {
+      const payload = {
+        post_id: postData.post._id,
+        participants: [currentUser._id, postData.user.author_id],
+      };
 
-  //     const res = await axios.post(
-  //       "http://localhost:8080/api/conversations",
-  //       payload
-  //     );
+      const res = await axios.post(
+        "http://localhost:8080/api/conversations",
+        payload
+      );
 
-  //     // Chuẩn hóa dữ liệu conversation trước khi lưu localStorage
-  //     const conversationToSave = {
-  //       ...res.data,
-  //       post_id: {
-  //         _id: post._id,
-  //         title: post.title,
-  //         image: post.image,
-  //         author_id: post.author_id._id,
-  //         category_id: post.category_id?.name || "",
-  //         price: post.price,
-  //         description: post.reputation || "",
-  //         condition: post.condition,
-  //         transaction_type: post.transaction_type,
-  //         status: post.status,
-  //         address: post.address,
-  //         createdAt: post.createdAt,
-  //         updatedAt: post.createdAt,
-  //       },
-  //       participants: [
-  //       {
-  //         _id: currentUser._id,
-  //         full_name: currentUser.full_name,
-  //         avatar: currentUser.avatar || "",
-  //       },
-  //       {
-  //         _id: user._id,
-  //         full_name: user.full_name,
-  //         avatar: user.avatar || "",
-  //       },
-  //     ],
-  //     };
+      // Chuẩn hóa dữ liệu conversation trước khi lưu localStorage
+      const conversationToSave = {
+        ...res.data,
+        post_id: {
+          _id: postData.post._id,
+          title: postData.post.title,
+          images: postData.post.image_urls,
+          author_id: postData.post.author_id,
+          category_id: postData.post.category_id?.name || "",
+          price: postData.post.price,
+          description: postData.post.description || "",
+          condition: postData.post.condition,
+          transaction_type: postData.post.transaction_type,
+          status: postData.post.status,
+          // address: postData.post.address,
+          createdAt: postData.post.createdAt,
+          updatedAt: postData.post.updatedAt,
+        },
+        participants: [
+          {
+            _id: currentUser._id,
+            full_name: currentUser.full_name,
+            avatar: currentUser.avatar || "",
+          },
+          {
+            _id: postData.user.author_id,
+            full_name: postData.user.name,
+            avatar: postData.user.avatar_url || "",
+          },
+        ],
+      };
 
-  //     localStorage.setItem("conversation", JSON.stringify(conversationToSave));
+      console.log("Created conversation:", conversationToSave);
+      localStorage.setItem("conversation", JSON.stringify(conversationToSave));
 
-  //     router.push(`/conversation/${res.data._id}`);
-  //   } catch (error) {
-  //     console.error("Error creating conversation:", error);
-  //   }
-  // };
+      router.push(`/conversation/${res.data._id}`);
+    } catch (error) {
+      console.error("Error creating conversation:", error);
+    }
+  };
 
   return (
     <div className={`${styles["detail-post"]}`}>
@@ -642,7 +678,9 @@ export const DetailPost: React.FC = () => {
                   >
                     <img
                       id="main-image"
-                      src={postData.post.image_urls[currentImageIndex]}
+                      src={
+                        base + postData.post.image_urls[currentImageIndex].url
+                      }
                       alt="main"
                     />
                     <div
@@ -683,7 +721,7 @@ export const DetailPost: React.FC = () => {
                     ref={thumbsRef}
                   >
                     {postData.post.image_urls.map(
-                      (imageUrl: string, idx: number) => (
+                      (imageUrl: any, idx: number) => (
                         <div
                           key={idx}
                           data-thumb-index={idx}
@@ -694,7 +732,7 @@ export const DetailPost: React.FC = () => {
                           }`}
                           onClick={() => handleSetImage(idx)}
                         >
-                          <img src={imageUrl} alt={`thumb-${idx}`} />
+                          <img src={base + imageUrl.url} alt={`thumb-${idx}`} />
                         </div>
                       )
                     )}
@@ -804,7 +842,14 @@ export const DetailPost: React.FC = () => {
                     <div className={`${styles["skeleton-line"]}`} />
                   )}
                   <div className={`${styles["comment-input-row"]}`}>
-                    <img src={postData.user.avatar_url} alt="Your Avatar" />
+                    <img
+                      src={
+                        postData.user.avatar_url
+                          ? base + postData.user.avatar_url
+                          : "/image/header/carbon_user-avatar-filled-alt.svg"
+                      }
+                      alt="Your Avatar"
+                    />
                     <form
                       className={`${styles["comment-form"]}`}
                       onSubmit={handleSubmitComment}
@@ -894,7 +939,14 @@ export const DetailPost: React.FC = () => {
                 <div className={`${styles["desktop-sticky-sidebar"]}`}>
                   <div className={`${styles["seller-card"]}`}>
                     <div className={`${styles["seller-head"]}`}>
-                      <img src={postData.user.avatar_url} alt="seller" />
+                      <img
+                        src={
+                          postData.user.avatar_url
+                            ? base + postData.user.avatar_url
+                            : "/image/header/carbon_user-avatar-filled-alt.svg"
+                        }
+                        alt="seller"
+                      />
                       <div>
                         <div className={`${styles["seller-name"]}`}>
                           {postData.user.name}{" "}
@@ -944,6 +996,7 @@ export const DetailPost: React.FC = () => {
                         className={`${styles["chat-btn"]} ${styles["ripple-target"]}`}
                         onClick={(e) => {
                           createRipple(e as any);
+                          handleCreateConversation();
                           /* TODO: open chat modal */
                         }}
                       >
