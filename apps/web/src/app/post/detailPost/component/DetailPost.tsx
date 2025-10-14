@@ -453,7 +453,62 @@ export const DetailPost: React.FC = () => {
 
   const handleSetImage = (idx: number) => setCurrentImageIndex(idx);
 
-  const toggleFavorite = () => setIsFavorite((v) => !v);
+  //Favorite 
+  useEffect(() => {
+     const checkFavorite = async () => {
+    if (!postData.post._id || !currentUser?._id) return;
+    const res = await axios.get(
+      `http://localhost:8080/api/favorites/${currentUser._id}/${postData.post._id}`
+    );
+    setIsFavorite(res.data);
+  };  
+  checkFavorite();
+  }, [postData.post._id, currentUser?._id]);
+ 
+
+  const toggleFavorite = React.useCallback(
+  async (postId: string) => {
+    if (!currentUser?._id) {
+      alert("Vui lòng đăng nhập để thực hiện chức năng này.");
+      return;
+    }
+
+    // 🔍 Gọi API kiểm tra trạng thái yêu thích hiện tại
+    let isCurrentlyFavorited = false;
+    try {
+      const res = await axios.get(
+        `http://localhost:8080/api/favorites/${currentUser._id}/${postId}`
+      );
+      isCurrentlyFavorited = res.data === true;
+    } catch {
+      isCurrentlyFavorited = false;
+    }
+
+    try {
+      if (isCurrentlyFavorited) {
+        //  Xóa khỏi favorites
+         await axios.delete(`http://localhost:8080/api/favorites/post/${postId}`, {
+          data: { user_id: currentUser._id },
+        });
+
+        setIsFavorite(false);
+      } else {
+        //  Thêm vào favorites
+        await axios.post(`http://localhost:8080/api/favorites`, {
+          user_id: currentUser._id,
+          post_id: postId,
+        });
+
+        setIsFavorite(true);
+      }
+    } catch (error) {
+      console.error("Lỗi khi cập nhật trạng thái yêu thích:", error);
+      alert("Đã xảy ra lỗi khi cập nhật yêu thích.");
+    }
+  },
+  [currentUser]
+);
+
 
   // Toggle favorite for a product card by id
   const toggleCardFavorite = (id: number) => {
@@ -1082,7 +1137,7 @@ export const DetailPost: React.FC = () => {
                             className={`${styles["fav-btn"]} ${isFavorite ? styles["active"] : ""} ${styles["ripple-target"]}`}
                             onClick={(e) => {
                               createRipple(e as any);
-                              toggleFavorite();
+                              toggleFavorite(postData.post._id!);
                             } }
                           >
                               <Icon icon="lucide:heart" width={16} height={16} />
@@ -1344,7 +1399,7 @@ export const DetailPost: React.FC = () => {
             <button
               type="button"
               className={`${styles["fav-btn"]} ${isFavorite ? `${styles["active"]}` : ""}`}
-              onClick={() => toggleFavorite()}
+              onClick={() => toggleFavorite(postData.post._id!)}
               aria-label="Lưu yêu thích"
             >
               {isFavorite ? "Đã Lưu" : "Lưu"}
