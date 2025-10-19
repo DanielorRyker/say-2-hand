@@ -4,7 +4,7 @@ import styles from "./DetailPost.module.scss";
 import { Icon } from "@iconify/react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import { create } from "domain";
+import Image from "next/image";
 
 // Helper to create a ripple span on a button. Call from button onClick: createRipple(e)
 export function createRipple(
@@ -209,7 +209,7 @@ export const DetailPost: React.FC = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const [lightboxSrc, setLightboxSrc] = useState("");
+  // lightboxSrc was removed in favor of using postData.post.image_urls[currentImageIndex]
   const [isFavorite, setIsFavorite] = useState(false);
   const [comments, setComments] = useState<Comment[]>([
     {
@@ -308,8 +308,8 @@ export const DetailPost: React.FC = () => {
                 typeof parsed.price === "number"
                   ? parsed.price
                   : parsed.price && !isNaN(Number(parsed.price)),
-              transaction_type: parsed.transaction_type ,
-              condition: parsed.condition ,
+              transaction_type: parsed.transaction_type,
+              condition: parsed.condition,
               category_id: parsed.category_id,
               image_urls: (() => {
                 // Ưu tiên parsed.images nếu có
@@ -355,7 +355,7 @@ export const DetailPost: React.FC = () => {
 
                 return [];
               })(),
-              
+
               status: parsed.status,
               views: parsed.views || mockData.post.views,
               updatedAt: parsed.updatedAt,
@@ -445,7 +445,6 @@ export const DetailPost: React.FC = () => {
 
   const openLightbox = (index: number) => {
     setCurrentImageIndex(index);
-    setLightboxSrc(base + postData.post.image_urls[index].url);
     setIsLightboxOpen(true);
   };
 
@@ -572,7 +571,7 @@ export const DetailPost: React.FC = () => {
         post_id: {
           _id: postData.post._id,
           title: postData.post.title,
-          images: postData.post.image_urls ,
+          images: postData.post.image_urls,
           author_id: postData.user,
           category_id: postData.post.category_id?.name || "",
           price: postData.post.price,
@@ -606,8 +605,8 @@ export const DetailPost: React.FC = () => {
     }
   };
 
- //button sell,give away, exchange
-   const badgeClassFor = React.useCallback((postType: string) => {
+  //button sell,give away, exchange
+  const badgeClassFor = React.useCallback((postType: string) => {
     switch (postType) {
       case "sell":
         return styles["post-badge-ban"];
@@ -618,44 +617,44 @@ export const DetailPost: React.FC = () => {
     }
   }, []);
 
-    const setTransactionType = (type: string) => {
-        switch (type) {
-          case "sell":
-            return " Mua Ngay";
-          case "give away":
-            return "Nhận Miễn Phí";
-          case "exchange":
-            return "Đổi Sản Phẩm";
-          default:
-            return type;
-        }
-      };
-
-    const setTransactionIcon = (type: string) => {
-      switch (type) {
-          case "sell":
-            return "icon-park-outline:buy";
-          case "give away":
-            return "mdi:gift-outline";
-          case "exchange":
-            return "mdi:briefcase-exchange-outline";
-          default:
-            return type;
-      }
+  const setTransactionType = (type: string) => {
+    switch (type) {
+      case "sell":
+        return " Mua Ngay";
+      case "give away":
+        return "Nhận Miễn Phí";
+      case "exchange":
+        return "Đổi Sản Phẩm";
+      default:
+        return type;
     }
-    //tách chuỗi
-    const extractStringAfterLastComma = (fullString: string): string => {
-  if (!fullString || typeof fullString !== 'string') {
-    return "";
-  }
+  };
 
-  const lastCommaIndex = fullString.lastIndexOf(',');
-  if (lastCommaIndex === -1) {
-    return ""; 
-  }
-  const result = fullString.slice(lastCommaIndex + 1);
-  return result.trim();
-};
+  const setTransactionIcon = (type: string) => {
+    switch (type) {
+      case "sell":
+        return "icon-park-outline:buy";
+      case "give away":
+        return "mdi:gift-outline";
+      case "exchange":
+        return "mdi:briefcase-exchange-outline";
+      default:
+        return type;
+    }
+  };
+  //tách chuỗi
+  const extractStringAfterLastComma = (fullString: string): string => {
+    if (!fullString || typeof fullString !== "string") {
+      return "";
+    }
+
+    const lastCommaIndex = fullString.lastIndexOf(",");
+    if (lastCommaIndex === -1) {
+      return "";
+    }
+    const result = fullString.slice(lastCommaIndex + 1);
+    return result.trim();
+  };
   return (
     <div className={`${styles["detail-post"]}`}>
       <div className={`${styles["container"]}`}>
@@ -702,9 +701,11 @@ export const DetailPost: React.FC = () => {
             </div>
           </div>
         ) : (
-          
           <div id="main-content">
-            <p>Say2hand &gt; {postData.post.category_id.name} &gt; {extractStringAfterLastComma(postData.location.address_text)}</p>
+            <p>
+              Say2hand &gt; {postData.post.category_id.name} &gt;{" "}
+              {extractStringAfterLastComma(postData.location.address_text)}
+            </p>
             <article className={`${styles["main-article"]}`}>
               <div className={`${styles["left-col"]}`}>
                 <div className={`${styles["header-row"]}`}>
@@ -727,12 +728,15 @@ export const DetailPost: React.FC = () => {
                     className={`${styles["main-image-container"]}`}
                     onClick={() => openLightbox(currentImageIndex)}
                   >
-                    <img
+                    <Image
                       id="main-image"
                       src={
                         base + postData.post.image_urls[currentImageIndex].url
                       }
                       alt="main"
+                      fill
+                      style={{ objectFit: "contain" }}
+                      unoptimized
                     />
                     <div
                       id="image-count"
@@ -783,7 +787,14 @@ export const DetailPost: React.FC = () => {
                           }`}
                           onClick={() => handleSetImage(idx)}
                         >
-                          <img src={base + imageUrl.url} alt={`thumb-${idx}`} />
+                          <Image
+                            src={base + imageUrl.url}
+                            alt={`thumb-${idx}`}
+                            width={96}
+                            height={64}
+                            style={{ objectFit: "contain" }}
+                            unoptimized
+                          />
                         </div>
                       )
                     )}
@@ -793,9 +804,11 @@ export const DetailPost: React.FC = () => {
                 <div className={`${styles["info-card"]}`}>
                   <div className={`${styles["price-row"]}`}>
                     <div id="post-price" className={`${styles["price"]}`}>
-                      {
-                        postData.post.transaction_type === "give away" ? "Miễn phí" : postData.post.transaction_type === "exchange" ? "Trao đổi" : price
-                      }
+                      {postData.post.transaction_type === "give away"
+                        ? "Miễn phí"
+                        : postData.post.transaction_type === "exchange"
+                          ? "Trao đổi"
+                          : price}
                     </div>
                     <div
                       id="post-status"
@@ -895,13 +908,17 @@ export const DetailPost: React.FC = () => {
                     <div className={`${styles["skeleton-line"]}`} />
                   )}
                   <div className={`${styles["comment-input-row"]}`}>
-                    <img
+                    <Image
                       src={
                         postData.user.avatar
                           ? base + postData.user.avatar
                           : "/image/header/carbon_user-avatar-filled-alt.svg"
                       }
                       alt="Your Avatar"
+                      width={40}
+                      height={40}
+                      style={{ objectFit: "cover" }}
+                      unoptimized
                     />
                     <form
                       className={`${styles["comment-form"]}`}
@@ -936,7 +953,14 @@ export const DetailPost: React.FC = () => {
                         key={comment.id}
                         className={`${styles["comment-item"]}`}
                       >
-                        <img src={comment.user.avatar} alt="avatar" />
+                        <Image
+                          src={comment.user.avatar}
+                          alt="avatar"
+                          width={40}
+                          height={40}
+                          style={{ objectFit: "cover" }}
+                          unoptimized
+                        />
                         <div className={`${styles["comment-content"]}`}>
                           <div className={`${styles["comment-box"]}`}>
                             <p className={`${styles["author"]}`}>
@@ -961,10 +985,14 @@ export const DetailPost: React.FC = () => {
                                 key={reply.id}
                                 className={`${styles["reply-row"]}`}
                               >
-                                <img
+                                <Image
                                   src={reply.user.avatar}
                                   alt="reply"
+                                  width={32}
+                                  height={32}
                                   className={`${styles["reply-avatar"]}`}
+                                  style={{ objectFit: "cover" }}
+                                  unoptimized
                                 />
                                 <div className={`${styles["reply-content"]}`}>
                                   <div className={`${styles["reply-box"]}`}>
@@ -992,13 +1020,17 @@ export const DetailPost: React.FC = () => {
                 <div className={`${styles["desktop-sticky-sidebar"]}`}>
                   <div className={`${styles["seller-card"]}`}>
                     <div className={`${styles["seller-head"]}`}>
-                      <img
+                      <Image
                         src={
                           postData.user.avata
                             ? base + postData.user.avatar
                             : "/image/header/carbon_user-avatar-filled-alt.svg"
                         }
                         alt="seller"
+                        width={56}
+                        height={56}
+                        style={{ objectFit: "cover" }}
+                        unoptimized
                       />
                       <div>
                         <div className={`${styles["seller-name"]}`}>
@@ -1043,61 +1075,32 @@ export const DetailPost: React.FC = () => {
                   <div className={`${styles["spacer-sm"]}`} />
 
                   <div className={`${styles["cta-box"]}`}>
-
-                   {
-                   postData.post.author_id !== currentUser._id ? 
-                     <>
-                            <button
-                              type="button"
-                              className={`${styles["post-type-badge"]} ${badgeClassFor(postData.post.transaction_type)}`}
-                              onClick={(e) => {
-                                createRipple(e as any);
-                                /* TODO: open chat modal */
-                              }}
-                            >
-                              <Icon
-                                icon={setTransactionIcon(postData.post.transaction_type)}
-                                width={18}
-                                height={18}
-                              />
-                              &nbsp; {setTransactionType(postData.post.transaction_type)}
-                          </button> 
+                    {postData.post.author_id !== currentUser._id ? (
+                      <>
                         <button
-                            type="button"
-                            className={`${styles["chat-btn"]} ${styles["ripple-target"]}`}
-                            onClick={(e) => {
-                              createRipple(e as any);
-                              handleCreateConversation();
-                              /* TODO: open chat modal */
-                            } }
-                          >
-                            <Icon
-                              icon="lucide:message-square"
-                              width={16}
-                              height={16} />
-                            &nbsp; Chat Ngay / Liên Hệ
-                          </button>
-                          <button
-                            type="button"
-                            className={`${styles["fav-btn"]} ${isFavorite ? styles["active"] : ""} ${styles["ripple-target"]}`}
-                            onClick={(e) => {
-                              createRipple(e as any);
-                              toggleFavorite();
-                            } }
-                          >
-                              <Icon icon="lucide:heart" width={16} height={16} />
-                              &nbsp; {isFavorite ? "Đã Lưu Yêu Thích" : "Lưu Yêu Thích"}
-                            </button>
-
-                            </>
-                            
-                     
-                    : 
+                          type="button"
+                          className={`${styles["post-type-badge"]} ${badgeClassFor(postData.post.transaction_type)}`}
+                          onClick={(e) => {
+                            createRipple(e as any);
+                            /* TODO: open chat modal */
+                          }}
+                        >
+                          <Icon
+                            icon={setTransactionIcon(
+                              postData.post.transaction_type
+                            )}
+                            width={18}
+                            height={18}
+                          />
+                          &nbsp;{" "}
+                          {setTransactionType(postData.post.transaction_type)}
+                        </button>
                         <button
                           type="button"
                           className={`${styles["chat-btn"]} ${styles["ripple-target"]}`}
                           onClick={(e) => {
                             createRipple(e as any);
+                            handleCreateConversation();
                             /* TODO: open chat modal */
                           }}
                         >
@@ -1106,9 +1109,38 @@ export const DetailPost: React.FC = () => {
                             width={16}
                             height={16}
                           />
-                          &nbsp; Xác nhận đã thanh lý
-                      </button> 
-                   }
+                          &nbsp; Chat Ngay / Liên Hệ
+                        </button>
+                        <button
+                          type="button"
+                          className={`${styles["fav-btn"]} ${isFavorite ? styles["active"] : ""} ${styles["ripple-target"]}`}
+                          onClick={(e) => {
+                            createRipple(e as any);
+                            toggleFavorite();
+                          }}
+                        >
+                          <Icon icon="lucide:heart" width={16} height={16} />
+                          &nbsp;{" "}
+                          {isFavorite ? "Đã Lưu Yêu Thích" : "Lưu Yêu Thích"}
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        type="button"
+                        className={`${styles["chat-btn"]} ${styles["ripple-target"]}`}
+                        onClick={(e) => {
+                          createRipple(e as any);
+                          /* TODO: open chat modal */
+                        }}
+                      >
+                        <Icon
+                          icon="lucide:message-square"
+                          width={16}
+                          height={16}
+                        />
+                        &nbsp; Xác nhận đã thanh lý
+                      </button>
+                    )}
 
                     {/* <button
                       type="button"
@@ -1206,7 +1238,14 @@ export const DetailPost: React.FC = () => {
                       </button>
 
                       <div className={`${styles["product-aspect"]}`}>
-                        <img src={product.img} alt={product.title} />
+                        <Image
+                          src={product.img}
+                          alt={product.title}
+                          width={300}
+                          height={200}
+                          style={{ objectFit: "cover" }}
+                          unoptimized
+                        />
                       </div>
 
                       <div className={`${styles["card-body"]}`}>
@@ -1262,9 +1301,13 @@ export const DetailPost: React.FC = () => {
 
                           <div className={`${styles["seller-small"]}`}>
                             <div className={`${styles["seller-avatar"]}`}>
-                              <img
+                              <Image
                                 src={product.seller.avatar}
                                 alt={product.seller.name}
+                                width={30}
+                                height={30}
+                                style={{ objectFit: "cover" }}
+                                unoptimized
                               />
                             </div>
 
@@ -1321,11 +1364,18 @@ export const DetailPost: React.FC = () => {
             >
               <Icon icon="lucide:chevron-left" width={24} height={24} />
             </button>
-            <img
-              src={base + postData.post.image_urls[currentImageIndex].url}
-              alt="lightbox"
+            <div
+              className={styles.lightboxInner}
               onClick={(e) => e.stopPropagation()}
-            />
+            >
+              <Image
+                src={base + postData.post.image_urls[currentImageIndex].url}
+                alt="lightbox"
+                fill
+                style={{ objectFit: "contain" }}
+                unoptimized
+              />
+            </div>
             <button
               className={`${styles["nav-arrow"]} ${styles["right"]}`}
               onClick={(e) => {

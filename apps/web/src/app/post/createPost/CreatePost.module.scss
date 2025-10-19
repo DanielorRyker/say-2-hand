@@ -386,3 +386,34 @@ textarea:focus {
 .mtLarge {
   margin-top: 1.5rem;
 }
+
+/* loading overlay while posting */
+.loadingOverlay {
+  /* make overlay cover the full viewport so it blocks the entire UI */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.6);
+  z-index: 9999;
+  pointer-events: all;
+}
+
+.spinner {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 6px solid rgba(255, 255, 255, 0.15);
+  border-top-color: #fff;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

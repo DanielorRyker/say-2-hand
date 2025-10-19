@@ -5,8 +5,15 @@ import stylesCategoryForm from "./CategoryForm.module.scss";
 type FormData = {
   title: string;
   description: string;
-  condition: "used" | "new";
-  transaction_type: "sell" | "exchange" | "donate";
+  condition:
+    | "used"
+    | "new"
+    | "like new"
+    | "minor flaw"
+    | "for repair"
+    | "for parts";
+  transaction_type: "sell" | "exchange" | "give away";
+
   price?: number | null;
 };
 
@@ -434,8 +441,11 @@ export default function BasicInfoForm({
               }))
             }
           >
-            <option value="used">Đã sử dụng</option>
             <option value="new">Mới</option>
+            <option value="like new">Như mới</option>
+            <option value="used">Đã sử dụng</option>
+            <option value="minor flaw">Hư nhẹ</option>
+            <option value="for repair">Cần sửa chữa</option>
           </select>
         </div>
 
@@ -459,7 +469,7 @@ export default function BasicInfoForm({
           >
             <option value="sell">Bán</option>
             <option value="exchange">Trao đổi</option>
-            <option value="donate">Tặng</option>
+            <option value="give away">Tặng</option>
           </select>
         </div>
       </div>

@@ -1,9 +1,10 @@
-@use '@/styles/abstracts/variables' ;
+@use '@/styles/abstracts/variables';
+
 .detail-post {
     --color-primary: #3b82f6;
     --color-secondary: #10b981;
     font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
-     background: var(--background-light);
+    background: var(--background-light);
     color: #0f172a;
 }
 
@@ -270,7 +271,7 @@
     inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: contain; 
+    object-fit: contain;
     display: block;
     transition: transform .3s ease;
 }
@@ -306,7 +307,7 @@
 .detail-post .thumb img {
     width: 100%;
     height: 100%;
-    object-fit: contain; 
+    object-fit: contain;
     display: block;
 }
 
@@ -1258,7 +1259,7 @@
 }
 
 .post-type-badge {
-	display: flex;
+    display: flex;
     align-items: center;
     justify-content: center;
     width: 100%;
@@ -1274,16 +1275,22 @@
 
 /* Badge variants (match top-level styles.module.scss) */
 .post-badge-ban {
-	/* BÁN - muted warm orange */
-	background: linear-gradient(90deg, #F59E0B 0%, #D97706 100%)
+    /* BÁN - muted warm orange */
+    background: linear-gradient(90deg, #F59E0B 0%, #D97706 100%)
 }
 
 .post-badge-trao {
-	/* TRAO ĐỔI - muted teal -> soft blue */
-	background: linear-gradient(90deg, #6366F1 0%, #8B5CF6 100%);
+    /* TRAO ĐỔI - muted teal -> soft blue */
+    background: linear-gradient(90deg, #6366F1 0%, #8B5CF6 100%);
 }
 
 .post-badge-tang {
-	/* TẶNG - softer success green */
-	background: linear-gradient(90deg, #10B981 0%, #059669 100%);
+    /* TẶNG - softer success green */
+    background: linear-gradient(90deg, #10B981 0%, #059669 100%);
+}
+
+.detail-post .lightboxInner {
+    position: relative;
+    width: 100%;
+    height: 100%;
 }
