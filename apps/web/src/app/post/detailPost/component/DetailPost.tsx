@@ -4,7 +4,7 @@ import styles from "./DetailPost.module.scss";
 import { Icon } from "@iconify/react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import Image from "next/image";
+import { create } from "domain";
 
 // Helper to create a ripple span on a button. Call from button onClick: createRipple(e)
 export function createRipple(
@@ -209,7 +209,7 @@ export const DetailPost: React.FC = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  // lightboxSrc was removed in favor of using postData.post.image_urls[currentImageIndex]
+  const [lightboxSrc, setLightboxSrc] = useState("");
   const [isFavorite, setIsFavorite] = useState(false);
   const [comments, setComments] = useState<Comment[]>([
     {
@@ -445,6 +445,7 @@ export const DetailPost: React.FC = () => {
 
   const openLightbox = (index: number) => {
     setCurrentImageIndex(index);
+    setLightboxSrc(base + postData.post.image_urls[index].url);
     setIsLightboxOpen(true);
   };
 
@@ -698,6 +699,12 @@ export const DetailPost: React.FC = () => {
         return type;
     }
   };
+  //Xác nhận Post đã thanh lý
+  const handleCompletedPost = async (postId: string) => {
+    await axios.patch(`http://localhost:8080/api/posts/${postId}`, {
+      status: "completed",
+    });
+  };
   //tách chuỗi
   const extractStringAfterLastComma = (fullString: string): string => {
     if (!fullString || typeof fullString !== "string") {
@@ -784,15 +791,12 @@ export const DetailPost: React.FC = () => {
                     className={`${styles["main-image-container"]}`}
                     onClick={() => openLightbox(currentImageIndex)}
                   >
-                    <Image
+                    <img
                       id="main-image"
                       src={
                         base + postData.post.image_urls[currentImageIndex].url
                       }
                       alt="main"
-                      fill
-                      style={{ objectFit: "contain" }}
-                      unoptimized
                     />
                     <div
                       id="image-count"
@@ -843,14 +847,7 @@ export const DetailPost: React.FC = () => {
                           }`}
                           onClick={() => handleSetImage(idx)}
                         >
-                          <Image
-                            src={base + imageUrl.url}
-                            alt={`thumb-${idx}`}
-                            width={96}
-                            height={64}
-                            style={{ objectFit: "contain" }}
-                            unoptimized
-                          />
+                          <img src={base + imageUrl.url} alt={`thumb-${idx}`} />
                         </div>
                       )
                     )}
@@ -964,17 +961,13 @@ export const DetailPost: React.FC = () => {
                     <div className={`${styles["skeleton-line"]}`} />
                   )}
                   <div className={`${styles["comment-input-row"]}`}>
-                    <Image
+                    <img
                       src={
                         postData.user.avatar
                           ? base + postData.user.avatar
                           : "/image/header/carbon_user-avatar-filled-alt.svg"
                       }
                       alt="Your Avatar"
-                      width={40}
-                      height={40}
-                      style={{ objectFit: "cover" }}
-                      unoptimized
                     />
                     <form
                       className={`${styles["comment-form"]}`}
@@ -1009,14 +1002,7 @@ export const DetailPost: React.FC = () => {
                         key={comment.id}
                         className={`${styles["comment-item"]}`}
                       >
-                        <Image
-                          src={comment.user.avatar}
-                          alt="avatar"
-                          width={40}
-                          height={40}
-                          style={{ objectFit: "cover" }}
-                          unoptimized
-                        />
+                        <img src={comment.user.avatar} alt="avatar" />
                         <div className={`${styles["comment-content"]}`}>
                           <div className={`${styles["comment-box"]}`}>
                             <p className={`${styles["author"]}`}>
@@ -1041,14 +1027,10 @@ export const DetailPost: React.FC = () => {
                                 key={reply.id}
                                 className={`${styles["reply-row"]}`}
                               >
-                                <Image
+                                <img
                                   src={reply.user.avatar}
                                   alt="reply"
-                                  width={32}
-                                  height={32}
                                   className={`${styles["reply-avatar"]}`}
-                                  style={{ objectFit: "cover" }}
-                                  unoptimized
                                 />
                                 <div className={`${styles["reply-content"]}`}>
                                   <div className={`${styles["reply-box"]}`}>
@@ -1076,17 +1058,13 @@ export const DetailPost: React.FC = () => {
                 <div className={`${styles["desktop-sticky-sidebar"]}`}>
                   <div className={`${styles["seller-card"]}`}>
                     <div className={`${styles["seller-head"]}`}>
-                      <Image
+                      <img
                         src={
                           postData.user.avata
                             ? base + postData.user.avatar
                             : "/image/header/carbon_user-avatar-filled-alt.svg"
                         }
                         alt="seller"
-                        width={56}
-                        height={56}
-                        style={{ objectFit: "cover" }}
-                        unoptimized
                       />
                       <div>
                         <div className={`${styles["seller-name"]}`}>
@@ -1135,7 +1113,7 @@ export const DetailPost: React.FC = () => {
                       <>
                         <button
                           type="button"
-                          className={`${styles["post-type-badge"]} ${badgeClassFor(postData.post.transaction_type)}`}
+                          className={`${styles["post-type-badge"]} ${styles["ripple-target"]} ${badgeClassFor(postData.post.transaction_type)}`}
                           onClick={(e) => {
                             createRipple(e as any);
                             /* TODO: open chat modal */
@@ -1172,7 +1150,7 @@ export const DetailPost: React.FC = () => {
                           className={`${styles["fav-btn"]} ${isFavorite ? styles["active"] : ""} ${styles["ripple-target"]}`}
                           onClick={(e) => {
                             createRipple(e as any);
-                            toggleFavorite(postData.post._id);
+                            toggleFavorite(postData.post._id!);
                           }}
                         >
                           <Icon icon="lucide:heart" width={16} height={16} />
@@ -1184,9 +1162,18 @@ export const DetailPost: React.FC = () => {
                       <button
                         type="button"
                         className={`${styles["chat-btn"]} ${styles["ripple-target"]}`}
+                        disabled={postData?.post?.status === "completed"} // 🔒 Khóa nếu đã hoàn thành
                         onClick={(e) => {
-                          createRipple(e as any);
-                          /* TODO: open chat modal */
+                          if (postData?.post?.status === "completed") return; // 🚫 Ngăn click logic
+                          handleCompletedPost(postData.post._id!);
+                        }}
+                        style={{
+                          opacity:
+                            postData?.post?.status === "completed" ? 0.5 : 1, // 💧 Làm mờ nút
+                          cursor:
+                            postData?.post?.status === "completed"
+                              ? "not-allowed"
+                              : "pointer",
                         }}
                       >
                         <Icon
@@ -1197,6 +1184,18 @@ export const DetailPost: React.FC = () => {
                         &nbsp; Xác nhận đã thanh lý
                       </button>
                     )}
+
+                    {/* <button
+                      type="button"
+                      className={`${styles["fav-btn"]} ${isFavorite ? styles["active"] : ""} ${styles["ripple-target"]}`}
+                      onClick={(e) => {
+                        createRipple(e as any);
+                        toggleFavorite();
+                      }}
+                    >
+                      <Icon icon="lucide:heart" width={16} height={16} />
+                      &nbsp; {isFavorite ? "Đã Lưu Yêu Thích" : "Lưu Yêu Thích"}
+                    </button> */}
                   </div>
 
                   <div className={`${styles["spacer-sm"]}`} />
@@ -1282,14 +1281,7 @@ export const DetailPost: React.FC = () => {
                       </button>
 
                       <div className={`${styles["product-aspect"]}`}>
-                        <Image
-                          src={product.img}
-                          alt={product.title}
-                          width={300}
-                          height={200}
-                          style={{ objectFit: "cover" }}
-                          unoptimized
-                        />
+                        <img src={product.img} alt={product.title} />
                       </div>
 
                       <div className={`${styles["card-body"]}`}>
@@ -1345,13 +1337,9 @@ export const DetailPost: React.FC = () => {
 
                           <div className={`${styles["seller-small"]}`}>
                             <div className={`${styles["seller-avatar"]}`}>
-                              <Image
+                              <img
                                 src={product.seller.avatar}
                                 alt={product.seller.name}
-                                width={30}
-                                height={30}
-                                style={{ objectFit: "cover" }}
-                                unoptimized
                               />
                             </div>
 
@@ -1408,18 +1396,11 @@ export const DetailPost: React.FC = () => {
             >
               <Icon icon="lucide:chevron-left" width={24} height={24} />
             </button>
-            <div
-              className={styles.lightboxInner}
+            <img
+              src={base + postData.post.image_urls[currentImageIndex].url}
+              alt="lightbox"
               onClick={(e) => e.stopPropagation()}
-            >
-              <Image
-                src={base + postData.post.image_urls[currentImageIndex].url}
-                alt="lightbox"
-                fill
-                style={{ objectFit: "contain" }}
-                unoptimized
-              />
-            </div>
+            />
             <button
               className={`${styles["nav-arrow"]} ${styles["right"]}`}
               onClick={(e) => {
