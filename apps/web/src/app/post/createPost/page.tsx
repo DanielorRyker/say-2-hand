@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import styles from "./CreatePost.module.scss";
 import stylesBasicForm from "./components/BasicInfoForm.module.scss";
 import {
@@ -12,12 +13,18 @@ import {
 } from "./components";
 import axios from "axios";
 
-
 type PostFormData = {
   title: string;
   description: string;
-  condition: "used" | "new";
-  transaction_type: "sell" | "exchange" | "donate";
+  condition:
+    | "used"
+    | "new"
+    | "like new"
+    | "minor flaw"
+    | "for repair"
+    | "for parts";
+  // allow both variants to match different components
+  transaction_type: "sell" | "exchange" | "give away";
   price: number | null;
   category_id: string;
   // một input địa chỉ đơn thay thế cho tỉnh/quận/đường
@@ -30,20 +37,20 @@ type PostFormData = {
 };
 
 export default function Page() {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState<number>(1);
+  const [loading, setLoading] = useState<boolean>(false);
   const [images, setImages] = useState<string[]>([]);
   const [message, setMessage] = useState<string | null>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
   //Lấy User
-const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
     setCurrentUser(userData ? JSON.parse(userData) : null);
   }, []);
-
- 
 
   const [formData, setFormData] = useState<PostFormData>({
     title: "",
@@ -52,7 +59,7 @@ const [currentUser, setCurrentUser] = useState<any>(null);
     transaction_type: "sell",
     price: null,
     category_id: "",
-    location: { address: ""},
+    location: { address: "" },
     tags: [],
     custom_fields: {},
   });
@@ -123,35 +130,33 @@ const [currentUser, setCurrentUser] = useState<any>(null);
     setCurrentStep((s) => Math.max(s - 1, 1));
   }
 
-// ✅ Chuyển base64 → File
+  // ✅ Chuyển base64 → File
 
-useEffect(() => {
-  // Load từ localStorage khi mount
-  const savedImages = localStorage.getItem("uploadedImages");
-  if (savedImages) {
-    try {
-      const parsed = JSON.parse(savedImages);
-      if (Array.isArray(parsed)) setImages(parsed);
-    } catch (err) {
-      console.error("Error parsing saved images:", err);
+  useEffect(() => {
+    // Load từ localStorage khi mount
+    const savedImages = localStorage.getItem("uploadedImages");
+    if (savedImages) {
+      try {
+        const parsed = JSON.parse(savedImages);
+        if (Array.isArray(parsed)) setImages(parsed);
+      } catch (err) {
+        console.error("Error parsing saved images:", err);
+      }
     }
-  }
-}, []);
+  }, []);
 
-// Đồng bộ images → selectedFiles
-useEffect(() => {
-  if (!images || images.length === 0) {
-    setSelectedFiles([]);
-    return;
-  }
+  // Đồng bộ images → selectedFiles
+  useEffect(() => {
+    if (!images || images.length === 0) {
+      setSelectedFiles([]);
+      return;
+    }
 
-  const files = images.map((base64, i) =>
-    base64ToFile(base64, `image_${i + 1}.png`)
-  );
-  setSelectedFiles(files);
-}, [images]);
-
-
+    const files = images.map((base64, i) =>
+      base64ToFile(base64, `image_${i + 1}.png`)
+    );
+    setSelectedFiles(files);
+  }, [images]);
 
   function base64ToFile(base64: string, filename: string) {
     const arr = base64.split(",");
@@ -166,41 +171,42 @@ useEffect(() => {
   }
 
   // ✅ Load ảnh từ localStorage (ở trang khác lưu base64)
-  
+
   useEffect(() => {
-  const interval = setInterval(() => {
-    const savedImages = localStorage.getItem("uploadedImages");
-    if (savedImages) {
-      try {
-        const parsed = JSON.parse(savedImages);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          const files = parsed.map((base64: string, i: number) =>
-            base64ToFile(base64, `image_${i + 1}.png`)
-          );
-          setSelectedFiles(files);
-          clearInterval(interval); // ✅ Dừng khi đã có ảnh
+    const interval = setInterval(() => {
+      const savedImages = localStorage.getItem("uploadedImages");
+      if (savedImages) {
+        try {
+          const parsed = JSON.parse(savedImages);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const files = parsed.map((base64: string, i: number) =>
+              base64ToFile(base64, `image_${i + 1}.png`)
+            );
+            setSelectedFiles(files);
+            clearInterval(interval); // ✅ Dừng khi đã có ảnh
+          }
+        } catch (err) {
+          console.error("Error parsing saved images:", err);
         }
-      } catch (err) {
-        console.error("Error parsing saved images:", err);
       }
-    }
-  }, 200);
+    }, 200);
 
-  return () => clearInterval(interval);
-}, []);
-
+    return () => clearInterval(interval);
+  }, []);
 
   // Upload ảnh lên server (NestJS endpoint /upload/imgs)
-  const uploadImages = async (files: File[], title: string): Promise<string[]> => {
-    if (!files || files.length === 0)
-    {
+  const uploadImages = async (
+    files: File[],
+    title: string
+  ): Promise<string[]> => {
+    if (!files || files.length === 0) {
       console.warn("No files to upload.");
       return [];
     }
 
     const formData = new FormData();
     files.forEach((file) => formData.append("files", file));
-    formData.append("bucket", "posts/"+currentUser._id+"/"+title); 
+    formData.append("bucket", "posts/" + currentUser._id + "/" + title);
 
     try {
       const res = await axios.post(
@@ -238,55 +244,63 @@ useEffect(() => {
 
     console.log("Dữ liệu tin đăng:", { images, formData });
 
-    //Upload ảnh
-    const uploadedUrls = await uploadImages(selectedFiles,formData.title);
-     if (!uploadedUrls || uploadedUrls.length === 0) {
-      showMessage("Không thể tải ảnh lên, vui lòng thử lại.");
-      return;
+    setLoading(true);
+    try {
+      // Upload ảnh
+      const uploadedUrls = await uploadImages(selectedFiles, formData.title);
+      if (!uploadedUrls || uploadedUrls.length === 0) {
+        setLoading(false);
+        showMessage("Không thể tải ảnh lên, vui lòng thử lại.");
+        return;
+      }
+
+      // Format lại dữ liệu
+      const payload = {
+        author_id: currentUser._id, // ObjectId người đăng
+        category_id: formData.category_id, // ObjectId danh mục
+        title: formData.title,
+        description: formData.description,
+        images: uploadedUrls.map((url: string, i: number) => ({
+          url,
+          alt: `image_${i + 1}`,
+        })),
+        condition: formData.condition,
+        transaction_type:
+          formData.transaction_type === "give away"
+            ? "give away"
+            : formData.transaction_type, // Map lại nếu FE dùng "give away"
+        price: formData.price ?? null,
+        location:
+          formData.location && formData.location.coords
+            ? {
+                address: formData.location.address,
+                geo: {
+                  type: "Point",
+                  coordinates: [
+                    formData.location.coords.lon,
+                    formData.location.coords.lat,
+                  ],
+                },
+              }
+            : null,
+        custom_fields: formData.custom_fields || {},
+        tags: formData.tags?.length ? formData.tags : [],
+      };
+      console.log("📦 Dữ liệu gửi BE:", payload);
+
+      await axios.post("http://localhost:8080/api/posts", payload, {
+        headers: { "Content-Type": "application/json" },
+      });
+      showMessage("Đăng tin thành công!");
+      setLoading(false);
+      // chuyển về trang home
+      router.push("/");
+    } catch (err) {
+      console.error("Lỗi khi đăng tin:", err);
+      setLoading(false);
+      showMessage("Lỗi khi đăng tin. Vui lòng thử lại.");
     }
-
-    //Format lại dữ liệu
-
-    const payload = {
-      author_id: currentUser._id, // ObjectId người đăng
-      category_id: formData.category_id, // ObjectId danh mục
-      title: formData.title,
-      description: formData.description,
-      images: uploadedUrls.map((url: string, i: number) => ({
-        url,
-        alt: `image_${i + 1}`,
-      })),
-      condition: formData.condition,
-      transaction_type: formData.transaction_type === "donate" ? "give away" : formData.transaction_type, // Map lại nếu FE dùng "donate"
-      price: formData.price ?? null,
-      location: formData.location && formData.location.coords
-        ? {
-            address: formData.location.address,
-            geo: {
-              type: "Point",
-              coordinates: [
-                formData.location.coords.lon,
-                formData.location.coords.lat,
-              ],
-            },
-          }
-        : null,
-      custom_fields: formData.custom_fields || {},
-      tags: formData.tags?.length ? formData.tags : [],
-    };
-    console.log("📦 Dữ liệu gửi BE:", payload);
-
-    const res = await axios.post("http://localhost:8080/api/posts", payload, {
-      headers: { "Content-Type": "application/json" },
-    });
-    showMessage("Đăng tin thành công!");
   }
-
-  
-
-  
-
-
 
   return (
     <div className={styles.container}>
@@ -294,6 +308,11 @@ useEffect(() => {
       <ProgressBar step={currentStep} />
 
       <div className={styles.section}>
+        {loading && (
+          <div className={styles.loadingOverlay}>
+            <div className={styles.spinner} aria-hidden="true" />
+          </div>
+        )}
         {currentStep === 1 && (
           <section>
             <h2 className={styles.sectionTitle}>1. Tải lên hình ảnh</h2>
@@ -310,6 +329,7 @@ useEffect(() => {
                     return showMessage("Vui lòng tải lên ít nhất 1 ảnh.");
                   nextStep();
                 }}
+                disabled={loading}
               >
                 Tiếp tục
               </button>
@@ -343,6 +363,7 @@ useEffect(() => {
             customFieldData={customFieldData}
             onPrev={prevStep}
             onSubmit={handleSubmit}
+            loading={loading}
             showMessage={showMessage}
           />
         )}

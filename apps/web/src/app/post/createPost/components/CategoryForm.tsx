@@ -14,12 +14,13 @@ export default function CategoryForm({
   onPrev,
   onSubmit,
   showMessage,
+  loading = false,
 }: any) {
   // trước đây chúng ta có các field riêng tỉnh/quận/đường;
   // giờ hợp nhất thành một input địa chỉ dạng free-text tại
   // `formData.location.address` nên không cần state districts nữa.
 
-    //lấy dữ liệu Category từ BE
+  //lấy dữ liệu Category từ BE
   interface Category {
     _id: string;
     name?: string;
@@ -27,14 +28,14 @@ export default function CategoryForm({
     image?: string;
   }
   const [categoriesData, setCategoriesData] = useState<Category[]>([]);
-  
-    useEffect(() => {
-      async function fetchCategories() {
-        const res = await axios.get("http://localhost:8080/api/categories/");
-        setCategoriesData(res.data); // res.data là danh sách categories
-      }
-      fetchCategories();
-    }, []);
+
+  useEffect(() => {
+    async function fetchCategories() {
+      const res = await axios.get("http://localhost:8080/api/categories/");
+      setCategoriesData(res.data); // res.data là danh sách categories
+    }
+    fetchCategories();
+  }, []);
 
   const fields = customFieldData[formData.category_id] || [];
 
@@ -85,12 +86,6 @@ export default function CategoryForm({
     });
   }
 
- 
-   
-  
-
-  
-
   return (
     <form
       className={styles.form}
@@ -120,7 +115,7 @@ export default function CategoryForm({
           required
         >
           <option value="">-- Chọn danh mục --</option>
-           {categoriesData.map((cate) => (
+          {categoriesData.map((cate) => (
             <option key={cate._id} value={cate._id}>
               {cate.name}
             </option>
@@ -291,12 +286,14 @@ export default function CategoryForm({
         >
           Quay lại
         </button>
-        <button type="submit" className={stylesBasicForm.btnPrimary}>
-          Đăng tin
+        <button
+          type="submit"
+          className={stylesBasicForm.btnPrimary}
+          disabled={loading}
+        >
+          {loading ? "Đang đăng..." : "Đăng tin"}
         </button>
       </div>
     </form>
   );
 }
-
-
