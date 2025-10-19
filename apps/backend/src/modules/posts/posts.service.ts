@@ -116,6 +116,9 @@ async create(createPostDto: CreatePostDto) {
   findByUserId(userId: string) {
     return this.postModel
       .find({ author_id: new Types.ObjectId(userId) })
+      .populate('author_id', 'full_name avatar') // lấy thông tin user
+      .populate('category_id', 'name') // lấy tên category
+      .sort({ updatedAt: -1 })
       .exec();
   }
 
@@ -156,4 +159,20 @@ async create(createPostDto: CreatePostDto) {
 
     return { message: 'Post and related conversations/messages deleted successfully' };
   }
+
+  //Tìm theo favories
+  async findByIds(ids: string[]): Promise<Post[]> {
+  // Chuyển string sang ObjectId để tìm trong MongoDB
+  const objectIds = ids.map((id) => new Types.ObjectId(id));
+
+  return this.postModel
+    .find({ _id: { $in: objectIds } })
+    .populate('author_id', 'full_name avatar') // lấy thông tin user
+    .populate('category_id', 'name') // lấy tên category
+    .sort({ updatedAt: -1 })
+    .exec();
+}
+
+
+
 }

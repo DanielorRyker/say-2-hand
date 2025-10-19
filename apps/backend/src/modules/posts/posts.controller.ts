@@ -68,4 +68,10 @@ export class PostsController {
   findByUserId(@Param('userId') userId: string) {
     return this.postsService.findByUserId(userId);
   }
+
+  @Post('by-ids')
+  findByIds(@Body('ids') ids: string[]) {
+  return this.postsService.findByIds(ids);
+}
+
 }

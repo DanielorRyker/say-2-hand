@@ -54,6 +54,18 @@ const Header = () => {
 
     router.push("/profile/" + user?.full_name);
   };
+  //Mở trang favories
+  const handlerFavorites = () => {
+  const sortBy = "favorites";
+  localStorage.setItem("sortBy", sortBy);
+  router.push(`/${sortBy}`); 
+};
+  //Mở trang bài đăng của tôi
+  const handleMyPost = () => {
+  const sortBy = "myPost";
+  localStorage.setItem("sortBy", sortBy);
+  router.push(`/${sortBy}`); 
+  }
 
   const avatarUrl = user
     ? process.env.NEXT_PUBLIC_URL_GCS + user.avatar
@@ -105,6 +117,7 @@ const Header = () => {
             type="button"
             title="Yêu thích"
             aria-label="Yêu thích"
+            onClick={handlerFavorites}
           >
             <Image
               src="/image/header/Favourite icon.svg"
@@ -114,20 +127,6 @@ const Header = () => {
               height={24}
             />
           </button>
-          {/* <button
-            className={headerStyles.btnHeader}
-            type="button"
-            title="Tin nhắn"
-            aria-label="Tin nhắn"
-          >
-            <Image
-              src="/image/header/IconMessage.svg"
-              alt="Tin nhắn"
-              className={headerStyles.img}
-              width={24}
-              height={24}
-            />
-          </button> */}
           <ConversationsSidebar />
           <button
             className={headerStyles.btnHeader}
@@ -207,7 +206,7 @@ const Header = () => {
                   Cài đặt tài khoản
                 </NavDropdown.Item>
                 <NavDropdown.Divider />
-                <NavDropdown.Item onClick={handleProfile}>
+                <NavDropdown.Item onClick={handleMyPost}>
                   Bài đăng của tôi
                 </NavDropdown.Item>
                 <NavDropdown.Divider />

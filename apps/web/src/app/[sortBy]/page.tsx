@@ -3,7 +3,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import styles from "./postList.module.scss";
+import styles from "@/app/home/component/postList.module.scss";
 // Iconify import (replace HeartSVG with this icon)
 import { Icon } from "@iconify/react";
 import axios from "axios";
@@ -100,34 +100,66 @@ export const ListPost: React.FC = () => {
   const [postsData, setPostsData] = useState<Post[]>([]);
   const [favoriteData, setFavoriteData] = useState<Post[]>([]);
 
-  useEffect(() => {
-        async function fetchPosts() {
-            const res = await axios.get("http://localhost:8080/api/posts/postmap");
-            setPostsData(res.data); // res.data là danh sách posts
-        }
-        fetchPosts();
-               
-        }, []);
-
     useEffect(() => {
-        if (!currentUser?._id) return; // 🚫 nếu chưa có user thì không gọi
+  if (!currentUser?._id) return;
 
-        console.log("Fetching favorites for user:", currentUser._id);
+  console.log("Fetching favorites for user:", currentUser._id);
 
-        async function fetchFavorites() {
-          try {
-            const res = await axios.get(
-              `http://localhost:8080/api/favorites/user/${currentUser._id}`
-            );
-            console.log("Favorite Data:", res.data);
-            setFavoriteData(res.data);
-          } catch (err) {
-            console.error("Error loading favorites:", err);
-          }
-        }
+  async function fetchFavorites() {
+    try {
+      const res = await axios.get(
+        `http://localhost:8080/api/favorites/user/${currentUser._id}`
+      );
+      console.log("Favorite Data:", res.data);
+      setFavoriteData(res.data);
+    } catch (err) {
+      console.error("Error loading favorites:", err);
+    }
+  }
 
-        fetchFavorites();
-      }, [currentUser]);
+  fetchFavorites();
+}, [currentUser]);
+
+useEffect(() => {
+  const sortBy = localStorage.getItem("sortBy");
+  if (!sortBy) return;
+
+  async function fetchData() {
+    try {
+      if (sortBy === "favorites") {
+        if (favoriteData.length === 0) return;
+
+        const postIds = favoriteData.map((fav) => fav.post_id);
+        console.log("Favorite Post IDs:", postIds);
+
+        const res = await axios.post("http://localhost:8080/api/posts/by-ids", {
+          ids: postIds,
+        });
+        console.log("Favorite Posts Data:", res.data);
+        setPostsData(res.data);
+      } 
+      else if (sortBy === "myPost") {
+        if (!currentUser?._id) return;
+
+        const res = await axios.get(
+          `http://localhost:8080/api/posts/user/${currentUser._id}`
+        );
+        console.log("My Posts Data:", res.data);
+        setPostsData(res.data);
+      } 
+      else {
+        console.log("Unknown sortBy value:", sortBy);
+      }
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    }
+  }
+
+  fetchData();
+}, [favoriteData, currentUser]);
+
+
+
 
 //dữ liệu tạm thời
 

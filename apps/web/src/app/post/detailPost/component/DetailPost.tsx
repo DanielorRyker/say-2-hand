@@ -698,6 +698,12 @@ export const DetailPost: React.FC = () => {
             return type;
       }
     }
+    //Xác nhận Post đã thanh lý 
+    const handleCompletedPost = async (postId: string) => {
+    await axios.patch(`http://localhost:8080/api/posts/${postId}`, {
+      status: "completed",
+    });
+  };
     //tách chuỗi
     const extractStringAfterLastComma = (fullString: string): string => {
   if (!fullString || typeof fullString !== 'string') {
@@ -1104,7 +1110,7 @@ export const DetailPost: React.FC = () => {
                      <>
                             <button
                               type="button"
-                              className={`${styles["post-type-badge"]} ${badgeClassFor(postData.post.transaction_type)}`}
+                              className={`${styles["post-type-badge"]} ${styles["ripple-target"]} ${badgeClassFor(postData.post.transaction_type)}`}
                               onClick={(e) => {
                                 createRipple(e as any);
                                 /* TODO: open chat modal */
@@ -1149,20 +1155,22 @@ export const DetailPost: React.FC = () => {
                      
                     : 
                         <button
-                          type="button"
-                          className={`${styles["chat-btn"]} ${styles["ripple-target"]}`}
-                          onClick={(e) => {
-                            createRipple(e as any);
-                            /* TODO: open chat modal */
-                          }}
-                        >
-                          <Icon
-                            icon="lucide:message-square"
-                            width={16}
-                            height={16}
-                          />
-                          &nbsp; Xác nhận đã thanh lý
-                      </button> 
+                            type="button"
+                            className={`${styles["chat-btn"]} ${styles["ripple-target"]}`}
+                            disabled={postData?.post?.status === "completed"} // 🔒 Khóa nếu đã hoàn thành
+                            onClick={(e) => {
+                              if (postData?.post?.status === "completed") return; // 🚫 Ngăn click logic
+                              handleCompletedPost(postData.post._id!);
+                            }}
+                            style={{
+                              opacity: postData?.post?.status === "completed" ? 0.5 : 1, // 💧 Làm mờ nút
+                              cursor: postData?.post?.status === "completed" ? "not-allowed" : "pointer",
+                            }}
+                          >
+                            <Icon icon="lucide:message-square" width={16} height={16} />
+                            &nbsp; Xác nhận đã thanh lý
+                          </button>
+
                    }
 
                     {/* <button
