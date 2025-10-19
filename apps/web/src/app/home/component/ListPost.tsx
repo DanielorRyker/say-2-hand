@@ -217,10 +217,16 @@ const itemsData: ItemData[] = [
 
 export const ListPost: React.FC = () => {
   const router = useRouter();
-
+ //Lấy user hiện tại
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    setCurrentUser(userData ? JSON.parse(userData) : null);
+  }, []);
   //Lấy dữ liệu từ database
 
  interface Post {
+  post_id: string;
   _id: string;
   title: string;
   description: string;
@@ -272,34 +278,53 @@ export const ListPost: React.FC = () => {
 }
 
   const [postsData, setPostsData] = useState<Post[]>([]);
+  const [favoriteData, setFavoriteData] = useState<Post[]>([]);
 
-useEffect(() => {
+  useEffect(() => {
         async function fetchPosts() {
             const res = await axios.get("http://localhost:8080/api/posts/postmap");
             setPostsData(res.data); // res.data là danh sách posts
         }
         fetchPosts();
+               
         }, []);
-  useEffect(() => {
-    async function fetchPosts() {
-      const res = await axios.get("http://localhost:8080/api/posts/postmap");
-      setPostsData(res.data); // res.data là danh sách posts
-      console.log("posts", res.data);
-    }
-    fetchPosts();
-  }, []);
+
+    useEffect(() => {
+        if (!currentUser?._id) return; // 🚫 nếu chưa có user thì không gọi
+
+        console.log("Fetching favorites for user:", currentUser._id);
+
+        async function fetchFavorites() {
+          try {
+            const res = await axios.get(
+              `http://localhost:8080/api/favorites/user/${currentUser._id}`
+            );
+            console.log("Favorite Data:", res.data);
+            setFavoriteData(res.data);
+          } catch (err) {
+            console.error("Error loading favorites:", err);
+          }
+        }
+
+        fetchFavorites();
+      }, [currentUser]);
 
 //dữ liệu tạm thời
-const [isFavorited, setIsFavorited] = useState(false);
 
-const handleSetFavorite = (value: boolean) => {
-  // Cập nhật trạng thái yêu thích
-  if(value === true){
-    setIsFavorited(false);
-  }else{
-    setIsFavorited(true);
-  }
-};
+const checkFavorited = (postId: string) => {
+  return favoriteData.some(fav => fav.post_id === postId);
+}
+
+// const [isFavorited, setIsFavorited] = useState(false);
+
+// const handleSetFavorite = (value: boolean) => {
+//   // Cập nhật trạng thái yêu thích
+//   if(value === true){
+//     setIsFavorited(false);
+//   }else{
+//     setIsFavorited(true);
+//   }
+// };
 
   ////Tính thời gian
   const getRelativeTime = (isoString: string) => {
@@ -365,21 +390,45 @@ const handleSetFavorite = (value: boolean) => {
     return () => buttons.forEach((b) => (b.onclick = null));
   }, [handleRippleClick]);
 
-  const toggleFavorite = React.useCallback((itemId: number) => {
-    setItems((prev) =>
-      prev.map((it) =>
-        it.id !== itemId
-          ? it
-          : {
-              ...it,
-              isFavorited: !it.isFavorited,
-              favorites: it.isFavorited
-                ? Math.max(0, it.favorites - 1)
-                : it.favorites + 1,
-            }
-      )
-    );
-  }, []);
+
+  const toggleFavorite = React.useCallback(async (postId: string) => {
+    if (!currentUser?._id) {
+      // Xử lý trường hợp người dùng chưa đăng nhập (ví dụ: chuyển hướng đến trang đăng nhập)
+      alert("Vui lòng đăng nhập để thực hiện chức năng này.");
+      return;
+    }
+    
+    const isCurrentlyFavorited = checkFavorited(postId);
+    
+    try {
+      if (isCurrentlyFavorited) {
+        // XÓA khỏi favorites (DELETE request)
+        await axios.delete(`http://localhost:8080/api/favorites/post/${postId}`, {
+          data: { user_id: currentUser._id },
+        });
+        setFavoriteData(prev => prev.filter(fav => fav.post_id !== postId));
+        console.log(`Đã xóa bài đăng ${postId} khỏi favorites.`);
+
+      } else {
+        // THÊM vào favorites (POST request)
+       await axios.post(`http://localhost:8080/api/favorites/`, 
+        {
+           user_id: currentUser._id,
+           post_id: postId 
+        });
+    
+        const postToAdd = postsData.find(p => p._id === postId);
+        if (postToAdd) {
+          
+            setFavoriteData(prev => [...prev, ({ ...postToAdd, post_id: postId } as Post)]);
+        }
+        console.log(`Đã thêm bài đăng ${postId} vào favorites.`);
+      }
+    } catch (error) {
+      console.error("Lỗi khi cập nhật trạng thái yêu thích:", error);
+      alert("Đã xảy ra lỗi khi cập nhật yêu thích.");
+    }
+  }, [currentUser, checkFavorited, postsData]); // Thêm dependencies
 
   const badgeClassFor = React.useCallback((postType: string) => {
     switch (postType) {
@@ -458,18 +507,18 @@ const handleSetFavorite = (value: boolean) => {
                   onClick={(e) => {
                     e.stopPropagation();
                     handleRippleClick(e);
-                    toggleFavorite(data._id as unknown as number);
-                    handleSetFavorite(isFavorited);
+                    toggleFavorite(data._id);
+                    checkFavorited(data._id);
                   }}
                   onKeyDown={(e) => e.stopPropagation()}
                 >
                   {/* chưa có Yêu thích*/}
                   <span
-                    className={`${styles.heartIcon} ${isFavorited ? styles.heartIconActive : ""}`}
+                    className={`${styles.heartIcon} ${checkFavorited(data._id) ? styles.heartIconActive : ""}`}
                   >
                     <Icon
                       icon={
-                        isFavorited
+                        checkFavorited(data._id)
                           ? "ic:sharp-favorite"
                           : "ic:twotone-favorite"
                       }

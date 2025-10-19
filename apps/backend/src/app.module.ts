@@ -15,6 +15,7 @@ import { CategoriesModule } from './modules/categories/categories.module';
 import { ConversationsModule } from './modules/conversations/conversations.module';
 import { MessagesModule } from './modules/messages/messages.module';
 import { ChatGateway } from './common/socket/chat.gateway';
+import { FavoritesModule } from './modules/favorites/favorites.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { ChatGateway } from './common/socket/chat.gateway';
     CategoriesModule,
     ConversationsModule,
     MessagesModule,
+    FavoritesModule,
   ],
   controllers: [AppController],
   providers: [AppService, ChatGateway],
