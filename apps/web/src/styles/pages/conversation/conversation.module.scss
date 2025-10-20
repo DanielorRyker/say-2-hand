@@ -252,3 +252,20 @@
 .conversationItemHeader{
   display: flex;
 }
+
+.messageLayour{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.unreadCount{
+  background-color: red;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  text-align: center;
+  font-size: 14px;
+  color: white; 
+}

@@ -41,7 +41,7 @@
   // position: absolute;   
   /* top: 0;              
   left: 0; */
-  z-index: 1000;
+  // z-index: 1000;
   flex-direction: column;
   background-size: 100% 70%;
   background-repeat: no-repeat;
@@ -224,6 +224,18 @@
     var(--background-light) bottom/100% 50% no-repeat;
 }
 
-
+.btnHeader .unreadCount{
+  position: absolute;
+  background-color: red;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  text-align: center;
+  font-size: 14px;
+  color: #ffffff; 
+  margin-bottom: 1.5rem;
+  margin-left: 3rem;
+  font-weight: 600;
+}
 
 /* header */

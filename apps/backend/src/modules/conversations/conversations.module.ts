@@ -3,24 +3,19 @@ import { ConversationsService } from './conversations.service';
 import { ConversationsController } from './conversations.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Conversation, ConversationSchema } from './schemas/conversation.schema';
-import { PostsModule } from '../posts/posts.module'; // nếu Conversations có dùng PostsService
+import { Message, MessageSchema } from '../messages/schemas/message.schema';
+import { PostsModule } from '../posts/posts.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
-      {
-        name: Conversation.name,
-        schema: ConversationSchema,
-        collection: 'conversations',
-      },
+      { name: Conversation.name, schema: ConversationSchema, collection: 'conversations' },
+      { name: Message.name, schema: MessageSchema },
     ]),
-    forwardRef(() => PostsModule), // chỉ cần nếu có dùng PostsService
+    forwardRef(() => PostsModule),
   ],
   controllers: [ConversationsController],
   providers: [ConversationsService],
-  exports: [
-    ConversationsService, // ✅ phải có
-    MongooseModule,        // ✅ để module khác dùng ConversationModel
-  ],
+  exports: [ConversationsService],
 })
 export class ConversationsModule {}

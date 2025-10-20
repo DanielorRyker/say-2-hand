@@ -78,6 +78,7 @@ useEffect(() => {
     conversation_key: string;
     createdAt: string;
     updatedAt: string;
+    unreadCount: number,
     __v?: number;
   }
 
@@ -100,7 +101,6 @@ useEffect(() => {
       let user;
       if (userStr) {
         user = JSON.parse(userStr); // chuyển string -> object
-        // console.log(user.status); // ✅ lấy được status
       }
       const res = await axios.get(
         `http://localhost:8080/api/conversations/conversations/${user._id}`
@@ -155,7 +155,6 @@ useEffect(() => {
           `http://localhost:8080/api/messages/conversationId/${conversation._id}`
         );
         setMessagesData(res.data);
-        console.log("messagesData", res.data);
       } catch (error) {
         console.error("Error fetching messages:", error);
       }
@@ -171,6 +170,10 @@ useEffect(() => {
 
       // nếu muốn lưu vào localStorage để khi F5 không mất
       localStorage.setItem("conversation", JSON.stringify(selected));
+
+      markConversationAsRead(selected);
+
+      
     }
   };
 
@@ -181,7 +184,7 @@ useEffect(() => {
   useEffect(() => {
     // Kết nối socket.io tới BE (NestJS WebSocketGateway)
     const newSocket = io("http://localhost:8080", {
-      transports: ["websocket"], // ép dùng websocket (tránh polling)
+      transports: ["websocket"], 
     });
 
     setSocket(newSocket);
@@ -200,34 +203,73 @@ useEffect(() => {
     };
   }, []);
 
-  useEffect(() => {
-    if (!socket || !conversation?._id) return;
+useEffect(() => {
+  if (!socket || !conversation?._id || !currentUser?._id) return;
 
-    socket.emit("join_conversation", { conversationId: conversation._id });
+  // Join cả phòng hội thoại và phòng user
+  socket.emit("join_conversation", { conversationId: conversation._id });
+  socket.emit("join_user", { userId: currentUser._id });
 
-    const handleReceiveMessage = (msg: any) => {
-      // Nếu tin nhắn thuộc cuộc hội thoại đang mở → append vào messagesData
-      if (msg.conversation_id === conversation._id) {
-        setMessagesData((prev) => {
-          if (prev.some((m) => m._id === msg._id)) return prev; // tránh trùng
-          return [...prev, msg];
-        });
-      }
+  // Khi nhận tin nhắn trong cuộc trò chuyện đang mở
+  const handleReceiveMessage = (msg: any) => {
+    if (msg.conversation_id === conversation._id) {
 
-      // Luôn update last_message cho sidebar
+      //Đánh dấu đã đọc
+      axios.patch(
+      `http://localhost:8080/api/messages/mark-as-read/${conversation._id}`,
+      { userId: currentUser._id }
+    );
+      // ✅ Thêm vào danh sách tin nhắn hiện tại
+      setMessagesData((prev) => {
+        if (prev.some((m) => m._id === msg._id)) return prev;
+        return [...prev, msg];
+      });
+
+      // ✅ Cập nhật last_message cho conversation hiện tại
       setConversationsData((prev) =>
         prev.map((c) =>
           c._id === msg.conversation_id ? { ...c, last_message: msg } : c
         )
       );
-    };
+    }
+  };
 
-    socket.on("receive_message", handleReceiveMessage);
+  // Khi có tin nhắn đến cuộc trò chuyện KHÁC (chưa join)
+  const handleConversationUpdated = (data: any) => {
+  setConversationsData((prev) =>
+    prev.map((c) => {
+      if (c._id === data.conversationId) {
+        // Nếu conversation đang mở, giữ unreadCount = 0
+        const unread =
+          conversation?._id === data.conversationId
+            ? 0
+            : (c.unreadCount || 0) + (data.unreadIncrement || 1);
 
-    return () => {
-      socket.off("receive_message", handleReceiveMessage);
-    };
-  }, [socket, conversation?._id]);
+        return {
+          ...c,
+          unreadCount: unread,
+          last_message: {
+            text: data.text,
+            created_at: data.createdAt,
+            sender_id: data.sender_id,
+          },
+        };
+      }
+      return c;
+    })
+  );
+};
+
+
+  socket.on("receive_message", handleReceiveMessage);
+  socket.on("conversation_updated", handleConversationUpdated);
+
+  return () => {
+    socket.off("receive_message", handleReceiveMessage);
+    socket.off("conversation_updated", handleConversationUpdated);
+  };
+}, [socket, conversation?._id, currentUser?._id]);
+
 
   /// Gửi tin nhắn
 
@@ -265,6 +307,8 @@ useEffect(() => {
       if (socket) {
         socket.emit("send_message", {
           conversationId: conversation._id,
+          receiverId:otherUser?._id ,
+          unreadIncrement:1,
           ...res.data,
         });
       }
@@ -297,6 +341,45 @@ useEffect(() => {
 
     return res.data.filename; // BE trả về filename
   };
+  
+
+useEffect(() => {
+  if (!conversation || !currentUser?._id || !socket) return;
+  // Tự động mark-as-read khi load conversation đầu tiên
+  markConversationAsRead(conversation);
+}, [conversation?._id, currentUser?._id, socket]);
+
+const markConversationAsRead = async (conv: IConversation) => {
+  if (!conv?._id || !currentUser?._id || !socket) return;
+
+  try {
+   
+    await axios.patch(
+      `http://localhost:8080/api/messages/mark-as-read/${conv._id}`,
+      { userId: currentUser._id }
+    );
+
+    socket.emit("send_message", {
+      
+      receiverId: currentUser?._id,
+    
+    });
+
+    setConversationsData(prev =>
+      prev.map(c =>
+        c._id === conv._id ? { ...c, unreadCount: 0 } : c
+      )
+    );
+    setConversation(prev => prev ? { ...prev, unreadCount: 0 } : prev);
+
+  } catch (err) {
+    console.error("Error marking messages as read:", err);
+  }
+};
+
+
+
+  
   
 
   return (
@@ -337,7 +420,7 @@ useEffect(() => {
                   />
 
                   {otherUser && (
-                    <div>
+                    <div style={{width:"100%"}}>
                       <p className={cvstStyles.title}>{i.post_id.title}</p>
 
                       <div className={cvstStyles.conversationItemHeader}>
@@ -356,10 +439,19 @@ useEffect(() => {
                           {otherUser.full_name || "Người dùng"}
                         </p>
                       </div>
-
-                      <p className={cvstStyles.lastMessage}>
-                        {i.last_message?.sender_id?.full_name}: {i.last_message?.text}
-                      </p>
+                      
+                      <div className={cvstStyles.messageLayour}>
+                        <p className={cvstStyles.lastMessage}>
+                          {i.last_message?.sender_id?.full_name}: {i.last_message?.text}
+                        </p>
+                        {
+                        i.unreadCount!=0 ?
+                        <p className={cvstStyles.unreadCount}>{i.unreadCount}</p>
+                        :
+                        <p></p>
+                        }
+                      </div>
+                      
                     </div>
                   )}
                 </div>
@@ -425,7 +517,7 @@ useEffect(() => {
         <div className={cvstStyles.messages}>
           {messagesData.map((msg) => {
             const isMe = msg.sender_id._id === currentUser._id;
-
+            if (msg.type !== "text" && msg.type !== "image") return null;
             return (
               <div
                 key={msg._id}
@@ -452,7 +544,8 @@ useEffect(() => {
                 )}
               </div>
             );
-          })}
+          })
+          }
 
         {/* ref để scroll xuống cuối */}
         <div ref={endRef} />

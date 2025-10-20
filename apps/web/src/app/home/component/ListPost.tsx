@@ -112,14 +112,12 @@ export const ListPost: React.FC = () => {
     useEffect(() => {
         if (!currentUser?._id) return; // 🚫 nếu chưa có user thì không gọi
 
-        console.log("Fetching favorites for user:", currentUser._id);
 
         async function fetchFavorites() {
           try {
             const res = await axios.get(
               `http://localhost:8080/api/favorites/user/${currentUser._id}`
             );
-            console.log("Favorite Data:", res.data);
             setFavoriteData(res.data);
           } catch (err) {
             console.error("Error loading favorites:", err);

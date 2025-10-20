@@ -86,4 +86,26 @@ export class MessagesService {
   async removeByConversationIds(conversationIds: Types.ObjectId[]) {
   return this.messageModel.deleteMany({ conversation_id: { $in: conversationIds } }).exec();
   }
+
+  // Đánh dấu đã đọc tất cả tin nhắn trong conversation
+  async markAsRead(conversationId: string, userId: string) {
+    const convObjId = new Types.ObjectId(conversationId);
+    const userObjId = new Types.ObjectId(userId);
+
+    
+    const result = await this.messageModel.updateMany(
+      {
+        conversation_id: convObjId,
+        read_by: { $ne: userObjId },
+      },
+      {
+        $push: { read_by: userObjId },
+      },
+    );
+
+    return {
+      message: ` Đã đánh dấu ${result.modifiedCount} tin nhắn là đã đọc.`,
+      modifiedCount: result.modifiedCount,
+    };
+  }
 }
