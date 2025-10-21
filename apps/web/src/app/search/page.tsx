@@ -213,8 +213,6 @@ function SearchPageContent() {
     selectedConditions,
     selectedCategories,
     priceRange,
-    selectedLocation,
-    distance,
     sortBy,
   ]);
 
@@ -240,23 +238,7 @@ function SearchPageContent() {
     return `${years} năm trước`;
   };
 
-  // Format address to show only "Ward, Province" (Vietnam's new administrative structure)
-  const formatAddress = (address: string) => {
-    if (!address) return "";
-
-    // Split by comma and trim spaces
-    const parts = address.split(",").map((part) => part.trim());
-
-    // If we have at least 2 parts, take the first (ward/commune) and last (province/city)
-    if (parts.length >= 2) {
-      const ward = parts[0]; // First part: ward/commune
-      const province = parts[parts.length - 1]; // Last part: province/city
-      return `${ward}, ${province}`;
-    }
-
-    // If address is too short, return as is
-    return address;
-  };
+  // Use shared address formatter (keeps ward/province while normalizing)
 
   const handleRippleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     const btn = e.currentTarget;

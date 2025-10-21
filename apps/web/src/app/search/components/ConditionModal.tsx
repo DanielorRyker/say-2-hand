@@ -86,27 +86,46 @@ export default function ConditionModal({
         </div>
 
         <div className={styles.modalBody}>
-          <div className={styles.conditionList}>
-            {CONDITIONS.map((condition) => (
-              <button
-                key={condition.value}
-                className={`${styles.conditionCard} ${selectedConditions.includes(condition.value) ? styles.active : ""}`}
-                onClick={() => toggleCondition(condition.value)}
-              >
-                <div className={styles.conditionIcon}>
-                  <Icon icon={condition.icon} width={32} height={32} />
-                </div>
-                <div className={styles.conditionInfo}>
-                  <h4>{condition.label}</h4>
-                  <p>{condition.description}</p>
-                </div>
-                {selectedConditions.includes(condition.value) && (
-                  <div className={styles.checkMark}>
-                    <Icon icon="mdi:check-circle" width={24} height={24} />
-                  </div>
-                )}
-              </button>
-            ))}
+          <div className={styles.conditionGrid}>
+            {CONDITIONS.map((condition) => {
+              const active = selectedConditions.includes(condition.value);
+              return (
+                <React.Fragment key={condition.value}>
+                  {active ? (
+                    <button
+                      className={`${styles.conditionCard} ${styles.active}`}
+                      onClick={() => toggleCondition(condition.value)}
+                      aria-pressed="true"
+                      title={condition.label}
+                    >
+                      <div className={styles.conditionIcon}>
+                        <Icon icon={condition.icon} width={20} height={20} />
+                      </div>
+                      <div className={styles.conditionInfo}>
+                        <h4>{condition.label}</h4>
+                      </div>
+                      <div className={styles.checkMark}>
+                        <Icon icon="mdi:check" width={16} height={16} />
+                      </div>
+                    </button>
+                  ) : (
+                    <button
+                      className={styles.conditionCard}
+                      onClick={() => toggleCondition(condition.value)}
+                      aria-pressed="false"
+                      title={condition.label}
+                    >
+                      <div className={styles.conditionIcon}>
+                        <Icon icon={condition.icon} width={20} height={20} />
+                      </div>
+                      <div className={styles.conditionInfo}>
+                        <h4>{condition.label}</h4>
+                      </div>
+                    </button>
+                  )}
+                </React.Fragment>
+              );
+            })}
           </div>
         </div>
 

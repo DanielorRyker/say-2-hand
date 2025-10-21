@@ -172,18 +172,7 @@ export default function CategoryModal({
           )}
         </div>
 
-        {/* Back button for subcategories */}
-        {showingSubcategories && (
-          <div className={styles.backNav}>
-            <button
-              className={styles.backButton}
-              onClick={() => setActiveParentId(null)}
-            >
-              <Icon icon="mdi:arrow-left" width={18} height={18} />
-              Quay lại tất cả danh mục
-            </button>
-          </div>
-        )}
+        {/* NOTE: removed 'Quay lại tất cả danh mục' back button per UX request */}
 
         {/* Body - Split Panel: left nav (parents) + right panel (subcats / search results) */}
         <div className={styles.modalBody}>

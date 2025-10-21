@@ -2,6 +2,8 @@
 import styleAdmin from "@/styles/pages/admin/admin.module.scss";
 import axios from "axios";
 import { useEffect, useState } from "react";
+import Image from "next/image";
+import { URL_GCS } from "@/lib/constants";
 
 const Home = () => {
   const bucket = "categories";
@@ -30,12 +32,12 @@ const Home = () => {
   const totalPages = Math.ceil(categoriesData.length / pageSize);
   const paginatedCategories = categoriesData.slice(
     (currentPage - 1) * pageSize,
-    currentPage * pageSize,
+    currentPage * pageSize
   );
 
   //chỉnh sửa category
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(
-    null,
+    null
   );
   const [editForm, setEditForm] = useState<Partial<Category>>({});
 
@@ -57,7 +59,7 @@ const Home = () => {
     try {
       await axios.delete(`http://localhost:8080/api/categories/${categoryId}`);
       setCategoriesData(
-        categoriesData.filter((category) => category._id !== categoryId),
+        categoriesData.filter((category) => category._id !== categoryId)
       );
       alert("Xóa thành công");
     } catch (error) {
@@ -84,8 +86,8 @@ const Home = () => {
         categoriesData.map((c) =>
           c._id === editingCategoryId
             ? { ...c, ...editForm, image: imageUrl }
-            : c,
-        ),
+            : c
+        )
       );
       setEditingCategoryId(null);
       setFile(null);
@@ -132,7 +134,7 @@ const Home = () => {
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        },
+        }
       );
       return res.data.filename;
     } catch (error) {
@@ -150,7 +152,7 @@ const Home = () => {
     } else if (!file) return alert("Vui lòng chọn ảnh!");
 
     const ok = window.confirm(
-      `Bạn có chắc chắn muốn thêm danh mục: ${newCategoryName}?`,
+      `Bạn có chắc chắn muốn thêm danh mục: ${newCategoryName}?`
     );
     if (!ok) return;
     try {
@@ -172,6 +174,13 @@ const Home = () => {
       console.error("Error adding category:", error);
       alert("Có lỗi khi thêm danh mục!");
     }
+  };
+
+  const imageLoader = ({ src }: { src: string }) => {
+    if (!src) return "/image/category/default.svg";
+    if (src.startsWith("http") || src.startsWith("/")) return src;
+    if (URL_GCS) return URL_GCS + src;
+    return src;
   };
 
   return (
@@ -197,10 +206,14 @@ const Home = () => {
               style={{ display: "none" }}
             />
             <label htmlFor="upload-avatar">
-              <img
-                src={preview}
+              <Image
+                loader={imageLoader}
+                src={preview ?? "/image/category/default.svg"}
                 alt="preview"
+                width={80}
+                height={80}
                 className={styleAdmin.imgCategory}
+                unoptimized
               />
             </label>
           </div>
@@ -214,10 +227,14 @@ const Home = () => {
               style={{ display: "none" }}
             />
             <label htmlFor="upload-avatar">
-              <img
+              <Image
+                loader={imageLoader}
                 src="/image/profile/camera.svg"
                 alt="Upload avatar"
+                width={80}
+                height={80}
                 className={styleAdmin.imgCategory}
+                unoptimized
               />
             </label>
           </div>
@@ -266,44 +283,43 @@ const Home = () => {
                       style={{ width: "100%" }}
                     />
                     {preview && (
-                      // Use next/image for optimized loading
-                      <img
+                      <Image
+                        loader={imageLoader}
                         src={preview}
                         alt="preview"
+                        width={80}
+                        height={80}
                         className={styleAdmin.imgCategory}
+                        unoptimized
                       />
                     )}
                   </>
                 ) : category.image ? (
                   // Ensure correct image URL
-                  <img
-                    src={
-                      category.image.startsWith("http")
-                        ? category.image
-                        : `${process.env.NEXT_PUBLIC_URL_GCS}${category.image}`
-                    }
+                  <Image
+                    loader={imageLoader}
+                    src={category.image ?? "/image/category/default.svg"}
                     alt="category"
+                    width={80}
+                    height={80}
                     className={styleAdmin.imgCategory}
-                    style={{
-                      maxWidth: "80px",
-                      maxHeight: "80px",
-                      objectFit: "cover",
-                    }}
+                    style={{ objectFit: "cover" }}
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src =
+                      (e.currentTarget as HTMLImageElement).src =
                         "/image/profile/camera.svg";
                     }}
+                    unoptimized
                   />
                 ) : (
-                  <img
-                    src="/"
+                  <Image
+                    loader={imageLoader}
+                    src="/image/category/default.svg"
                     alt="No image"
+                    width={80}
+                    height={80}
                     className={styleAdmin.imgCategory}
-                    style={{
-                      maxWidth: "80px",
-                      maxHeight: "80px",
-                      objectFit: "cover",
-                    }}
+                    style={{ objectFit: "cover" }}
+                    unoptimized
                   />
                 )}
               </td>

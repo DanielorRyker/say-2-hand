@@ -1,8 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import { Icon } from "@iconify/react";
 import styles from "./FilterModal.module.scss";
+import CategoryDropdown from "./CategoryDropdown";
 
 interface FilterModalProps {
   isOpen: boolean;
@@ -50,6 +52,8 @@ export default function FilterModal({
   setSelectedTransactionTypes,
   selectedConditions,
   setSelectedConditions,
+  selectedCategories,
+  setSelectedCategories,
   priceRange,
   setPriceRange,
   distance,
@@ -57,7 +61,7 @@ export default function FilterModal({
   onApply,
   onReset,
 }: FilterModalProps) {
-  if (!isOpen) return null;
+  // Note: keep hooks declared unconditionally so rules-of-hooks are satisfied.
 
   const toggleTransactionType = (type: string) => {
     if (selectedTransactionTypes.includes(type)) {
@@ -81,6 +85,37 @@ export default function FilterModal({
     return new Intl.NumberFormat("vi-VN").format(value);
   };
 
+  interface Category {
+    _id: string;
+    name: string;
+    parent_id?: string | null;
+    icon?: string;
+  }
+
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    let mounted = true;
+    const fetchCategories = async () => {
+      try {
+        const res = await axios.get("http://localhost:8080/api/categories");
+        if (mounted) setCategories(res.data || []);
+      } catch (err) {
+        console.error("Failed to fetch categories", err);
+      }
+    };
+    fetchCategories();
+    return () => {
+      mounted = false;
+    };
+  }, [isOpen]);
+
+  // categories state is used by CategoryDropdown component
+
+  // Only render the modal content when open; hooks above always run so rules-of-hooks are satisfied
+  if (!isOpen) return null;
+
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
@@ -97,6 +132,25 @@ export default function FilterModal({
 
         {/* Body */}
         <div className={styles.modalBody}>
+          {/* Category (first) */}
+          <div className={styles.filterSection}>
+            <h3 className={styles.sectionTitle}>
+              <Icon icon="mdi:shape" width={20} height={20} />
+              Danh mục
+            </h3>
+            <div className={styles.dropdownGroup}>
+              <CategoryDropdown
+                categories={categories}
+                value={selectedCategories[0] || undefined}
+                onChange={(id) => {
+                  if (!id) setSelectedCategories([]);
+                  else setSelectedCategories([id]);
+                }}
+                placeholder="Tất cả"
+              />
+            </div>
+          </div>
+
           {/* Transaction Types */}
           <div className={styles.filterSection}>
             <h3 className={styles.sectionTitle}>

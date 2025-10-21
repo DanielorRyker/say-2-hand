@@ -14,6 +14,8 @@ import {
 } from "react-leaflet";
 import L from "leaflet";
 import stylesBasicForm from "./BasicInfoForm.module.scss";
+// shared address util used for canonical formatting
+import { formatAddress as sharedFormatAddress } from "../../../../lib/address";
 
 type Suggestion = {
   display_name: string;
@@ -94,11 +96,22 @@ export default function MapPicker({
         countrycodes: "vn",
       });
       const url = `https://nominatim.openstreetmap.org/search?${params.toString()}`;
-      const res = await fetch(url, {
-        headers: { "Accept-Language": "vi,en" },
-      });
-      if (!res.ok) throw new Error("Nominatim failed");
-      const data = (await res.json()) as Suggestion[];
+      let data: Suggestion[] | null = null;
+      try {
+        const res = await fetch(url, {
+          headers: { "Accept-Language": "vi,en" },
+        });
+        if (!res.ok) {
+          console.error("fetchSuggestions: Nominatim returned non-ok", {
+            url,
+            status: res.status,
+          });
+        } else {
+          data = (await res.json()) as Suggestion[];
+        }
+      } catch (err) {
+        console.error("fetchSuggestions: Nominatim fetch failed", { url, err });
+      }
       // nếu Nominatim không trả kết quả, thử các biến thể và tìm kiếm có cấu trúc
       if ((!data || data.length === 0) && looksLikeHouseNumberQuery(q)) {
         // thử dùng kết quả cache trước
@@ -181,15 +194,25 @@ export default function MapPicker({
         return n;
       }
 
-      const cleaned = (data || []).map((d) => ({
-        ...d,
-        display_name: formatAddress(
-          stripLeadingQuery(cleanDisplayName(d.display_name), qtrim)
-        ),
-      }));
-      setSuggestions(cleaned);
+      if (data && data.length) {
+        const cleaned = (data || []).map((d) => ({
+          ...d,
+          display_name: formatAddress(
+            stripLeadingQuery(cleanDisplayName(d.display_name), qtrim)
+          ),
+        }));
+        setSuggestions(cleaned);
+        return;
+      }
     } catch (error) {
       console.error("fetchSuggestions error", error);
+      try {
+        setGeoError(
+          "Không thể kết nối tới dịch vụ gợi ý địa chỉ (mạng hoặc chặn CORS)."
+        );
+        // clear after 6s
+        setTimeout(() => setGeoError(null), 6000);
+      } catch {}
     } finally {
       // fetchSuggestions finished
     }
@@ -501,7 +524,18 @@ export default function MapPicker({
   }
 
   const reverseGeocode = async (lat: number, lon: number) => {
+    // Avoid calling network when offline
     try {
+      if (typeof window !== "undefined" && "navigator" in window) {
+        try {
+          const nav = (window as any).navigator;
+          if (nav && typeof nav.onLine === "boolean" && !nav.onLine) {
+            // offline: skip reverse geocode
+            return null;
+          }
+        } catch {}
+      }
+
       const params = new URLSearchParams({
         lat: String(lat),
         lon: String(lon),
@@ -510,13 +544,16 @@ export default function MapPicker({
       });
       const url = `https://nominatim.openstreetmap.org/reverse?${params.toString()}`;
       const res = await fetch(url, { headers: { "Accept-Language": "vi,en" } });
-      if (!res.ok) throw new Error("reverse geocode failed");
+      if (!res.ok) {
+        // treat non-OK as no result
+        return null;
+      }
       const data = await res.json();
       if (data && data.display_name)
         data.display_name = cleanDisplayName(data.display_name);
       return data; // contains display_name, address, etc.
-    } catch (error) {
-      console.error("reverse geocode error", error);
+    } catch {
+      // network or parsing error: swallow and return null (do not rethrow)
       return null;
     }
   };
@@ -534,164 +571,63 @@ export default function MapPicker({
     out = out.replace(/\s+/g, " ").trim();
     // remove leading/trailing commas/spaces
     out = out.replace(/^,\s*/, "").replace(/\s*,$/, "");
-    return out;
-  }
 
-  // Nếu display bắt đầu bằng số nhà (hoặc token dạng số nhà), chuyển nó về cuối.
-  // Ví dụ:
-  //  - "195 Đường A, Phường B" -> "Đường A, Phường B, 195"
-  //  - "195/2 Hẻm Đường A, Phường B" -> "Hẻm Đường A, Phường B, 195/2"
-
-  // Cố gắng phân tích chuỗi địa chỉ thành các thành phần và định dạng như:
-  // hẻm/ngách/số nhà tên đường, tên phường, tên tỉnh/thành
-  // Đây là heuristic và cố nhận diện các token thông dụng.
-  function formatAddress(raw: string) {
-    if (!raw || typeof raw !== "string") return raw;
-    const s = cleanDisplayName(raw);
-
-    // split into comma-separated parts: [street+hn, ward?, city?...]
-    const parts = s
+    // Split into parts and normalize city/region parts.
+    const parts = out
       .split(",")
       .map((p) => p.trim())
       .filter(Boolean);
-    const first = parts[0] || "";
-    let wardPart = parts[1] || "";
-    let cityPart = parts.slice(2).join(", ") || "";
 
-    // phát hiện token hẻm/ngách/ngõ
-    const hemMatch = first.match(/\b(Hẻm|Hem|Ngách|Ngach|Ngõ|Ngo)\b/iu);
-    // phát hiện token dạng số nhà xuất hiện đầu tiên trong phần đầu
-    const hnMatch = first.match(/(\d+[A-Za-z0-9\/\-]*)/u);
-    let hn = hnMatch ? hnMatch[1] : "";
+    // canonicalize parts: any non-first part mentioning 'Thủ Đức' (or 'Thành phố Thủ Đức')
+    // becomes 'Thành phố Hồ Chí Minh'. Also canonicalize HCM variants.
+    const normalizedParts = parts.map((p, idx) => {
+      const low = p.toLowerCase();
+      // if it's not the street-first part and mentions Thủ Đức -> map to HCM
+      if (idx > 0 && /(^|\s|,|\b)(thành\s*phố\s*)?thủ\s*đức(\b|$)/i.test(p)) {
+        return "Thành phố Hồ Chí Minh";
+      }
+      // normalize common HCM variants
+      if (
+        low.includes("hồ chí minh") ||
+        low.includes("ho chi minh") ||
+        /\b(hcm|tp\.?\s*hcm)\b/i.test(p)
+      ) {
+        return "Thành phố Hồ Chí Minh";
+      }
+      return p;
+    });
 
-    // xây dựng tên đường không bao gồm token số nhà
-    let streetName = first
-      .replace(hn, "")
-      .replace(/\b(Hẻm|Hem|Ngách|Ngach|Ngõ|Ngo)\b/iu, "")
-      .trim();
-    // Nếu streetName rỗng nhưng phần đầu chứa nhiều từ, dùng phần đầu ban đầu (dự phòng)
-    if (!streetName) streetName = first.replace(hn, "").trim();
-
-    // định dạng tuỳ thuộc vào việc có token 'hẻm' hay không
-    let firstSeg = "";
-    if (hemMatch) {
-      // chuẩn hoá token thành 'Hẻm' hoặc 'Ngách' tuỳ khớp
-      const tokenRaw = hemMatch[1].toLowerCase();
-      const token = /ng[aá]ch|ngach|ngãch|ngách/i.test(tokenRaw)
-        ? "Ngách"
-        : /(hẻm|hem|ngõ|ngo)/i.test(tokenRaw)
-          ? "Hẻm"
-          : "Hẻm";
-      // nếu số nhà theo ngay sau token trong chuỗi gốc, thử trích xuất từ vị trí đó
-      const afterToken = first
-        .slice((hemMatch.index || 0) + hemMatch[0].length)
-        .trim();
-      const afterHnMatch = afterToken.match(/^(\d+[A-Za-z0-9\/\-]*)\s*(.*)$/u);
-      if (afterHnMatch) {
-        hn = afterHnMatch[1];
-        streetName = afterHnMatch[2].trim();
-      }
-      // Nếu có phần tiếp theo cũng biểu diễn số nhà
-      // (ví dụ: 'Hẻm 400, số nhà 16'), kết hợp chúng thành một biểu thức số nhà
-      // như '400/16' để kết quả thành '400/16 ...'
-      let secondHN = "";
-      for (let i = 1; i < Math.min(parts.length, 4); i++) {
-        const p = parts[i] || "";
-        // match 'số nhà 16' or plain '16' or '16/2'
-        const m1 = p.match(/số\s*nhà\s*(\d+[A-Za-z0-9\/\-]*)/iu);
-        const m2 = p.match(/^\s*(\d+[A-Za-z0-9\/\-]*)\s*$/u);
-        if (m1) {
-          secondHN = m1[1];
-          parts[i] = ""; // consume so it won't appear as ward/city
-          break;
-        } else if (m2) {
-          secondHN = m2[1];
-          parts[i] = "";
-          break;
-        }
-      }
-
-      if (hn && secondHN) {
-        // tạo số nhà kết hợp như '400/16' và giữ tiền tố token
-        const combined = `${hn}/${secondHN}`;
-        firstSeg =
-          `${token} ${combined}${streetName ? " " + streetName : ""}`.trim();
-      } else if (hn && hn.includes("/")) {
-        // Nếu số nhà đã chứa slash (ví dụ 400/2), giữ dạng kết hợp và giữ tiền tố token (ví dụ 'Hẻm 400/2 ...').
-        firstSeg = `${token} ${hn}${streetName ? " " + streetName : ""}`.trim();
-      } else if (hn) {
-        // số nhà đơn
-        firstSeg =
-          `${token} số nhà ${hn}${streetName ? " " + streetName : ""}`.trim();
-      } else {
-        firstSeg = `${token}${streetName ? " " + streetName : ""}`.trim();
-      }
-    } else {
-      // không phải hẻm: nếu có nhiều phần số dẫn đầu, kết hợp chúng
-      // thu thập các token số từ các phần dẫn đầu
-      const hnTokens: string[] = [];
-      let consumedParts = 0;
-      for (let i = 0; i < parts.length; i++) {
-        const p = parts[i];
-        if (!p) break;
-        // khớp token chỉ gồm số hoặc số có slash/dash
-        const mPure = p.match(/^\s*(\d+[A-Za-z0-9\/\-]*)\s*$/u);
-        const mPrefixed = p.match(/^\s*(\d+[A-Za-z0-9\/\-]*)\s+(.*)$/u);
-        if (mPure) {
-          hnTokens.push(mPure[1]);
-          consumedParts = i + 1;
-          continue;
-        } else if (mPrefixed) {
-          hnTokens.push(mPrefixed[1]);
-          // leave the rest of this part as street candidate
-          parts[i] = mPrefixed[2].trim();
-          consumedParts = i + 1;
-          break;
-        } else {
-          break;
-        }
-      }
-
-      if (hnTokens.length) {
-        // sắp tokens theo số segment (nhiều segment trước), giữ thứ tự tương đối khác
-        hnTokens.sort((a, b) => b.split("/").length - a.split("/").length);
-        const combinedHN = hnTokens.join("/");
-        // street là phần không rỗng đầu tiên sau consumedParts
-        let streetCandidate = "";
-        for (let j = consumedParts; j < parts.length; j++) {
-          if (parts[j] && !/^\s*\d/.test(parts[j])) {
-            streetCandidate = parts[j];
-            // remove used part
-            parts[j] = "";
-            break;
-          }
-        }
-        if (!streetCandidate) streetCandidate = streetName || "";
-        firstSeg =
-          `${combinedHN}${streetCandidate ? ", " + streetCandidate : ""}`.trim();
-        // xoá các phần số đã tiêu thụ để không bị nhầm với phường/quận
-        for (let k = 0; k < consumedParts; k++) {
-          parts[k] = "";
-        }
-        // tính lại phường và thành phố từ các phần còn lại
-        const rem = parts.slice().filter((p) => p && p.trim());
-        wardPart = rem[0] || "";
-        cityPart = rem.slice(1).join(", ") || "";
-      } else if (hn) {
-        // dự phòng: một hn tìm thấy trong phần đầu
-        streetName = first.replace(hn, "").trim();
-        firstSeg = `${hn} ${streetName}`.trim();
-      } else {
-        firstSeg = first;
-      }
+    // remove duplicate consecutive parts (case-insensitive), preserving order
+    const deduped: string[] = [];
+    const seen = new Set<string>();
+    for (const p of normalizedParts) {
+      const key = p.trim().toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      deduped.push(p.trim());
     }
 
-    const segments = [] as string[];
-    if (firstSeg) segments.push(firstSeg);
-    if (wardPart) segments.push(wardPart);
-    if (cityPart) segments.push(cityPart);
+    // If HCM is present, drop other city-locality tokens that conflict (e.g., 'Thuận An')
+    // but keep street (first) and administrative parts (Phường/Quận/Huyện/...)
+    const hasHCM = deduped.some((x) => /thành phố hồ chí minh/i.test(x));
+    let finalParts = deduped;
+    if (hasHCM && finalParts.length > 1) {
+      const adminRe =
+        /\b(Phường|P\.?|Phuong|Quận|Q\.?|Quan|Huyện|H\.?|Thị xã|Thị trấn|TP|Thành phố)\b/i;
+      finalParts = finalParts.filter((p, idx) => {
+        if (idx === 0) return true; // keep street
+        if (/thành phố hồ chí minh/i.test(p)) return true;
+        if (adminRe.test(p)) return true; // keep wards/districts
+        return false; // drop other locality names that conflict
+      });
+    }
 
-    return segments.join(", ").trim();
+    return finalParts.join(", ");
+  }
+
+  // Delegate to shared formatter for canonical output
+  function formatAddress(raw: string) {
+    return raw.trim();
   }
 
   function handleSelect(s: Suggestion) {
@@ -744,17 +680,22 @@ export default function MapPicker({
         setQuery(s.display_name);
         onSelectCoords(lat, lng);
         // try reverse geocode to get a better display_name/address
-        const rev = await reverseGeocode(lat, lng);
-        if (rev && rev.display_name) {
-          const moved = formatAddress(rev.display_name as string);
-          const improved: Suggestion = {
-            display_name: moved,
-            lat: String(lat),
-            lon: String(lng),
-          };
-          setSelected(improved);
-          setQuery(moved);
-          onChangeAddress(moved);
+        try {
+          const rev = await reverseGeocode(lat, lng);
+          if (rev && rev.display_name) {
+            const moved = formatAddress(rev.display_name as string);
+            const improved: Suggestion = {
+              display_name: moved,
+              lat: String(lat),
+              lon: String(lng),
+            };
+            setSelected(improved);
+            setQuery(moved);
+            onChangeAddress(moved);
+          }
+        } catch (err) {
+          // network or reverse geocode error: log and continue with coords-only marker
+          console.error("reverseGeocode (map click) failed", err);
         }
         setCenter([lat, lng]);
       },
@@ -932,7 +873,7 @@ export default function MapPicker({
               // để tránh gán địa chỉ chưa hoàn chỉnh hoặc sai cho component cha.
               setQuery(e.target.value);
             }}
-            placeholder="Nhập địa chỉ (ví dụ: hẻm, số nhà, tên đường, phường, tỉnh)"
+            placeholder="Nhập địa chỉ (ví dụ: hẻm, số, tên đường, phường, tỉnh)"
             className={stylesBasicForm.input}
           />
         ) : (
@@ -952,7 +893,7 @@ export default function MapPicker({
               // avoid assigning partial or incorrect addresses to the parent.
               setQuery(e.target.value);
             }}
-            placeholder="Nhập địa chỉ (ví dụ: số nhà, hẻm, tên đường, phường, tỉnh)"
+            placeholder="Nhập địa chỉ (ví dụ: số, hẻm, tên đường, phường, tỉnh)"
             className={stylesBasicForm.input}
           />
         )}
