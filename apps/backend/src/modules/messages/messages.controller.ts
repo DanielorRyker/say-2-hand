@@ -46,4 +46,13 @@ export class MessagesController {
   ) {
     return this.messagesService.findByConversation(conversationId);
   }
+
+  @Patch('mark-as-read/:conversationId')
+  async markAsRead(
+    @Param('conversationId') conversationId: string,
+    @Body('userId') userId: string,
+  ) {
+    return this.messagesService.markAsRead(conversationId, userId);
+  }
+
 }

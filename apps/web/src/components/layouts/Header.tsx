@@ -3,9 +3,12 @@ import NavDropdown from "react-bootstrap/NavDropdown";
 // import "@/styles/globals.scss";
 import headerStyles from "@/styles/layout/header.module.scss";
 import { useRouter, usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import ConversationsSidebar from "@/components/conversation/ConversationsSidebar";
+import { io, Socket } from "socket.io-client";
+import axios from "axios";
+
 
 const Header = () => {
   const router = useRouter();
@@ -36,6 +39,111 @@ const Header = () => {
   const handleSelect = (value: string) => {
     setSelectedItem(value);
   };
+  //Conversation
+  interface IConversation {
+    _id: string;
+    post_id: {
+      _id: string;
+      title: string;
+      images: {
+        _id: string;
+        url: string;
+        alt?: string;
+        tags: string[];
+      }[];
+    };
+    participants: {
+      _id: string;
+      full_name: string;
+      avatar?: string;
+    }[];
+    last_message?: {
+      text: string;
+      sender_id?: {
+        _id: string;
+        full_name: string;
+        avatar: string;
+      };
+      created_at: string;
+    };
+    updatedAt: string;
+    unreadCount: number,
+  }
+  const [conversationsData, setConversationsData] = useState<IConversation[]>(
+      []
+    );
+    // API lấy danh sách
+  const fetchConversations = useCallback(async () => {
+    if (!user) return;
+    try {
+      const res = await axios.get(
+        `http://localhost:8080/api/conversations/conversations/${user._id}`
+      );
+      setConversationsData(res.data);
+    } catch (err) {
+      console.error("Lỗi fetch conversations:", err);
+    }
+  }, [user]);
+  // Lần đầu load
+  useEffect(() => {
+    fetchConversations();
+  }, [fetchConversations]);
+
+  // Socket connect
+   const [socket, setSocket] = useState<Socket | null>(null);
+   useEffect(() => {
+    // Kết nối socket.io tới BE (NestJS WebSocketGateway)
+    const newSocket = io("http://localhost:8080", {
+      transports: ["websocket"], 
+    });
+
+    setSocket(newSocket);
+
+    newSocket.on("connect", () => {
+      console.log("Connected to socket:", newSocket.id);
+    });
+
+    newSocket.on("disconnect", () => {
+      console.log("Disconnected from socket");
+    });
+
+    // cleanup khi unmount
+    return () => {
+      newSocket.disconnect();
+    };
+  }, []);
+  // Lắng nghe receive_message => reload API
+ useEffect(() => {
+  if (!socket || !user?._id) return;
+
+  socket.emit("join_user", { userId: user._id });
+
+  const handleUpdate = (data : any) => {
+    console.log(" Có tin nhắn mới tới phòng khác:", data);
+    // chỉ cần fetch lại danh sách hội thoại để cập nhật unreadCount
+    fetchConversations();
+  };
+
+  socket.on("conversation_updated", handleUpdate);
+
+  return () => {
+    socket.off("conversation_updated", handleUpdate);
+  };
+}, [socket, user?._id]);
+
+
+  //tổng tin chưa đọc
+  const [totalUnread, setTotalUnread] = useState(0);
+  
+
+  useEffect(() => {
+    const count = conversationsData.reduce(
+      (acc, conv) => acc + (conv.unreadCount ?? 0),
+      0
+    );
+    setTotalUnread(count);
+  }, [conversationsData]);
+
   //Đăng xuất
   const handleLogout = () => {
     // Xóa toàn bộ localStorage
@@ -66,6 +174,11 @@ const Header = () => {
   localStorage.setItem("sortBy", sortBy);
   router.push(`/${sortBy}`); 
   }
+  //Mở trang tin nhắn
+  const handleMessage = () => {
+    localStorage.setItem("conversation", JSON.stringify(conversationsData[0]));
+    router.push(`/conversation/${conversationsData[0]._id}`);
+  };
 
   const avatarUrl = user
     ? process.env.NEXT_PUBLIC_URL_GCS + user.avatar
@@ -127,7 +240,28 @@ const Header = () => {
               height={24}
             />
           </button>
-          <ConversationsSidebar />
+
+            <button
+            className={headerStyles.btnHeader}
+            type="button"
+            title="Tin nhắn"
+            aria-label="Tin nhắn"
+            onClick={handleMessage}
+          >
+            <Image
+              src="/image/header/IconMessage.svg"
+              alt="Tin nhắn"
+              className={headerStyles.img}
+              width={24}
+              height={24}
+            />
+            {
+              totalUnread==0?
+              <div></div>:
+              <div className={headerStyles.unreadCount}>{totalUnread}</div>
+            }
+          </button>
+
           <button
             className={headerStyles.btnHeader}
             type="button"
@@ -320,3 +454,5 @@ const Header = () => {
 };
 
 export default Header;
+
+

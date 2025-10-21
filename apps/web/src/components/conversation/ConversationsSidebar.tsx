@@ -44,6 +44,7 @@ export default function ConversationsSidebar() {
       created_at: string;
     };
     updatedAt: string;
+    unreadCount: number,
   }
 
   const [conversationsData, setConversationsData] = useState<IConversation[]>(

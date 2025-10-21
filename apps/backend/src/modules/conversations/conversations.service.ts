@@ -11,12 +11,15 @@ import {
   ConversationDocument,
 } from './schemas/conversation.schema';
 import { Model, Types } from 'mongoose';
+import { Message, MessageDocument } from '../messages/schemas/message.schema';
 
 @Injectable()
 export class ConversationsService {
   constructor(
     @InjectModel(Conversation.name)
     private conversationModel: Model<ConversationDocument>,
+    @InjectModel(Message.name)
+    private readonly messageModel: Model<MessageDocument>, 
   ) {}
 
   async create(createConversationDto: CreateConversationDto) {
@@ -78,17 +81,47 @@ export class ConversationsService {
     return updated;
   }
 
+  // async findConversationsByUserId(userId: string) {
+  //   return this.conversationModel
+  //     .find({
+  //       participants: { $in: [new Types.ObjectId(userId)] },
+  //     })
+  //     .populate('participants', 'full_name avatar')
+  //     .populate('post_id') // lấy thêm thông tin post
+  //     .populate('last_message.sender_id', 'full_name avatar') // chỉ lấy 1 số field user
+  //     .sort({ updatedAt: -1 })
+  //     .exec();
+  // }
+
   async findConversationsByUserId(userId: string) {
-    return this.conversationModel
-      .find({
-        participants: { $in: [new Types.ObjectId(userId)] },
-      })
-      .populate('participants', 'full_name avatar')
-      .populate('post_id') // lấy thêm thông tin post
-      .populate('last_message.sender_id', 'full_name avatar') // chỉ lấy 1 số field user
-      .sort({ updatedAt: -1 })
-      .exec();
-  }
+  const userObjectId = new Types.ObjectId(userId);
+
+  // 1️⃣ Lấy tất cả conversation của user
+  const conversations = await this.conversationModel
+    .find({
+      participants: { $in: [userObjectId] },
+    })
+    .populate('participants', 'full_name avatar')
+    .populate('post_id')
+    .populate('last_message.sender_id', 'full_name avatar')
+    .sort({ updatedAt: -1 })
+    .lean(); // dùng lean() để thao tác nhanh hơn
+
+  // 2️⃣ Với mỗi conversation, đếm tin nhắn chưa đọc
+  const withUnread = await Promise.all(
+    conversations.map(async (conv) => {
+      const unreadCount = await this.messageModel.countDocuments({
+        conversation_id: conv._id,
+        sender_id: { $ne: userObjectId },
+        read_by: { $ne: userObjectId },
+      });
+      return { ...conv, unreadCount };
+    })
+  );
+
+  return withUnread;
+}
+
 
   async findByPostId(postId: string){
     return this.conversationModel.find({ post_id: postId }).exec();
