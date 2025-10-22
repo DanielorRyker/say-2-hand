@@ -1,0 +1,30 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="200" rx="20" fill="url(#paint0_linear)"/>
+  
+  <!-- Left item -->
+  <rect x="40" y="60" width="50" height="50" rx="8" fill="white"/>
+  <rect x="50" y="70" width="30" height="4" rx="2" fill="#3B82F6"/>
+  <rect x="50" y="80" width="20" height="4" rx="2" fill="#3B82F6"/>
+  
+  <!-- Right item -->
+  <rect x="110" y="60" width="50" height="50" rx="8" fill="white"/>
+  <rect x="120" y="70" width="30" height="4" rx="2" fill="#10B981"/>
+  <rect x="120" y="80" width="20" height="4" rx="2" fill="#10B981"/>
+  
+  <!-- Exchange arrows -->
+  <path d="M85 75L95 75L90 70M85 85L95 85L90 90" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M115 75L105 75L110 70M115 85L105 85L110 90" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Recycle symbol -->
+  <circle cx="100" cy="140" r="25" stroke="white" stroke-width="4" fill="none"/>
+  <path d="M100 120L95 130L105 130Z" fill="white"/>
+  <path d="M115 145L110 135L120 140Z" fill="white"/>
+  <path d="M85 145L80 140L90 135Z" fill="white"/>
+  
+  <defs>
+    <linearGradient id="paint0_linear" x1="0" y1="0" x2="200" y2="200" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8B5CF6"/>
+      <stop offset="1" stop-color="#7C3AED"/>
+    </linearGradient>
+  </defs>
+</svg>

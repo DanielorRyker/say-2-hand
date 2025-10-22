@@ -1157,6 +1157,12 @@
     z-index: 50;
 }
 
+/* Disabled button style */
+.detail-post .chat-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
     .detail-post .main-article {

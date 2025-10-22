@@ -1,0 +1,38 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="200" height="200" rx="20" fill="url(#cash-gradient)"/>
+  
+  <!-- Money Bills Stack -->
+  <!-- Back bill -->
+  <rect x="45" y="85" width="110" height="65" rx="8" fill="#10b981" opacity="0.5"/>
+  
+  <!-- Middle bill -->
+  <rect x="40" y="75" width="110" height="65" rx="8" fill="#10b981" opacity="0.7"/>
+  
+  <!-- Front bill -->
+  <rect x="35" y="65" width="110" height="65" rx="8" fill="#10b981"/>
+  
+  <!-- Dollar sign on front bill -->
+  <text x="90" y="107" font-family="Arial" font-size="40" font-weight="bold" fill="white" text-anchor="middle">₫</text>
+  
+  <!-- Coins -->
+  <circle cx="130" cy="120" r="18" fill="#fbbf24" opacity="0.9"/>
+  <circle cx="145" cy="110" r="18" fill="#fbbf24"/>
+  <text x="145" y="118" font-family="Arial" font-size="16" font-weight="bold" fill="#92400e" text-anchor="middle">₫</text>
+  
+  <!-- Shine effect -->
+  <circle cx="145" cy="110" r="18" fill="url(#shine)" opacity="0.3"/>
+  
+  <!-- Gradient Definitions -->
+  <defs>
+    <linearGradient id="cash-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+    </linearGradient>
+    
+    <radialGradient id="shine">
+      <stop offset="0%" style="stop-color:white;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:white;stop-opacity:0" />
+    </radialGradient>
+  </defs>
+</svg>

@@ -1,0 +1,201 @@
+@use '../../styles/abstracts/variables.scss'as vars;
+@use '../../styles/abstracts/colors.scss'as colors;
+
+/* ==========================================
+   GRADIENT BUTTON COMPONENT
+   ========================================== */
+
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: vars.$spacing-sm;
+    border: none;
+    border-radius: vars.$radius-full;
+    font-weight: vars.$font-weight-semibold;
+    cursor: pointer;
+    transition: all vars.$transition-base;
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+    font-family: inherit;
+
+    &:disabled,
+    &.disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.2);
+        opacity: 0;
+        transition: opacity vars.$transition-fast;
+    }
+
+    &:hover:not(:disabled):not(.disabled) {
+        transform: translateY(-2px);
+        box-shadow: vars.$shadow-lg;
+
+        &::before {
+            opacity: 1;
+        }
+    }
+
+    &:active:not(:disabled):not(.disabled) {
+        transform: translateY(0);
+    }
+}
+
+/* Variants */
+.primary {
+    background: colors.$ui-button-primary;
+    color: colors.$solid-text-white;
+    box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+
+    &:hover:not(:disabled) {
+        box-shadow: 0 6px 20px rgba(79, 172, 254, 0.5);
+    }
+}
+
+.secondary {
+    background: colors.$secondary-main;
+    color: colors.$solid-text-white;
+    box-shadow: 0 4px 15px rgba(45, 224, 153, 0.4);
+
+    &:hover:not(:disabled) {
+        box-shadow: 0 6px 20px rgba(45, 224, 153, 0.5);
+    }
+}
+
+.success {
+    background: colors.$status-success;
+    color: colors.$solid-text-white;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+
+    &:hover:not(:disabled) {
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+    }
+}
+
+.error {
+    background: colors.$status-error;
+    color: colors.$solid-text-white;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+
+    &:hover:not(:disabled) {
+        box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
+    }
+}
+
+.ghost {
+    background: transparent;
+    color: colors.$solid-primary;
+    border: 2px solid colors.$solid-primary;
+    box-shadow: none;
+
+    &:hover:not(:disabled) {
+        background: colors.$primary-light;
+        box-shadow: vars.$shadow-md;
+    }
+}
+
+/* Sizes */
+.sm {
+    height: vars.$button-height-sm;
+    padding: 0 vars.$button-padding-x-sm;
+    font-size: vars.$font-size-sm;
+    gap: vars.$spacing-xs;
+}
+
+.md {
+    height: vars.$button-height-md;
+    padding: 0 vars.$button-padding-x-md;
+    font-size: vars.$font-size-base;
+}
+
+.lg {
+    height: vars.$button-height-lg;
+    padding: 0 vars.$button-padding-x-lg;
+    font-size: vars.$font-size-lg;
+}
+
+.xl {
+    height: vars.$button-height-xl;
+    padding: 0 vars.$button-padding-x-xl;
+    font-size: vars.$font-size-xl;
+}
+
+/* Full width */
+.fullWidth {
+    width: 100%;
+}
+
+/* Loading state */
+.loading {
+    pointer-events: none;
+
+    .text {
+        opacity: 0.6;
+    }
+}
+
+.spinner {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.spinnerIcon {
+    width: 20px;
+    height: 20px;
+    animation: spin 0.8s linear infinite;
+}
+
+.spinnerCircle {
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-dasharray: 50;
+    stroke-dashoffset: 0;
+    animation: spinnerDash 1.5s ease-in-out infinite;
+}
+
+/* Icons */
+.leftIcon,
+.rightIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+        width: 1.2em;
+        height: 1.2em;
+    }
+}
+
+/* Animations */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes spinnerDash {
+    0% {
+        stroke-dashoffset: 50;
+    }
+
+    50% {
+        stroke-dashoffset: 12.5;
+        transform: rotate(135deg);
+    }
+
+    100% {
+        stroke-dashoffset: 50;
+        transform: rotate(450deg);
+    }
+}

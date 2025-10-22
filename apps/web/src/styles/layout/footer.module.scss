@@ -1,9 +1,107 @@
+@use '../abstracts/variables.scss'as vars;
+@use '../abstracts/colors.scss'as colors;
+
+/* ==========================================
+   SAY2HAND - FOOTER STYLES
+   Modern gradient footer với social links
+   ========================================== */
+
 .footerBar {
-  background-color: #E3F2FD;
-  font-size: 20px;
-  height: 80px;
+  background: var(--ui-footer);
+  width: 100%;
+  padding: vars.$spacing-3xl vars.$spacing-lg;
+  margin-top: vars.$spacing-3xl;
+  border-top: 1px solid colors.$solid-border-light;
+
+  @include vars.respond-below('md') {
+    padding: vars.$spacing-2xl vars.$spacing-md;
+  }
+}
+
+.footerContainer {
+  @include vars.container;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: vars.$spacing-2xl;
+  margin-bottom: vars.$spacing-xl;
+
+  @include vars.respond-below('md') {
+    grid-template-columns: 1fr;
+    gap: vars.$spacing-xl;
+  }
+}
+
+.footerSection {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  font-weight: bold;
+  flex-direction: column;
+  gap: vars.$spacing-md;
+}
+
+.footerTitle {
+  font-size: vars.$font-size-xl;
+  font-weight: vars.$font-weight-bold;
+  @include colors.gradient-text(colors.$primary-dark);
+  margin-bottom: vars.$spacing-sm;
+}
+
+.footerText {
+  font-size: vars.$font-size-base;
+  color: colors.$solid-text-secondary;
+  line-height: vars.$line-height-relaxed;
+}
+
+.footerLink {
+  font-size: vars.$font-size-base;
+  color: colors.$solid-text-secondary;
+  text-decoration: none;
+  transition: all vars.$transition-fast;
+  display: inline-block;
+
+  &:hover {
+    color: colors.$solid-primary;
+    transform: translateX(4px);
+  }
+}
+
+.socialLinks {
+  display: flex;
+  gap: vars.$spacing-md;
+  margin-top: vars.$spacing-md;
+}
+
+.socialIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: vars.$radius-full;
+  background: colors.$solid-bg-white;
+  @include vars.flex-center;
+  transition: all vars.$transition-base;
+  box-shadow: vars.$shadow-sm;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: vars.$shadow-md;
+    background: colors.$ui-button-primary;
+
+    img {
+      filter: brightness(0) invert(1);
+    }
+  }
+
+  img {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.footerBottom {
+  padding-top: vars.$spacing-xl;
+  border-top: 1px solid colors.$solid-border-light;
+  text-align: center;
+
+  p {
+    font-size: vars.$font-size-sm;
+    color: colors.$solid-text-tertiary;
+    font-weight: vars.$font-weight-medium;
+  }
 }

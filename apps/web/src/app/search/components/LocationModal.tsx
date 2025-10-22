@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Icon } from "@iconify/react";
+import { apiClient } from "@/lib/api-client";
 import styles from "./LocationModal.module.scss";
 import { formatAddress, parseAddress } from "../../../lib/address";
 
@@ -76,8 +77,8 @@ export default function LocationModal({
     let mounted = true;
     async function fetchPostMap() {
       try {
-        const res = await fetch("/api/posts/postmap");
-        const data = await res.json();
+        const res = await apiClient.get("/posts/postmap");
+        const data = res.data;
         if (!mounted) return;
         // keep posts that have geo coordinates and address
         const filtered = (data || []).filter(

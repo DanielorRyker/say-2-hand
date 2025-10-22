@@ -1,0 +1,342 @@
+@use '@/styles/abstracts/variables';
+
+/* Success Page Layout */
+.success-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f0f9ff 0%, #ecfdf5 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    position: relative;
+    overflow: hidden;
+}
+
+.container {
+    max-width: 600px;
+    width: 100%;
+}
+
+/* Success Card */
+.success-card {
+    background: white;
+    border-radius: 20px;
+    padding: 48px 32px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Success Icon */
+.success-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 120px;
+    height: 120px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border-radius: 50%;
+    margin: 0 auto 24px;
+    animation: scaleIn 0.5s ease-out 0.2s both;
+    box-shadow: 0 8px 32px rgba(16, 185, 129, 0.3);
+
+    svg {
+        color: white;
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Success Title */
+.success-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 16px 0;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: fadeIn 0.6s ease-out 0.3s both;
+}
+
+.success-message {
+    font-size: 1rem;
+    color: #6b7280;
+    line-height: 1.6;
+    margin: 0 0 32px 0;
+    animation: fadeIn 0.6s ease-out 0.4s both;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Transaction Info */
+.transaction-info {
+    background: linear-gradient(135deg, #f9fafb 0%, #f0fdf4 100%);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 32px;
+    border: 1px solid #e5e7eb;
+    animation: fadeIn 0.6s ease-out 0.5s both;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+
+    &:not(:last-child) {
+        border-bottom: 1px solid #e5e7eb;
+    }
+}
+
+.info-label {
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+.info-value {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.total-amount {
+    font-weight: 700;
+    color: #10b981;
+    font-size: 1rem;
+}
+
+/* Next Steps */
+.next-steps {
+    text-align: left;
+    margin-bottom: 32px;
+    animation: fadeIn 0.6s ease-out 0.6s both;
+}
+
+.steps-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 16px 0;
+}
+
+.steps-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.steps-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+
+    svg {
+        color: #10b981;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    span {
+        font-size: 0.9rem;
+        color: #4b5563;
+        line-height: 1.5;
+    }
+}
+
+/* Actions */
+.actions {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    animation: fadeIn 0.6s ease-out 0.7s both;
+}
+
+.btn-primary,
+.btn-secondary {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 24px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 12px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+    }
+}
+
+.btn-secondary {
+    background: white;
+    color: #3b82f6;
+    border: 2px solid #3b82f6;
+
+    &:hover {
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        transform: translateY(-2px);
+    }
+}
+
+/* Support Link */
+.support-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    color: #6b7280;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    animation: fadeIn 0.6s ease-out 0.8s both;
+
+    &:hover {
+        color: #3b82f6;
+        background: #f3f4f6;
+    }
+
+    svg {
+        color: currentColor;
+    }
+}
+
+/* Confetti Animation */
+.confetti {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    top: -10px;
+    z-index: 9999;
+    animation: confetti-fall linear forwards;
+    pointer-events: none;
+}
+
+@keyframes confetti-fall {
+    0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .success-card {
+        padding: 36px 24px;
+    }
+
+    .success-icon {
+        width: 100px;
+        height: 100px;
+
+        svg {
+            width: 60px;
+            height: 60px;
+        }
+    }
+
+    .success-title {
+        font-size: 1.6rem;
+    }
+
+    .success-message {
+        font-size: 0.95rem;
+    }
+
+    .actions {
+        flex-direction: column;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .success-page {
+        padding: 10px;
+    }
+
+    .success-card {
+        padding: 28px 20px;
+    }
+
+    .success-icon {
+        width: 80px;
+        height: 80px;
+
+        svg {
+            width: 48px;
+            height: 48px;
+        }
+    }
+
+    .success-title {
+        font-size: 1.4rem;
+    }
+
+    .transaction-info {
+        padding: 16px;
+    }
+
+    .info-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+}

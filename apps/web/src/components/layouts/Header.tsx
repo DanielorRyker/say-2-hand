@@ -2,17 +2,18 @@
 import NavDropdown from "react-bootstrap/NavDropdown";
 // import "@/styles/globals.scss";
 import headerStyles from "@/styles/layout/header.module.scss";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import ConversationsSidebar from "@/components/conversation/ConversationsSidebar";
 import { io, Socket } from "socket.io-client";
 import axios from "axios";
-
+import { Icon } from "@iconify/react";
 
 const Header = () => {
   const router = useRouter();
-  const pathname = usePathname();
+  const [scrolled, setScrolled] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [user, setUser] = useState<{
     _id: string;
@@ -29,6 +30,25 @@ const Header = () => {
       setUser(JSON.parse(storedUser));
     }
   }, []);
+
+  // Xử lý scroll để thay đổi header
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Xử lý search
+  const handleSearch = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    } else {
+      router.push("/search");
+    }
+  };
 
   const handleBtn = () => {
     router.push("/auth/login");
@@ -67,12 +87,12 @@ const Header = () => {
       created_at: string;
     };
     updatedAt: string;
-    unreadCount: number,
+    unreadCount: number;
   }
   const [conversationsData, setConversationsData] = useState<IConversation[]>(
-      []
-    );
-    // API lấy danh sách
+    []
+  );
+  // API lấy danh sách
   const fetchConversations = useCallback(async () => {
     if (!user) return;
     try {
@@ -90,11 +110,11 @@ const Header = () => {
   }, [fetchConversations]);
 
   // Socket connect
-   const [socket, setSocket] = useState<Socket | null>(null);
-   useEffect(() => {
+  const [socket, setSocket] = useState<Socket | null>(null);
+  useEffect(() => {
     // Kết nối socket.io tới BE (NestJS WebSocketGateway)
     const newSocket = io("http://localhost:8080", {
-      transports: ["websocket"], 
+      transports: ["websocket"],
     });
 
     setSocket(newSocket);
@@ -113,28 +133,26 @@ const Header = () => {
     };
   }, []);
   // Lắng nghe receive_message => reload API
- useEffect(() => {
-  if (!socket || !user?._id) return;
+  useEffect(() => {
+    if (!socket || !user?._id) return;
 
-  socket.emit("join_user", { userId: user._id });
+    socket.emit("join_user", { userId: user._id });
 
-  const handleUpdate = (data : any) => {
-    console.log(" Có tin nhắn mới tới phòng khác:", data);
-    // chỉ cần fetch lại danh sách hội thoại để cập nhật unreadCount
-    fetchConversations();
-  };
+    const handleUpdate = (data: any) => {
+      console.log(" Có tin nhắn mới tới phòng khác:", data);
+      // chỉ cần fetch lại danh sách hội thoại để cập nhật unreadCount
+      fetchConversations();
+    };
 
-  socket.on("conversation_updated", handleUpdate);
+    socket.on("conversation_updated", handleUpdate);
 
-  return () => {
-    socket.off("conversation_updated", handleUpdate);
-  };
-}, [socket, user?._id]);
-
+    return () => {
+      socket.off("conversation_updated", handleUpdate);
+    };
+  }, [socket, user?._id]);
 
   //tổng tin chưa đọc
   const [totalUnread, setTotalUnread] = useState(0);
-  
 
   useEffect(() => {
     const count = conversationsData.reduce(
@@ -164,16 +182,16 @@ const Header = () => {
   };
   //Mở trang favories
   const handlerFavorites = () => {
-  const sortBy = "favorites";
-  localStorage.setItem("sortBy", sortBy);
-  router.push(`/${sortBy}`); 
-};
+    const sortBy = "favorites";
+    localStorage.setItem("sortBy", sortBy);
+    router.push(`/${sortBy}`);
+  };
   //Mở trang bài đăng của tôi
   const handleMyPost = () => {
-  const sortBy = "myPost";
-  localStorage.setItem("sortBy", sortBy);
-  router.push(`/${sortBy}`); 
-  }
+    const sortBy = "myPost";
+    localStorage.setItem("sortBy", sortBy);
+    router.push(`/${sortBy}`);
+  };
   //Mở trang tin nhắn
   const handleMessage = () => {
     localStorage.setItem("conversation", JSON.stringify(conversationsData[0]));
@@ -185,7 +203,9 @@ const Header = () => {
     : "/image/header/carbon_user-avatar-filled-alt.svg";
 
   return (
-    <div className={headerStyles.headerContainer}>
+    <div
+      className={`${headerStyles.headerContainer} ${scrolled ? headerStyles.scrolled : ""}`}
+    >
       <div className={headerStyles.flexRow}>
         <div className={headerStyles.group1}>
           <NavDropdown
@@ -193,7 +213,7 @@ const Header = () => {
             title={
               <Image
                 src="/image/header/pajamas_hamburger.svg"
-                alt=""
+                alt="Menu"
                 width={32}
                 height={32}
                 className={headerStyles.img}
@@ -212,7 +232,11 @@ const Header = () => {
             <NavDropdown.Item href="#action/3">Đồ gia dụng</NavDropdown.Item>
             <NavDropdown.Item href="#action/3">Sách </NavDropdown.Item>
           </NavDropdown>
-          <a href="/home">
+          <button
+            onClick={() => router.push("/home")}
+            className={headerStyles.logoButton}
+            title="Về trang chủ"
+          >
             <Image
               src="/image/header/Say2Hand.svg"
               alt="Logo"
@@ -221,7 +245,123 @@ const Header = () => {
               className={headerStyles.logoImg}
               style={{ width: "auto", height: "auto" }}
             />
-          </a>
+          </button>
+        </div>
+
+        {/* Search bar - hiển thị trong header chính */}
+        <div className={headerStyles.searchContainer}>
+          <div className={headerStyles.searchInputGroup}>
+            <Icon
+              icon="mdi:magnify"
+              width={22}
+              height={22}
+              className={headerStyles.searchIcon}
+            />
+            <form onSubmit={handleSearch} className={headerStyles.searchForm}>
+              <input
+                type="text"
+                className={headerStyles.inputSearch}
+                placeholder="Tìm kiếm sản phẩm, đồ cũ, trao đổi..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </form>
+            {searchQuery && (
+              <button
+                type="button"
+                className={headerStyles.clearSearchBtn}
+                onClick={() => setSearchQuery("")}
+                title="Xóa tìm kiếm"
+                aria-label="Xóa tìm kiếm"
+              >
+                <Icon icon="mdi:close-circle" width={20} height={20} />
+              </button>
+            )}
+            <div className={headerStyles.searchDivider}></div>
+            <div className={headerStyles.locationDropDownWrapper}>
+              <NavDropdown
+                className={headerStyles.locationDropDown}
+                title={
+                  <span className={headerStyles.headerLocationDropdown}>
+                    <Icon
+                      icon="mdi:map-marker"
+                      width={18}
+                      height={18}
+                      className={headerStyles.locationIcon}
+                    />
+                    <span className={headerStyles.headerLocationText}>
+                      {selectedItem}
+                    </span>
+                    <Icon
+                      icon="mdi:chevron-down"
+                      width={16}
+                      height={16}
+                      className={headerStyles.dropdownArrow}
+                    />
+                  </span>
+                }
+                id="location-nav-dropdown"
+              >
+                <NavDropdown.Item onClick={() => handleSelect("Hà Nội")}>
+                  <Icon
+                    icon="mdi:map-marker-outline"
+                    width={16}
+                    height={16}
+                    style={{ marginRight: "8px" }}
+                  />
+                  Hà Nội
+                </NavDropdown.Item>
+                <NavDropdown.Item
+                  onClick={() => handleSelect("Tp. Hồ Chí Minh")}
+                >
+                  <Icon
+                    icon="mdi:map-marker-outline"
+                    width={16}
+                    height={16}
+                    style={{ marginRight: "8px" }}
+                  />
+                  Tp. Hồ Chí Minh
+                </NavDropdown.Item>
+                <NavDropdown.Item onClick={() => handleSelect("Vĩnh Long")}>
+                  <Icon
+                    icon="mdi:map-marker-outline"
+                    width={16}
+                    height={16}
+                    style={{ marginRight: "8px" }}
+                  />
+                  Vĩnh Long
+                </NavDropdown.Item>
+                <NavDropdown.Item onClick={() => handleSelect("Cần Thơ")}>
+                  <Icon
+                    icon="mdi:map-marker-outline"
+                    width={16}
+                    height={16}
+                    style={{ marginRight: "8px" }}
+                  />
+                  Cần Thơ
+                </NavDropdown.Item>
+                <NavDropdown.Item onClick={() => handleSelect("Thanh Hóa")}>
+                  <Icon
+                    icon="mdi:map-marker-outline"
+                    width={16}
+                    height={16}
+                    style={{ marginRight: "8px" }}
+                  />
+                  Thanh Hóa
+                </NavDropdown.Item>
+              </NavDropdown>
+            </div>
+            <button
+              className={headerStyles.searchButton}
+              onClick={handleSearch}
+              type="button"
+              title="Tìm kiếm"
+              aria-label="Tìm kiếm"
+            >
+              <Icon icon="mdi:magnify" width={24} height={24} />
+              <span className={headerStyles.searchButtonText}>Tìm</span>
+            </button>
+          </div>
         </div>
 
         <div className={headerStyles.group2}>
@@ -241,7 +381,7 @@ const Header = () => {
             />
           </button>
 
-            <button
+          <button
             className={headerStyles.btnHeader}
             type="button"
             title="Tin nhắn"
@@ -255,11 +395,11 @@ const Header = () => {
               width={24}
               height={24}
             />
-            {
-              totalUnread==0?
-              <div></div>:
+            {totalUnread == 0 ? (
+              <div></div>
+            ) : (
               <div className={headerStyles.unreadCount}>{totalUnread}</div>
-            }
+            )}
           </button>
 
           <button
@@ -354,7 +494,7 @@ const Header = () => {
                 <NavDropdown.Item onClick={handleProfile}>
                   Cài đặt tài khoản
                 </NavDropdown.Item>
-                  <NavDropdown.Divider />
+                <NavDropdown.Divider />
                 <NavDropdown.Item onClick={() => router.push("/admin/users")}>
                   Quản lý tài khoản
                 </NavDropdown.Item>
@@ -377,82 +517,8 @@ const Header = () => {
           </NavDropdown>
         </div>
       </div>
-
-      <div
-        className={`${headerStyles.searchBG1} ${
-          pathname === "/home" ? headerStyles.home : headerStyles.about
-        }`}
-      >
-        <div className={headerStyles.group3}>
-          <Image
-            src="/image/header/search_gray.svg"
-            alt=""
-            className={headerStyles.img}
-            width={24}
-            height={24}
-            style={{ width: "auto", height: "auto" }}
-          />
-          <input
-            type="text"
-            className={headerStyles.inputSearch}
-            placeholder="Tìm kiếm sản phẩm ..."
-          />
-          <div className={headerStyles.locationDropDownWrapper}>
-            <NavDropdown
-              className={headerStyles.locationDropDown}
-              title={
-                <span className={headerStyles.headerLocationDropdown}>
-                  <Image
-                    src="/image/header/location 1.svg"
-                    alt=""
-                    className={headerStyles.imgLocation}
-                    width={16}
-                    height={16}
-                  />
-                  <p className={headerStyles.headerLocationText}>
-                    {selectedItem}
-                  </p>
-                </span>
-              }
-              id="basic-nav-dropdown"
-            >
-              <NavDropdown.Item onClick={() => handleSelect("Hà nội")}>
-                {" "}
-                Hà nội
-              </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleSelect("Vĩnh Long")}>
-                {" "}
-                Vĩnh Long{" "}
-              </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleSelect("Cần thơ")}>
-                Cần thơ{" "}
-              </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleSelect("Thanh hóa")}>
-                Thanh hóa
-              </NavDropdown.Item>
-            </NavDropdown>
-          </div>
-
-          <button
-            className={headerStyles.btnSearch}
-            title="Tìm kiếm"
-            aria-label="Tìm kiếm"
-          >
-            <Image
-              src="/image/header/search_black.svg"
-              alt=""
-              className={headerStyles.img}
-              width={25}
-              height={25}
-              unoptimized={true}
-            />
-          </button>
-        </div>
-      </div>
     </div>
   );
 };
 
 export default Header;
-
-

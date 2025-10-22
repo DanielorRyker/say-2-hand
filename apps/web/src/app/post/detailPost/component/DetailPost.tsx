@@ -4,7 +4,6 @@ import styles from "./DetailPost.module.scss";
 import { Icon } from "@iconify/react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import { create } from "domain";
 
 // Helper to create a ripple span on a button. Call from button onClick: createRipple(e)
 export function createRipple(
@@ -209,7 +208,6 @@ export const DetailPost: React.FC = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const [lightboxSrc, setLightboxSrc] = useState("");
   const [isFavorite, setIsFavorite] = useState(false);
   const [comments, setComments] = useState<Comment[]>([
     {
@@ -445,7 +443,6 @@ export const DetailPost: React.FC = () => {
 
   const openLightbox = (index: number) => {
     setCurrentImageIndex(index);
-    setLightboxSrc(base + postData.post.image_urls[index].url);
     setIsLightboxOpen(true);
   };
 
@@ -1116,7 +1113,68 @@ export const DetailPost: React.FC = () => {
                           className={`${styles["post-type-badge"]} ${styles["ripple-target"]} ${badgeClassFor(postData.post.transaction_type)}`}
                           onClick={(e) => {
                             createRipple(e as any);
-                            /* TODO: open chat modal */
+                            // Xử lý theo loại giao dịch
+                            if (postData.post.transaction_type === "sell") {
+                              // Validate post data trước khi lưu
+                              if (!postData.post._id || !postData.post.title) {
+                                console.error(
+                                  "❌ Invalid post data:",
+                                  postData.post
+                                );
+                                alert(
+                                  "Dữ liệu sản phẩm không hợp lệ. Vui lòng tải lại trang."
+                                );
+                                return;
+                              }
+
+                              // Lưu dữ liệu vào sessionStorage trước khi navigate
+                              try {
+                                const dataToStore = {
+                                  _id: postData.post._id,
+                                  post_id: postData.post._id,
+                                  title: postData.post.title,
+                                  price: postData.post.price,
+                                  condition: postData.post.condition,
+                                  transaction_type:
+                                    postData.post.transaction_type,
+                                  images: postData.post.image_urls,
+                                  location: postData.location,
+                                  author_id: postData.user,
+                                };
+                                sessionStorage.setItem(
+                                  `selectedPost_${postData.post._id}`,
+                                  JSON.stringify(dataToStore)
+                                );
+                                console.log(
+                                  "✅ Saved post data to sessionStorage:",
+                                  {
+                                    postId: postData.post._id,
+                                    title: postData.post.title,
+                                    hasImages: dataToStore.images?.length > 0,
+                                  }
+                                );
+                              } catch (err) {
+                                console.error(
+                                  "❌ Error saving to sessionStorage:",
+                                  err
+                                );
+                                // Không block navigation, user vẫn có thể tiếp tục
+                              }
+                              // Nếu là bán -> chuyển đến trang thanh toán
+                              router.push(
+                                `/payment?postId=${postData.post._id}`
+                              );
+                            } else if (
+                              postData.post.transaction_type === "exchange"
+                            ) {
+                              // Nếu là trao đổi -> mở chat
+                              handleCreateConversation();
+                            } else if (
+                              postData.post.transaction_type === "give away"
+                            ) {
+                              // Nếu là cho tặng -> mở chat
+                              handleCreateConversation();
+                            }
                           }}
                         >
                           <Icon
@@ -1162,18 +1220,10 @@ export const DetailPost: React.FC = () => {
                       <button
                         type="button"
                         className={`${styles["chat-btn"]} ${styles["ripple-target"]}`}
-                        disabled={postData?.post?.status === "completed"} // 🔒 Khóa nếu đã hoàn thành
-                        onClick={(e) => {
-                          if (postData?.post?.status === "completed") return; // 🚫 Ngăn click logic
+                        disabled={postData?.post?.status === "completed"}
+                        onClick={() => {
+                          if (postData?.post?.status === "completed") return;
                           handleCompletedPost(postData.post._id!);
-                        }}
-                        style={{
-                          opacity:
-                            postData?.post?.status === "completed" ? 0.5 : 1, // 💧 Làm mờ nút
-                          cursor:
-                            postData?.post?.status === "completed"
-                              ? "not-allowed"
-                              : "pointer",
                         }}
                       >
                         <Icon
@@ -1424,8 +1474,67 @@ export const DetailPost: React.FC = () => {
             >
               {isFavorite ? "Đã Lưu" : "Lưu"}
             </button>
-            <button type="button" className={`${styles["chat-btn"]}`}>
-              Chat Ngay
+            <button
+              type="button"
+              className={`${styles["chat-btn"]}`}
+              onClick={() => {
+                // Xử lý theo loại giao dịch
+                if (postData.post.transaction_type === "sell") {
+                  // Validate post data trước khi lưu
+                  if (!postData.post._id || !postData.post.title) {
+                    console.error(
+                      "❌ Invalid post data (mobile):",
+                      postData.post
+                    );
+                    alert(
+                      "Dữ liệu sản phẩm không hợp lệ. Vui lòng tải lại trang."
+                    );
+                    return;
+                  }
+
+                  // Lưu dữ liệu vào sessionStorage trước khi navigate
+                  try {
+                    const dataToStore = {
+                      _id: postData.post._id,
+                      post_id: postData.post._id,
+                      title: postData.post.title,
+                      price: postData.post.price,
+                      condition: postData.post.condition,
+                      transaction_type: postData.post.transaction_type,
+                      images: postData.post.image_urls,
+                      location: postData.location,
+                      author_id: postData.user,
+                    };
+                    sessionStorage.setItem(
+                      `selectedPost_${postData.post._id}`,
+                      JSON.stringify(dataToStore)
+                    );
+                    console.log(
+                      "✅ Saved post data to sessionStorage (mobile):",
+                      {
+                        postId: postData.post._id,
+                        title: postData.post.title,
+                        hasImages: dataToStore.images?.length > 0,
+                      }
+                    );
+                  } catch (err) {
+                    console.error(
+                      "❌ Error saving to sessionStorage (mobile):",
+                      err
+                    );
+                    // Không block navigation
+                  }
+                  // Chuyển đến trang thanh toán
+                  router.push(`/payment?postId=${postData.post._id}`);
+                } else {
+                  // Nếu là trao đổi hoặc cho tặng -> mở chat
+                  handleCreateConversation();
+                }
+              }}
+            >
+              {postData.post.transaction_type === "sell"
+                ? "Mua Ngay"
+                : "Chat Ngay"}
             </button>
           </div>
         </div>

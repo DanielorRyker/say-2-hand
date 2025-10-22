@@ -5,7 +5,7 @@ import React, { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "./search.module.scss";
 import { Icon } from "@iconify/react";
-import axios from "axios";
+import { apiClient } from "@/lib/api-client";
 import FilterModal from "./components/FilterModal";
 import CategoryModal from "./components/CategoryModal";
 import ConditionModal from "./components/ConditionModal";
@@ -86,6 +86,13 @@ const CONDITION_MAP: Record<string, { text: string; colorKey: string }> = {
   for_parts: { text: "Đã hư", colorKey: "for_parts" },
 };
 
+const TRANSACTION_TYPE_MAP: Record<string, string> = {
+  sell: "Bán",
+  exchange: "Trao đổi",
+  give_away: "Tặng",
+  "give away": "Tặng",
+};
+
 const SORT_OPTIONS = [
   { value: "newest", label: "Mới nhất", icon: "mdi:clock-outline" },
   { value: "nearest", label: "Gần nhất", icon: "mdi:map-marker" },
@@ -100,8 +107,19 @@ function SearchPageContent() {
   const [postsData, setPostsData] = useState<Post[]>([]);
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [categories, setCategories] = useState<{ _id: string; name: string }[]>(
+    []
+  );
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [favoriteData, setFavoriteData] = useState<any[]>([]);
 
-  // Filter states
+  // Load currentUser from localStorage
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    setCurrentUser(userData ? JSON.parse(userData) : null);
+  }, []);
+
+  // Filter states - lấy từ URL params
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [selectedTransactionTypes, setSelectedTransactionTypes] = useState<
     string[]
@@ -123,21 +141,74 @@ function SearchPageContent() {
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [showPriceModal, setShowPriceModal] = useState(false);
 
+  // Sync search query từ URL
+  useEffect(() => {
+    const query = searchParams.get("q") || "";
+    setSearchQuery(query);
+  }, [searchParams]);
+
+  // Fetch categories
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const res = await apiClient.get("/categories");
+
+        // Kiểm tra nếu response là JSON
+        if (res.data && typeof res.data === "object") {
+          setCategories(res.data);
+        } else {
+          console.error("Invalid response format from categories API");
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        // Set empty array nếu lỗi
+        setCategories([]);
+      }
+    }
+    fetchCategories();
+  }, []);
+
   useEffect(() => {
     async function fetchPosts() {
       try {
         setIsLoading(true);
-        const res = await axios.get("http://localhost:8080/api/posts/postmap");
-        setPostsData(res.data);
-        setFilteredPosts(res.data);
+        const res = await apiClient.get("/posts/postmap");
+
+        // Kiểm tra nếu response là JSON
+        if (res.data && Array.isArray(res.data)) {
+          setPostsData(res.data);
+          setFilteredPosts(res.data);
+        } else {
+          console.error("Invalid response format from posts API");
+          setPostsData([]);
+          setFilteredPosts([]);
+        }
       } catch (error) {
         console.error("Error fetching posts:", error);
+        setPostsData([]);
+        setFilteredPosts([]);
       } finally {
         setIsLoading(false);
       }
     }
     fetchPosts();
   }, []);
+
+  // Fetch favorites
+  useEffect(() => {
+    if (!currentUser?._id) return;
+
+    async function fetchFavorites() {
+      try {
+        const res = await apiClient.get(`/favorites/user/${currentUser._id}`);
+        setFavoriteData(res.data);
+      } catch (err) {
+        console.error("Error loading favorites:", err);
+      }
+    }
+
+    fetchFavorites();
+  }, [currentUser]);
 
   const applyFilters = React.useCallback(() => {
     let filtered = [...postsData];
@@ -220,51 +291,6 @@ function SearchPageContent() {
     applyFilters();
   }, [applyFilters]);
 
-  const getRelativeTime = (isoString: string) => {
-    const date = new Date(isoString);
-    const now = new Date();
-    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-    if (seconds < 60) return "Vừa xong";
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes} phút trước`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours} giờ trước`;
-    const days = Math.floor(hours / 24);
-    if (days < 30) return `${days} ngày trước`;
-    const months = Math.floor(days / 30);
-    if (months < 12) return `${months} tháng trước`;
-    const years = Math.floor(months / 12);
-    return `${years} năm trước`;
-  };
-
-  // Use shared address formatter (keeps ward/province while normalizing)
-
-  const handleRippleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const btn = e.currentTarget;
-    const rect = btn.getBoundingClientRect();
-    const size = Math.max(rect.width, rect.height);
-    const x = e.clientX - rect.left - size / 2;
-    const y = e.clientY - rect.top - size / 2;
-
-    const ripple = document.createElement("span");
-    ripple.className = styles["ripple-span"] || "ripple-span";
-    ripple.style.width = ripple.style.height = size + "px";
-    ripple.style.left = x + "px";
-    ripple.style.top = y + "px";
-
-    btn
-      .querySelectorAll(`.${styles["ripple-span"]}`)
-      .forEach((s: Element) => (s as HTMLElement).remove());
-    btn.appendChild(ripple);
-    setTimeout(() => ripple.remove(), 600);
-  };
-
-  const toggleFavorite = (postId: string) => {
-    // Handle favorite toggle
-    console.log("Toggle favorite:", postId);
-  };
-
   const badgeClassFor = (postType: string) => {
     switch (postType) {
       case "sell":
@@ -308,6 +334,148 @@ function SearchPageContent() {
     setSearchQuery("");
   };
 
+  // Remove individual filters
+  const removeTransactionType = (type: string) => {
+    setSelectedTransactionTypes(
+      selectedTransactionTypes.filter((t) => t !== type)
+    );
+  };
+
+  const removeCondition = (condition: string) => {
+    setSelectedConditions(selectedConditions.filter((c) => c !== condition));
+  };
+
+  const removeCategory = (categoryId: string) => {
+    setSelectedCategories(selectedCategories.filter((c) => c !== categoryId));
+  };
+
+  const removePriceFilter = () => {
+    setPriceRange({ min: 0, max: 100000000 });
+  };
+
+  const removeLocationFilter = () => {
+    setSelectedLocation("");
+    setDistance(50);
+  };
+
+  // Get category name by ID
+  const getCategoryName = (categoryId: string) => {
+    const category = categories.find((c) => c._id === categoryId);
+    return category?.name || "Danh mục";
+  };
+
+  // Format price for display
+  const formatPrice = (price: number) => {
+    if (price >= 1000000) {
+      return `${(price / 1000000).toFixed(1)}tr`;
+    }
+    if (price >= 1000) {
+      return `${(price / 1000).toFixed(0)}k`;
+    }
+    return price.toString();
+  };
+
+  // Helper functions from ListPost
+  const getRelativeTime = (isoString: string) => {
+    const date = new Date(isoString);
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (seconds < 60) return "Vừa xong";
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes} phút trước`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} giờ trước`;
+    const days = Math.floor(hours / 24);
+    if (days < 30) return `${days} ngày trước`;
+    const months = Math.floor(days / 30);
+    if (months < 12) return `${months} tháng trước`;
+    const years = Math.floor(months / 12);
+    return `${years} năm trước`;
+  };
+
+  const handleRippleClick = React.useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      const btn = e.currentTarget;
+      const rect = btn.getBoundingClientRect();
+      const size = Math.max(rect.width, rect.height);
+      const x = e.clientX - rect.left - size / 2;
+      const y = e.clientY - rect.top - size / 2;
+
+      const ripple = document.createElement("span");
+      ripple.className = styles["ripple-span"] || "ripple-span";
+
+      ripple.style.width = ripple.style.height = size + "px";
+      ripple.style.left = x + "px";
+      ripple.style.top = y + "px";
+
+      btn
+        .querySelectorAll(`.${styles["ripple-span"]}`)
+        .forEach((s: Element) => (s as HTMLElement).remove());
+
+      btn.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 600);
+    },
+    []
+  );
+
+  React.useEffect(() => {
+    const selector = `.${styles["quick-action-btn"]}`;
+    const buttons = Array.from(
+      document.querySelectorAll(selector)
+    ) as HTMLButtonElement[];
+    buttons.forEach((b) => (b.onclick = handleRippleClick as any));
+    return () => buttons.forEach((b) => (b.onclick = null));
+  }, [handleRippleClick]);
+
+  const checkFavorited = React.useCallback(
+    (postId: string) => {
+      return favoriteData.some((fav) => fav.post_id === postId);
+    },
+    [favoriteData]
+  );
+
+  const toggleFavorite = React.useCallback(
+    async (postId: string) => {
+      if (!currentUser?._id) {
+        alert("Vui lòng đăng nhập để thực hiện chức năng này.");
+        return;
+      }
+
+      const isCurrentlyFavorited = checkFavorited(postId);
+
+      try {
+        if (isCurrentlyFavorited) {
+          await apiClient.delete(`/favorites/post/${postId}`, {
+            data: { user_id: currentUser._id },
+          });
+          setFavoriteData((prev) =>
+            prev.filter((fav) => fav.post_id !== postId)
+          );
+          console.log(`Đã xóa bài đăng ${postId} khỏi favorites.`);
+        } else {
+          await apiClient.post(`/favorites/`, {
+            user_id: currentUser._id,
+            post_id: postId,
+          });
+
+          const postToAdd = postsData.find((p) => p._id === postId);
+          if (postToAdd) {
+            setFavoriteData((prev) => [
+              ...prev,
+              { ...postToAdd, post_id: postId } as any,
+            ]);
+          }
+          console.log(`Đã thêm bài đăng ${postId} vào favorites.`);
+        }
+      } catch (err) {
+        console.error("Lỗi toggle favorite:", err);
+        alert("Có lỗi xảy ra. Vui lòng thử lại.");
+      }
+    },
+    [currentUser, checkFavorited, postsData]
+  );
+
   const activeFilterCount =
     selectedTransactionTypes.length +
     selectedConditions.length +
@@ -317,36 +485,7 @@ function SearchPageContent() {
 
   return (
     <div className={styles.searchPage}>
-      {/* Search Header */}
-      <div className={styles.searchHeader}>
-        <div className={styles.searchInputWrapper}>
-          <Icon
-            icon="mdi:magnify"
-            width={24}
-            height={24}
-            className={styles.searchIcon}
-          />
-          <input
-            type="text"
-            className={styles.searchInput}
-            placeholder="Tìm kiếm đồ cũ..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          {searchQuery && (
-            <button
-              className={styles.clearBtn}
-              onClick={() => setSearchQuery("")}
-              title="Xóa tìm kiếm"
-              aria-label="Xóa tìm kiếm"
-            >
-              <Icon icon="mdi:close" width={20} height={20} />
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Quick Filters Bar */}
+      {/* Quick Filters Bar - Sticky */}
       <div className={styles.quickFiltersBar}>
         <div className={styles.quickFilters}>
           <button
@@ -434,6 +573,138 @@ function SearchPageContent() {
         )}
       </div>
 
+      {/* Active Filters Chips */}
+      {activeFilterCount > 0 && (
+        <div className={styles.activeFiltersSection}>
+          <div className={styles.activeFiltersHeader}>
+            <Icon icon="mdi:filter-check" width={18} height={18} />
+            <span>Đang lọc theo ({activeFilterCount})</span>
+          </div>
+          <div className={styles.activeFiltersChips}>
+            {/* Search Query Chip */}
+            {searchQuery && (
+              <div className={styles.activeChip}>
+                <Icon icon="mdi:magnify" width={16} height={16} />
+                <span className={styles.chipLabel}>
+                  Tìm: &ldquo;{searchQuery}&rdquo;
+                </span>
+                <button
+                  className={styles.chipRemove}
+                  onClick={() => setSearchQuery("")}
+                  title="Xóa"
+                  aria-label="Xóa tìm kiếm"
+                >
+                  <Icon icon="mdi:close" width={14} height={14} />
+                </button>
+              </div>
+            )}
+
+            {/* Transaction Type Chips */}
+            {selectedTransactionTypes.map((type) => (
+              <div
+                key={type}
+                className={`${styles.activeChip} ${styles.chipTransaction}`}
+              >
+                <Icon icon="mdi:tag" width={16} height={16} />
+                <span className={styles.chipLabel}>
+                  {TRANSACTION_TYPE_MAP[type] || type}
+                </span>
+                <button
+                  className={styles.chipRemove}
+                  onClick={() => removeTransactionType(type)}
+                  title="Xóa"
+                  aria-label={`Xóa ${TRANSACTION_TYPE_MAP[type]}`}
+                >
+                  <Icon icon="mdi:close" width={14} height={14} />
+                </button>
+              </div>
+            ))}
+
+            {/* Condition Chips */}
+            {selectedConditions.map((condition) => (
+              <div
+                key={condition}
+                className={`${styles.activeChip} ${styles.chipCondition}`}
+              >
+                <Icon icon="mdi:check-circle" width={16} height={16} />
+                <span className={styles.chipLabel}>
+                  {CONDITION_MAP[condition]?.text || condition}
+                </span>
+                <button
+                  className={styles.chipRemove}
+                  onClick={() => removeCondition(condition)}
+                  title="Xóa"
+                  aria-label={`Xóa ${CONDITION_MAP[condition]?.text}`}
+                >
+                  <Icon icon="mdi:close" width={14} height={14} />
+                </button>
+              </div>
+            ))}
+
+            {/* Category Chips */}
+            {selectedCategories.map((categoryId) => (
+              <div
+                key={categoryId}
+                className={`${styles.activeChip} ${styles.chipCategory}`}
+              >
+                <Icon icon="mdi:shape" width={16} height={16} />
+                <span className={styles.chipLabel}>
+                  {getCategoryName(categoryId)}
+                </span>
+                <button
+                  className={styles.chipRemove}
+                  onClick={() => removeCategory(categoryId)}
+                  title="Xóa"
+                  aria-label={`Xóa ${getCategoryName(categoryId)}`}
+                >
+                  <Icon icon="mdi:close" width={14} height={14} />
+                </button>
+              </div>
+            ))}
+
+            {/* Price Range Chip */}
+            {(priceRange.min > 0 || priceRange.max < 100000000) && (
+              <div className={`${styles.activeChip} ${styles.chipPrice}`}>
+                <Icon icon="mdi:currency-usd" width={16} height={16} />
+                <span className={styles.chipLabel}>
+                  {priceRange.min > 0 && priceRange.max < 100000000
+                    ? `${formatPrice(priceRange.min)} - ${formatPrice(priceRange.max)}`
+                    : priceRange.min > 0
+                      ? `Từ ${formatPrice(priceRange.min)}`
+                      : `Đến ${formatPrice(priceRange.max)}`}
+                </span>
+                <button
+                  className={styles.chipRemove}
+                  onClick={removePriceFilter}
+                  title="Xóa"
+                  aria-label="Xóa bộ lọc giá"
+                >
+                  <Icon icon="mdi:close" width={14} height={14} />
+                </button>
+              </div>
+            )}
+
+            {/* Location Chip */}
+            {selectedLocation && (
+              <div className={`${styles.activeChip} ${styles.chipLocation}`}>
+                <Icon icon="mdi:map-marker" width={16} height={16} />
+                <span className={styles.chipLabel}>
+                  {selectedLocation} ({distance}km)
+                </span>
+                <button
+                  className={styles.chipRemove}
+                  onClick={removeLocationFilter}
+                  title="Xóa"
+                  aria-label="Xóa bộ lọc vị trí"
+                >
+                  <Icon icon="mdi:close" width={14} height={14} />
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Results Info */}
       <div className={styles.resultsInfo}>
         <span className={styles.resultCount}>
@@ -517,12 +788,19 @@ function SearchPageContent() {
                         e.stopPropagation();
                         handleRippleClick(e);
                         toggleFavorite(data._id);
+                        checkFavorited(data._id);
                       }}
                       onKeyDown={(e) => e.stopPropagation()}
                     >
-                      <span className={styles.heartIcon}>
+                      <span
+                        className={`${styles.heartIcon} ${checkFavorited(data._id) ? styles.heartIconActive : ""}`}
+                      >
                         <Icon
-                          icon="ic:twotone-favorite"
+                          icon={
+                            checkFavorited(data._id)
+                              ? "ic:sharp-favorite"
+                              : "ic:twotone-favorite"
+                          }
                           width={30}
                           height={30}
                         />
@@ -551,7 +829,7 @@ function SearchPageContent() {
                 <div
                   className={`${styles["card-body"]} ${styles["card-body--md"]}`}
                 >
-                  <div className={styles["price"]}>
+                  <div id="post-price" className={`${styles["price"]}`}>
                     {data.transaction_type === "give away"
                       ? "Miễn phí"
                       : data.transaction_type === "exchange"
@@ -561,14 +839,22 @@ function SearchPageContent() {
 
                   <h3
                     className={`${styles["title"]} ${styles["line-clamp-2"]}`}
-                    title={data.title}
+                    title={
+                      data.title && data.title.length > 80
+                        ? data.title
+                        : undefined
+                    }
                   >
                     {data.title}
                   </h3>
 
                   <p
                     className={`${styles["description"]} ${styles["line-clamp-4"]}`}
-                    title={data.description}
+                    title={
+                      data.description && data.description.length > 160
+                        ? data.description
+                        : undefined
+                    }
                   >
                     {data.description}
                   </p>
@@ -596,22 +882,25 @@ function SearchPageContent() {
                             data.author_id.avatar
                           : "/image/header/carbon_user-avatar-filled-alt.svg"
                       }
-                      alt="Avatar"
+                      alt="Avatar Người đăng"
                     />
                     <div>
                       <div className={styles["author-name"]}>
                         {data.author_id.full_name}
+                        {/* {data.author.isVerified && ( */}
                         <img
                           src={ICONS.badge}
-                          alt="Verified"
+                          alt="Đã xác thực"
                           width={16}
                           height={16}
                           className={styles["verified-badge"]}
                         />
+                        {/* )} */}
                       </div>
                       <div className={styles.reputation}>
                         <span
                           className={`${styles.starContainer} ${styles.stars} ${styles.starsFlex}`}
+                          aria-hidden
                         >
                           <span className={styles.iconStarBase}>
                             {Array.from({ length: 5 }).map((_, i) => (
@@ -623,20 +912,41 @@ function SearchPageContent() {
                               />
                             ))}
                           </span>
-                          <span
-                            className={`${styles.starsOverlay} ${styles.starsOverlayFull}`}
-                          >
-                            <span className={styles.iconStarColored}>
-                              {Array.from({ length: 5 }).map((_, i) => (
-                                <Icon
-                                  key={`c-${i}`}
-                                  icon="material-symbols:star"
-                                  width={18}
-                                  height={18}
-                                />
-                              ))}
-                            </span>
-                          </span>
+
+                          {(() => {
+                            const rawScore = Math.max(1, 5);
+                            const pct = Math.round((rawScore / 5) * 100);
+                            return (
+                              <span
+                                className={`${styles.starsOverlay}`}
+                                aria-hidden
+                                ref={(el) => {
+                                  if (!el) return;
+                                  try {
+                                    (el as HTMLElement).style.width = `${pct}%`;
+                                    if (pct === 100) {
+                                      el.classList.add(styles.starsOverlayFull);
+                                    } else {
+                                      el.classList.remove(
+                                        styles.starsOverlayFull
+                                      );
+                                    }
+                                  } catch {}
+                                }}
+                              >
+                                <span className={styles.iconStarColored}>
+                                  {Array.from({ length: 5 }).map((_, i) => (
+                                    <Icon
+                                      key={`c-${i}`}
+                                      icon="material-symbols:star"
+                                      width={18}
+                                      height={18}
+                                    />
+                                  ))}
+                                </span>
+                              </span>
+                            );
+                          })()}
                         </span>
                         <strong>5/5</strong>{" "}
                         <span className={styles.reviews}>( đánh giá)</span>
@@ -649,7 +959,7 @@ function SearchPageContent() {
                   <div className={styles.location}>
                     <img
                       src={ICONS.mappin}
-                      alt="Location"
+                      alt="Vị trí"
                       width={18}
                       height={18}
                       className={styles["map-pin"]}
@@ -658,24 +968,30 @@ function SearchPageContent() {
                       <span className={styles["location-name"]}>
                         {data.location.address}
                       </span>
+                      <span className={styles.proximity}>.</span>
                     </div>
                   </div>
 
                   <div className={styles["small-stats"]}>
                     <span className={styles["text-xs"]}>
-                      <img src={ICONS.eye} alt="Views" width={15} height={15} />
-                      0
+                      <img
+                        src={ICONS.eye}
+                        alt="Lượt xem"
+                        width={15}
+                        height={15}
+                      />
+                      {/* {data.views} */}0
                     </span>
                     <span
                       className={`${styles["text-xs"]} ${styles["stat-fav"]}`}
                     >
                       <img
                         src={ICONS.heart_viewer}
-                        alt="Favorites"
+                        alt="Yêu thích"
                         width={15}
                         height={15}
                       />
-                      0
+                      {/* {data.favorites} */}0
                     </span>
                   </div>
                 </div>

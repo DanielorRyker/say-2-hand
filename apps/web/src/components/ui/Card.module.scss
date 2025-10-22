@@ -1,0 +1,81 @@
+@use '../../styles/abstracts/variables.scss'as vars;
+@use '../../styles/abstracts/colors.scss'as colors;
+
+/* ==========================================
+   CARD COMPONENT
+   ========================================== */
+
+.card {
+    border-radius: vars.$card-border-radius;
+    transition: all vars.$transition-base;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Variants */
+.default {
+    background: colors.$solid-bg-white;
+    box-shadow: vars.$shadow-md;
+    border: 1px solid colors.$solid-border-light;
+}
+
+.gradient {
+    background: colors.$ui-card;
+    box-shadow: vars.$shadow-lg;
+    border: none;
+}
+
+.glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: vars.$shadow-md;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Padding variants */
+.padding-none {
+    padding: 0;
+}
+
+.padding-sm {
+    padding: vars.$spacing-md;
+
+    @include vars.respond-below('md') {
+        padding: vars.$spacing-sm;
+    }
+}
+
+.padding-md {
+    padding: vars.$card-padding;
+
+    @include vars.respond-below('md') {
+        padding: vars.$card-padding-mobile;
+    }
+}
+
+.padding-lg {
+    padding: vars.$spacing-xl;
+
+    @include vars.respond-below('md') {
+        padding: vars.$spacing-lg;
+    }
+}
+
+/* Hoverable */
+.hoverable {
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: vars.$shadow-xl;
+    }
+
+    &:active {
+        transform: translateY(-2px);
+    }
+}
+
+/* Clickable */
+.clickable {
+    cursor: pointer;
+    user-select: none;
+}

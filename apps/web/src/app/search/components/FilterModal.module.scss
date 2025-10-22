@@ -7,7 +7,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: 1001; // Cao hơn header (999) và filter bar (998)
     padding: 20px;
     animation: fadeIn 0.2s ease;
     -webkit-backdrop-filter: blur(4px);

@@ -1,0 +1,19 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="200" rx="20" fill="url(#paint0_linear)"/>
+  <!-- Two people meeting -->
+  <circle cx="70" cy="70" r="20" fill="white"/>
+  <path d="M50 110C50 100 55 95 65 95H75C85 95 90 100 90 110V120H50V110Z" fill="white"/>
+  
+  <circle cx="130" cy="70" r="20" fill="white"/>
+  <path d="M110 110C110 100 115 95 125 95H135C145 95 150 100 150 110V120H110V110Z" fill="white"/>
+  
+  <!-- Handshake -->
+  <path d="M80 140H120M90 135L95 145M110 135L105 145" stroke="white" stroke-width="4" stroke-linecap="round"/>
+  
+  <defs>
+    <linearGradient id="paint0_linear" x1="0" y1="0" x2="200" y2="200" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#10B981"/>
+      <stop offset="1" stop-color="#059669"/>
+    </linearGradient>
+  </defs>
+</svg>

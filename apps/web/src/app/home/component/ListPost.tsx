@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import styles from "./postList.module.scss";
 // Iconify import (replace HeartSVG with this icon)
 import { Icon } from "@iconify/react";
-import axios from "axios";
+import { apiClient } from "@/lib/api-client";
 
 // Local SVG icons (matching files in public/image/feed)
 const ICONS = {
@@ -22,8 +22,6 @@ const ICONS = {
   star: "/image/feed/star.svg",
 };
 
-
-
 const CONDITION_MAP: Record<string, { text: string; colorKey: string }> = {
   new: { text: "Mới 100%", colorKey: "new" },
   like_new: { text: "Gần như mới", colorKey: "like_new" },
@@ -33,11 +31,9 @@ const CONDITION_MAP: Record<string, { text: string; colorKey: string }> = {
   for_parts: { text: "Đã hư", colorKey: "for_parts" },
 };
 
-
-
 export const ListPost: React.FC = () => {
   const router = useRouter();
- //Lấy user hiện tại
+  //Lấy user hiện tại
   const [currentUser, setCurrentUser] = useState<any>(null);
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -45,94 +41,99 @@ export const ListPost: React.FC = () => {
   }, []);
   //Lấy dữ liệu từ database
 
- interface Post {
-  post_id: string;
-  _id: string;
-  title: string;
-  description: string;
-  images: {
+  interface Post {
+    post_id: string;
     _id: string;
-    url: string;
-    alt?: string;
-    tags: string[];
-  }[];
-  condition: string;
-  transaction_type: string;
-  price: number;
-  location: {
-    address: string;
-    geo?: {
-      type: string;
-      coordinates: [number, number];
+    title: string;
+    description: string;
+    images: {
+      _id: string;
+      url: string;
+      alt?: string;
+      tags: string[];
+    }[];
+    condition: string;
+    transaction_type: string;
+    price: number;
+    location: {
+      address: string;
+      geo?: {
+        type: string;
+        coordinates: [number, number];
+      };
     };
-  };
-  custom_fields?: Record<string, string>; // ví dụ: { "màu sắc": "đen", "bộ nhớ": "128GB" }
-  tags?: string[];
-  status: string;
-  stats?: {
-    _id?: string;
-    view_count: number;
-    favorite_count: number;
-    chat_count?: number;
-  };
-  moderation?: {
-    _id: string;
-  };
-  author_id: {
-    _id: string;
-    full_name: string;
-    avatar: string;
-  };
-  category_id?: {
-    _id?: string;
-    name?: string;
-  } | null;
-  createdAt: string;
-  updatedAt: string;
-  __v?: number;
-  reputation?: {
-    average_score: number;
-    total_ratings: number;
-  };
-  distance_km?: number;
-}
+    custom_fields?: Record<string, string>; // ví dụ: { "màu sắc": "đen", "bộ nhớ": "128GB" }
+    tags?: string[];
+    status: string;
+    stats?: {
+      _id?: string;
+      view_count: number;
+      favorite_count: number;
+      chat_count?: number;
+    };
+    moderation?: {
+      _id: string;
+    };
+    author_id: {
+      _id: string;
+      full_name: string;
+      avatar: string;
+    };
+    category_id?: {
+      _id?: string;
+      name?: string;
+    } | null;
+    createdAt: string;
+    updatedAt: string;
+    __v?: number;
+    reputation?: {
+      average_score: number;
+      total_ratings: number;
+    };
+    distance_km?: number;
+  }
 
   const [postsData, setPostsData] = useState<Post[]>([]);
   const [favoriteData, setFavoriteData] = useState<Post[]>([]);
 
   useEffect(() => {
-        async function fetchPosts() {
-            const res = await axios.get("http://localhost:8080/api/posts/postmap");
-            setPostsData(res.data); // res.data là danh sách posts
+    async function fetchPosts() {
+      try {
+        const res = await apiClient.get("/posts/postmap");
+        if (res.data && Array.isArray(res.data)) {
+          setPostsData(res.data);
+        } else {
+          console.error("Invalid response format from posts API");
+          setPostsData([]);
         }
-        fetchPosts();
-               
-        }, []);
+      } catch (error) {
+        console.error("Error fetching posts:", error);
+        setPostsData([]);
+      }
+    }
+    fetchPosts();
+  }, []);
 
-    useEffect(() => {
-        if (!currentUser?._id) return; // 🚫 nếu chưa có user thì không gọi
+  useEffect(() => {
+    if (!currentUser?._id) return; // 🚫 nếu chưa có user thì không gọi
 
+    async function fetchFavorites() {
+      try {
+        const res = await apiClient.get(`/favorites/user/${currentUser._id}`);
+        setFavoriteData(res.data);
+      } catch (err) {
+        console.error("Error loading favorites:", err);
+      }
+    }
 
-        async function fetchFavorites() {
-          try {
-            const res = await axios.get(
-              `http://localhost:8080/api/favorites/user/${currentUser._id}`
-            );
-            setFavoriteData(res.data);
-          } catch (err) {
-            console.error("Error loading favorites:", err);
-          }
-        }
+    fetchFavorites();
+  }, [currentUser]);
 
-        fetchFavorites();
-      }, [currentUser]);
+  //dữ liệu tạm thời
 
-//dữ liệu tạm thời
-
-const checkFavorited = (postId: string) => {
-  return favoriteData.some(fav => fav.post_id === postId);
-}
-
+  const checkFavorited = (postId: string) => {
+    return favoriteData.some((fav) => fav.post_id === postId);
+  };
 
   ////Tính thời gian
   const getRelativeTime = (isoString: string) => {
@@ -153,7 +154,6 @@ const checkFavorited = (postId: string) => {
     return `${years} năm trước`;
   };
 
- 
   // Note: rely on CSS `.line-clamp-*` classes for truncation/overflow handling
 
   const handleRippleClick = React.useCallback(
@@ -196,45 +196,49 @@ const checkFavorited = (postId: string) => {
     return () => buttons.forEach((b) => (b.onclick = null));
   }, [handleRippleClick]);
 
-
-  const toggleFavorite = React.useCallback(async (postId: string) => {
-    if (!currentUser?._id) {
-      // Xử lý trường hợp người dùng chưa đăng nhập (ví dụ: chuyển hướng đến trang đăng nhập)
-      alert("Vui lòng đăng nhập để thực hiện chức năng này.");
-      return;
-    }
-    
-    const isCurrentlyFavorited = checkFavorited(postId);
-    
-    try {
-      if (isCurrentlyFavorited) {
-        // XÓA khỏi favorites (DELETE request)
-        await axios.delete(`http://localhost:8080/api/favorites/post/${postId}`, {
-          data: { user_id: currentUser._id },
-        });
-        setFavoriteData(prev => prev.filter(fav => fav.post_id !== postId));
-        console.log(`Đã xóa bài đăng ${postId} khỏi favorites.`);
-
-      } else {
-        // THÊM vào favorites (POST request)
-       await axios.post(`http://localhost:8080/api/favorites/`, 
-        {
-           user_id: currentUser._id,
-           post_id: postId 
-        });
-    
-        const postToAdd = postsData.find(p => p._id === postId);
-        if (postToAdd) {
-          
-            setFavoriteData(prev => [...prev, ({ ...postToAdd, post_id: postId } as Post)]);
-        }
-        console.log(`Đã thêm bài đăng ${postId} vào favorites.`);
+  const toggleFavorite = React.useCallback(
+    async (postId: string) => {
+      if (!currentUser?._id) {
+        // Xử lý trường hợp người dùng chưa đăng nhập (ví dụ: chuyển hướng đến trang đăng nhập)
+        alert("Vui lòng đăng nhập để thực hiện chức năng này.");
+        return;
       }
-    } catch (error) {
-      console.error("Lỗi khi cập nhật trạng thái yêu thích:", error);
-      alert("Đã xảy ra lỗi khi cập nhật yêu thích.");
-    }
-  }, [currentUser, checkFavorited, postsData]); // Thêm dependencies
+
+      const isCurrentlyFavorited = checkFavorited(postId);
+
+      try {
+        if (isCurrentlyFavorited) {
+          // XÓA khỏi favorites (DELETE request)
+          await apiClient.delete(`/favorites/post/${postId}`, {
+            data: { user_id: currentUser._id },
+          });
+          setFavoriteData((prev) =>
+            prev.filter((fav) => fav.post_id !== postId)
+          );
+          console.log(`Đã xóa bài đăng ${postId} khỏi favorites.`);
+        } else {
+          // THÊM vào favorites (POST request)
+          await apiClient.post(`/favorites/`, {
+            user_id: currentUser._id,
+            post_id: postId,
+          });
+
+          const postToAdd = postsData.find((p) => p._id === postId);
+          if (postToAdd) {
+            setFavoriteData((prev) => [
+              ...prev,
+              { ...postToAdd, post_id: postId } as Post,
+            ]);
+          }
+          console.log(`Đã thêm bài đăng ${postId} vào favorites.`);
+        }
+      } catch (error) {
+        console.error("Lỗi khi cập nhật trạng thái yêu thích:", error);
+        alert("Đã xảy ra lỗi khi cập nhật yêu thích.");
+      }
+    },
+    [currentUser, checkFavorited, postsData]
+  ); // Thêm dependencies
 
   const badgeClassFor = React.useCallback((postType: string) => {
     switch (postType) {
@@ -260,11 +264,11 @@ const checkFavorited = (postId: string) => {
     }
   };
   const formatCurrency = (n: number) =>
-  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
-    n
-  );
+    new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(n);
 
- 
   return (
     <div className={styles["card-carousel"]} id="cardCarousel">
       {postsData.map((data) => {
@@ -363,12 +367,13 @@ const checkFavorited = (postId: string) => {
             <div
               className={`${styles["card-body"]} ${styles["card-body--md"]}`}
             >
- 
-                    <div id="post-price" className={`${styles["price"]}`}>
-                      {
-                        data.transaction_type === "give away" ? "Miễn phí" : data.transaction_type === "exchange" ? "Trao đổi" : formatCurrency(data.price)
-                      }
-                    </div>
+              <div id="post-price" className={`${styles["price"]}`}>
+                {data.transaction_type === "give away"
+                  ? "Miễn phí"
+                  : data.transaction_type === "exchange"
+                    ? "Trao đổi"
+                    : formatCurrency(data.price)}
+              </div>
 
               <h3
                 className={`${styles["title"]} ${styles["line-clamp-2"]}`}

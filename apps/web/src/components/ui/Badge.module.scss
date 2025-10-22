@@ -1,0 +1,86 @@
+@use '../../styles/abstracts/variables.scss'as vars;
+@use '../../styles/abstracts/colors.scss'as colors;
+
+/* ==========================================
+   BADGE COMPONENT
+   ========================================== */
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: vars.$spacing-xs vars.$spacing-sm;
+    border-radius: vars.$radius-full;
+    font-weight: vars.$font-weight-semibold;
+    line-height: 1;
+    white-space: nowrap;
+    transition: all vars.$transition-fast;
+}
+
+/* Condition variants */
+.new {
+    background: colors.$condition-new;
+    color: colors.$solid-text-white;
+}
+
+.like-new {
+    background: colors.$condition-like-new;
+    color: colors.$solid-text-white;
+}
+
+.used {
+    background: colors.$condition-used;
+    color: colors.$solid-text-white;
+}
+
+.minor-flaw {
+    background: colors.$condition-minor-flaw;
+    color: colors.$solid-text-white;
+}
+
+.for-repair {
+    background: colors.$condition-for-repair;
+    color: colors.$solid-text-white;
+}
+
+.for-parts {
+    background: colors.$condition-for-parts;
+    color: colors.$solid-text-white;
+}
+
+/* Status variants */
+.success {
+    background: colors.$status-success;
+    color: colors.$solid-text-white;
+}
+
+.warning {
+    background: colors.$status-warning;
+    color: colors.$solid-text-white;
+}
+
+.error {
+    background: colors.$status-error;
+    color: colors.$solid-text-white;
+}
+
+.info {
+    background: colors.$status-info;
+    color: colors.$solid-text-white;
+}
+
+/* Sizes */
+.sm {
+    font-size: vars.$font-size-xs;
+    padding: 2px vars.$spacing-xs;
+}
+
+.md {
+    font-size: vars.$font-size-sm;
+    padding: vars.$spacing-xs vars.$spacing-sm;
+}
+
+.lg {
+    font-size: vars.$font-size-base;
+    padding: vars.$spacing-sm vars.$spacing-md;
+}

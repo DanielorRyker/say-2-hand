@@ -1,39 +1,33 @@
-@use '../../../styles/common/common.scss';
+@use '../../../styles/abstracts/variables.scss'as vars;
+@use '../../../styles/abstracts/colors.scss'as colors;
 
+/* ==========================================
+   SAY2HAND - CATEGORY SECTION STYLES
+   Modern grid với gradient effects
+   ========================================== */
 
+.container {
+  margin-top: 1.5rem;
+  border-radius: vars.$radius-2xl;
+  width: 70%;
+  padding: vars.$spacing-xl 0;
+  background-color: #fff;
+}
 
 .categoryList {
   display: grid;
-  /* force exactly 2 rows, items will fill top->bottom then left->right */
-  grid-template-rows: repeat(2, auto);
-  grid-auto-flow: column;
-  /* make columns share available space and stretch evenly */
-  grid-auto-columns: minmax(120px, 1fr);
-  gap: 20px;
-  padding: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: vars.$spacing-lg;
+  padding: vars.$spacing-lg;
+
   width: 100%;
   justify-items: center;
-  justify-content: space-between;
-  align-items: start;
-}
 
-
-
-.image {
-  width: 120px;
-  height: 120px;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.imageItem {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  // display: block;
+  @include vars.respond-below('md') {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: vars.$spacing-md;
+    padding: vars.$spacing-md;
+  }
 }
 
 .categoryItem {
@@ -43,16 +37,85 @@
   text-align: center;
   cursor: pointer;
   border: none;
-  transition: transform 0.25s ease;
+  background: transparent;
+  padding: vars.$spacing-md;
+  border-radius: vars.$radius-xl;
+  transition: all vars.$transition-base;
+  position: relative;
+  width: 100%;
+
+  /* Gradient border effect */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: vars.$radius-xl;
+    padding: 2px;
+    background: colors.$primary-light;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity vars.$transition-base;
+  }
+
+  &:hover {
+    transform: translateY(-8px);
+
+    &::before {
+      opacity: 1;
+    }
+
+    .image {
+      transform: scale(1.1);
+    }
+
+    .categoryName {
+      @include colors.gradient-text(colors.$primary-dark);
+    }
+  }
+
+  &:active {
+    transform: translateY(-4px);
+  }
 }
 
-.categoryItem:hover {
-  transform: translateY(-6px);
+.image {
+  width: 120px;
+  height: 120px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: vars.$radius-lg;
+  background: colors.$solid-bg-light;
+  transition: transform vars.$transition-base;
+  margin-bottom: vars.$spacing-sm;
+
+  @include vars.respond-below('md') {
+    width: 90px;
+    height: 90px;
+  }
+}
+
+.imageItem {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: vars.$spacing-sm;
+  transition: transform vars.$transition-base;
 }
 
 .categoryName {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1a1a1a;
-  transform: translateY(-25px);
+  font-size: vars.$font-size-base;
+  font-weight: vars.$font-weight-semibold;
+  color: colors.$solid-text-primary;
+  transition: all vars.$transition-base;
+  line-height: vars.$line-height-tight;
+  margin-top: vars.$spacing-xs;
+
+  @include vars.respond-below('md') {
+    font-size: vars.$font-size-sm;
+  }
 }

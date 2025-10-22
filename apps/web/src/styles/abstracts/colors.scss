@@ -1,0 +1,203 @@
+// ==========================================
+// SAY2HAND - GRADIENT COLOR SYSTEM
+// ==========================================
+// Design System dựa trên gradient modern cho nền tảng trao đổi đồ cũ
+// Tất cả màu sắc được thiết kế để tạo sự đồng bộ và nhất quán trên toàn bộ ứng dụng
+
+// ==========================================
+// PRIMARY COLORS - Màu Chính
+// ==========================================
+$primary-brand: linear-gradient(90deg, #bfdbfe 0%, #a7f3d0 100%);
+$primary-dark: linear-gradient(90deg, #3b82f6 0%, #10b981 100%);
+$primary-light: linear-gradient(90deg, #ebf8ff 0%, #f0fdf4 100%);
+
+// ==========================================
+// SECONDARY COLORS - Màu Phụ
+// ==========================================
+$secondary-main: linear-gradient(90deg, #2de099 0%, #3b82f6 100%);
+$secondary-dark: linear-gradient(90deg, #059669 0%, #1e40af 100%);
+$secondary-light: linear-gradient(90deg, #a7f3d0 0%, #dbeafe 100%);
+
+// ==========================================
+// STATUS COLORS - Màu Trạng Thái
+// ==========================================
+$status-success: linear-gradient(90deg, #10b981 0%, #059669 100%);
+$status-warning: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
+$status-error: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+$status-info: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%);
+
+// ==========================================
+// CATEGORY COLORS - Màu Danh Mục
+// ==========================================
+$category-electronics: linear-gradient(90deg, #8b5cf6 0%, #7c3aed 100%);
+$category-fashion: linear-gradient(90deg, #ec4899 0%, #db2777 100%);
+$category-home: linear-gradient(90deg, #f97316 0%, #ea580c 100%);
+$category-books: linear-gradient(90deg, #06b6d4 0%, #0891b2 100%);
+$category-sports: linear-gradient(90deg, #10b981 0%, #059669 100%);
+$category-vehicles: linear-gradient(90deg, #64748b 0%, #475569 100%);
+
+// ==========================================
+// UI ELEMENT COLORS - Màu Giao Diện
+// ==========================================
+$ui-header: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+$ui-card: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+$ui-button-primary: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+$ui-button-secondary: linear-gradient(90deg, #a7f3d0 0%, #bfdbfe 100%);
+$ui-footer: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 100%);
+$ui-modal: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%);
+
+// ==========================================
+// BACKGROUND COLORS - Màu Nền
+// ==========================================
+$bg-main: linear-gradient(135deg, #f0f9ff 0%, #f0fdf4 100%);
+$bg-section: linear-gradient(135deg, #f8fafc 0%, #f0fdf4 100%);
+$bg-hero: linear-gradient(135deg, #dbeafe 0%, #d1fae5 100%);
+$bg-loading: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 50%, #f1f5f9 100%);
+
+// ==========================================
+// SPECIAL EFFECTS - Hiệu Ứng Đặc Biệt
+// ==========================================
+$effect-rainbow: linear-gradient(90deg, #ef4444 0%, #f59e0b 16.67%, #eab308 33.33%, #10b981 50%, #06b6d4 66.67%, #3b82f6 83.33%, #8b5cf6 100%);
+$effect-metallic: linear-gradient(135deg, #94a3b8 0%, #cbd5e1 50%, #94a3b8 100%);
+$effect-gold: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+$effect-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 100%);
+$effect-neon: linear-gradient(90deg, #06b6d4 0%, #8b5cf6 100%);
+$effect-sunset: linear-gradient(135deg, #fbbf24 0%, #f97316 50%, #ec4899 100%);
+
+// ==========================================
+// INTERACTION COLORS - Màu Tương Tác
+// ==========================================
+$interaction-favorite: linear-gradient(90deg, #ec4899 0%, #f43f5e 100%);
+$interaction-follow: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+$interaction-share: linear-gradient(90deg, #10b981 0%, #059669 100%);
+$interaction-comment: linear-gradient(90deg, #8b5cf6 0%, #7c3aed 100%);
+$interaction-rating: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
+$interaction-view-more: linear-gradient(90deg, #06b6d4 0%, #0891b2 100%);
+$interaction-completed: linear-gradient(90deg, #94a3b8 0%, #64748b 100%);
+$interaction-contact: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
+$interaction-history: linear-gradient(90deg, #64748b 0%, #475569 100%);
+$interaction-notification: linear-gradient(90deg, #f97316 0%, #ea580c 100%);
+$interaction-bookmark: linear-gradient(90deg, #eab308 0%, #ca8a04 100%);
+$interaction-social: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%);
+
+// ==========================================
+// NEUTRAL COLORS - Màu Trung Tính
+// ==========================================
+$neutral-light: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+$neutral-medium: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);
+$neutral-dark: linear-gradient(135deg, #475569 0%, #334155 100%);
+$neutral-white: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+
+// ==========================================
+// SOLID COLORS - Màu Đặc (cho text, borders)
+// ==========================================
+$solid-primary: #3b82f6;
+$solid-secondary: #10b981;
+$solid-success: #059669;
+$solid-warning: #f59e0b;
+$solid-error: #ef4444;
+$solid-info: #3b82f6;
+
+$solid-text-primary: #1f2937;
+$solid-text-secondary: #6b7280;
+$solid-text-tertiary: #9ca3af;
+$solid-text-white: #ffffff;
+
+$solid-border-light: #e5e7eb;
+$solid-border-medium: #d1d5db;
+$solid-border-dark: #9ca3af;
+
+$solid-bg-white: #ffffff;
+$solid-bg-light: #f9fafb;
+$solid-bg-medium: #f3f4f6;
+$solid-bg-dark: #e5e7eb;
+
+// ==========================================
+// CONDITION COLORS - Màu Tình Trạng Sản Phẩm
+// ==========================================
+$condition-new: linear-gradient(90deg, #10b981 0%, #059669 100%);
+$condition-like-new: linear-gradient(90deg, #06b6d4 0%, #0891b2 100%);
+$condition-used: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+$condition-minor-flaw: linear-gradient(90deg, #f97316 0%, #ea580c 100%);
+$condition-for-repair: linear-gradient(90deg, #8b5cf6 0%, #7c3aed 100%);
+$condition-for-parts: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+
+// Solid versions for condition badges
+$condition-new-solid: #10b981;
+$condition-like-new-solid: #06b6d4;
+$condition-used-solid: #3b82f6;
+$condition-minor-flaw-solid: #f97316;
+$condition-for-repair-solid: #8b5cf6;
+$condition-for-parts-solid: #ef4444;
+
+// ==========================================
+// UTILITY MIXINS - Các hàm tiện ích
+// ==========================================
+
+// Mixin để apply gradient as background
+@mixin gradient-bg($gradient) {
+    background: $gradient;
+}
+
+// Mixin để apply gradient as text color
+@mixin gradient-text($gradient) {
+    background: $gradient;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+// Mixin để tạo gradient border
+@mixin gradient-border($gradient, $width: 2px, $radius: 8px) {
+    position: relative;
+    background: $solid-bg-white;
+    border-radius: $radius;
+
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: $radius;
+        padding: $width;
+        background: $gradient;
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+    }
+}
+
+// Mixin để tạo hover effect với gradient
+@mixin gradient-hover($gradient, $scale: 1.02) {
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: $gradient;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    &:hover {
+        transform: scale($scale);
+
+        &::before {
+            opacity: 0.1;
+        }
+    }
+}
+
+// Mixin để tạo glass effect
+@mixin glass-effect($blur: 10px, $opacity: 0.8) {
+    background: rgba(255, 255, 255, $opacity);
+    backdrop-filter: blur($blur);
+    -webkit-backdrop-filter: blur($blur);
+}
+
+// Mixin để tạo shadow với gradient color
+@mixin gradient-shadow($color, $opacity: 0.3) {
+    box-shadow: 0 4px 20px rgba($color, $opacity);
+}
