@@ -1,4 +1,45 @@
-import { IsOptional, IsString, IsEmail, IsBoolean } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsEmail,
+  IsBoolean,
+  IsDate,
+  IsArray,
+  ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+
+export class AddressDto {
+  @IsOptional()
+  @IsString()
+  label?: string;
+
+  @IsOptional()
+  @IsString()
+  address?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  is_default?: boolean;
+}
+
+export class BankAccountDto {
+  @IsOptional()
+  @IsString()
+  bank_name?: string;
+
+  @IsOptional()
+  @IsString()
+  account_number?: string;
+
+  @IsOptional()
+  @IsString()
+  account_holder?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  is_default?: boolean;
+}
 
 export class UpdateUserDto {
   @IsOptional()
@@ -34,8 +75,10 @@ export class UpdateUserDto {
   phone_verified?: boolean;
 
   @IsOptional()
-  @IsString()
-  address?: string;
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => AddressDto)
+  addresses?: AddressDto[];
 
   @IsOptional()
   @IsString()
@@ -48,4 +91,15 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   role?: string;
+
+  @IsOptional()
+  @IsDate()
+  @Type(() => Date)
+  date_of_birth?: Date;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => BankAccountDto)
+  bank_accounts?: BankAccountDto;
 }

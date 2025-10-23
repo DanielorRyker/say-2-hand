@@ -12,8 +12,6 @@ import {
   FloatingMessage,
 } from "./components";
 import axios from "axios";
-// ✅ Import parseAddress
-import { parseAddress } from "../../../lib/address";
 
 type PostFormData = {
   title: string;
@@ -33,10 +31,6 @@ type PostFormData = {
   location: {
     address: string;
     coords?: { lat: number; lon: number }; // ✅ Thêm dòng này
-    // CÁC TRƯỜNG PHÂN TÁCH ĐỊA CHỈ
-    detail_address?: string; // Địa chỉ chi tiết: số nhà, hẻm, đường
-    ward?: string; // Phường / Xã / Thị trấn
-    province?: string; // Tỉnh / Thành phố
   };
   tags?: string[];
   custom_fields: Record<string, any>;
@@ -69,6 +63,60 @@ export default function Page() {
     tags: [],
     custom_fields: {},
   });
+
+  const addressData: Record<string, string[]> = {
+    "Hà Nội": ["Ba Đình", "Hoàn Kiếm", "Đống Đa", "Hai Bà Trưng", "Thanh Xuân"],
+    "TP. Hồ Chí Minh": [
+      "Quận 1",
+      "Quận 2",
+      "Quận 3",
+      "Quận 4",
+      "Quận 5",
+      "Quận Gò Vấp",
+      "Quận Bình Thạnh",
+    ],
+    "Đà Nẵng": ["Hải Châu", "Thanh Khê", "Sơn Trà", "Ngũ Hành Sơn"],
+    "Hải Phòng": ["Hồng Bàng", "Lê Chân", "Ngô Quyền", "Kiến An"],
+    "Cần Thơ": ["Ninh Kiều", "Bình Thủy", "Cái Răng", "Ô Môn"],
+  };
+
+  const customFieldData: Record<string, any[]> = {
+    "1": [
+      {
+        name: "brand",
+        label: "Hãng sản xuất",
+        type: "text",
+        placeholder: "Ví dụ: Apple, Samsung",
+      },
+      {
+        name: "model",
+        label: "Model",
+        type: "text",
+        placeholder: "Ví dụ: iPhone 13",
+      },
+      {
+        name: "is_new_device",
+        label: "Thiết bị mới nguyên hộp?",
+        type: "checkbox",
+      },
+      {
+        name: "warranty_info",
+        label: "Bảo hành",
+        type: "radio",
+        options: ["Còn", "Hết", "Không có"],
+      },
+    ],
+    "2": [
+      { name: "brand", label: "Thương hiệu", type: "text" },
+      {
+        name: "size",
+        label: "Kích cỡ",
+        type: "select",
+        options: ["S", "M", "L", "XL", "Free Size"],
+      },
+      { name: "material", label: "Chất liệu", type: "text" },
+    ],
+  };
 
   function showMessage(msg: string, duration = 3000) {
     setMessage(msg);
@@ -219,34 +267,6 @@ export default function Page() {
         return;
       }
 
-      // ✅ Bắt đầu xử lý tách địa chỉ
-      let locationPayload: any = undefined;
-      if (formData.location?.address) {
-        // Tách địa chỉ tổng thành 3 trường chi tiết
-        const { detail, ward, province } = parseAddress(
-          formData.location.address
-        );
-
-        // Tạo cấu trúc location (address là string theo schema backend)
-        locationPayload = {
-          address: formData.location.address, // giữ chuỗi đầy đủ
-          detail_address: detail || undefined, // Dùng detail, nếu không tách được thì dùng chuỗi đầy đủ
-          ward: ward || undefined,
-          province: province || undefined,
-          // Xử lý tọa độ nếu có
-          geo: formData.location.coords
-            ? {
-                type: "Point",
-                coordinates: [
-                  formData.location.coords.lon,
-                  formData.location.coords.lat,
-                ],
-              }
-            : undefined,
-        };
-      }
-      // ✅ Kết thúc xử lý tách địa chỉ
-
       // Format lại dữ liệu
       const payload = {
         author_id: currentUser._id, // ObjectId người đăng
@@ -263,8 +283,21 @@ export default function Page() {
             ? "give away"
             : formData.transaction_type, // Map lại nếu FE dùng "give away"
         price: formData.price ?? null,
-        // location: Bỏ logic cũ, dùng locationPayload đã xử lý
-        location: locationPayload,
+        location:
+          formData.location && formData.location.coords
+            ? {
+                address: formData.location.address,
+                geo: {
+                  type: "Point",
+                  coordinates: [
+                    formData.location.coords.lon,
+                    formData.location.coords.lat,
+                  ],
+                },
+              }
+            : formData.location?.address
+              ? { address: formData.location.address }
+              : undefined,
         custom_fields: formData.custom_fields || {},
         tags: formData.tags?.length ? formData.tags : [],
       };
@@ -277,14 +310,13 @@ export default function Page() {
       setLoading(false);
       // chuyển về trang home
       router.push("/");
-      // ✅ Xoá cache ảnh
-      localStorage.removeItem("uploadedImages");
     } catch (err) {
       console.error("Lỗi khi đăng tin:", err);
       setLoading(false);
       showMessage("Lỗi khi đăng tin. Vui lòng thử lại.");
     }
   }
+
   return (
     <div className={styles.container}>
       <h1 className={styles.heading}>Đăng Tin Mới</h1>
@@ -342,8 +374,8 @@ export default function Page() {
                 React.SetStateAction<any>
               >
             }
-            addressData={formData.location}
-            customFieldData={formData.custom_fields}
+            addressData={addressData}
+            customFieldData={customFieldData}
             onPrev={prevStep}
             onSubmit={handleSubmit}
             loading={loading}

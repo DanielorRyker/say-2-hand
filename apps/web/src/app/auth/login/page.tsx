@@ -1,62 +1,62 @@
 "use client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import styleLogin from "@/styles/pages/auth/login.module.scss";
+import styleLogin from "@/styles/pages/auth/login-v2.module.scss";
 import axios from "axios";
 import { useState } from "react";
 import Image from "next/image";
+import { Icon } from "@iconify/react";
 
-const Home = () => {
+export default function Login() {
   const router = useRouter();
 
   const [showPassword, setShowPassword] = useState(false);
-
   const [form, setForm] = useState({ email: "", password_hash: "" });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    if (error) setError(""); // Clear error when user types
   };
 
   const handleBtn = async () => {
     if (!form.email || !form.password_hash) {
-      alert("Vui lòng nhập đầy đủ email và mật khẩu");
+      setError("Vui lòng nhập đầy đủ email và mật khẩu");
       return;
     }
     try {
       setLoading(true);
+      setError("");
 
       const res = await axios.post(
-        "http://localhost:8080/api/auth/login", // API NestJS
+        "http://localhost:8080/api/auth/login",
         form,
-        { withCredentials: true }, // nếu BE dùng cookie/session
+        { withCredentials: true }
       );
 
       const data = res.data;
-      console.log("data", data);
 
       if (data.access_token) {
         localStorage.setItem("access_token", data.access_token);
       }
 
-      //Lấy thông tin user
+      // Fetch user info
       const token = localStorage.getItem("access_token");
-      console.log("Login Token:", token);
       const userRes = await axios.get(
         `http://localhost:8080/api/users/find/${form.email}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        },
+        }
       );
       localStorage.setItem("user", JSON.stringify(userRes.data));
 
       const userStr = localStorage.getItem("user");
       let user;
       if (userStr) {
-        user = JSON.parse(userStr); // chuyển string -> object
-        // console.log(user.status); // ✅ lấy được status
+        user = JSON.parse(userStr);
       }
 
       if (user.status == "active") {
@@ -66,135 +66,172 @@ const Home = () => {
           router.push("/");
         }
       } else {
-        alert("Tài khoản chưa được kích hoạt");
+        setError("Tài khoản chưa được xác thực");
         localStorage.setItem("email", form.email);
-        router.push("/auth/verification");
+        setTimeout(() => router.push("/auth/verification"), 2000);
       }
     } catch (err: any) {
       if (err.response?.status === 403) {
-        // Lỗi đăng nhập sai
-        alert(err.response?.data?.message || "Email hoặc mật khẩu không đúng");
+        setError(
+          err.response?.data?.message || "Email hoặc mật khẩu không đúng"
+        );
       } else if (err.response?.status === 401) {
-        // Lỗi đăng nhập sai
-        alert(
+        setError(
           err.response?.data?.message ||
-            "Phiên đăng nhập đã kết thúc vui lòng đăng nhập lại !!!",
+            "Phiên đăng nhập đã kết thúc vui lòng đăng nhập lại"
         );
       } else {
-        // Các lỗi khác mới log ra console
         console.error(err);
-        alert("Có lỗi xảy ra, vui lòng thử lại");
+        setError("Có lỗi xảy ra, vui lòng thử lại");
       }
     } finally {
       setLoading(false);
     }
   };
 
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !loading) {
+      handleBtn();
+    }
+  };
+
   return (
     <div className={styleLogin["container"]}>
-      <div className={styleLogin["card"]}>
-        <div>
-          <p className={styleLogin["title"]}>Đăng nhập</p>
+      <div className={styleLogin["loginCard"]}>
+        {/* Header with Logo and Title */}
+        <div className={styleLogin["header"]}>
+          <h1>Đăng nhập</h1>
+          <p>Chào mừng bạn trở lại! Vui lòng đăng nhập để tiếp tục.</p>
         </div>
 
-        <div className={styleLogin["gradientBorder"]}>
-          <input
-            type="text"
-            placeholder="Email hoặc số điện thoại"
-            className={styleLogin["input"]}
-            value={form.email}
-            name="email"
-            onChange={handleChange}
-          />
-        </div>
+        {/* Error Alert */}
+        {error && (
+          <div className={styleLogin["alertError"]} role="alert">
+            {error}
+          </div>
+        )}
 
-        <div className={styleLogin["gradientBorder"]}>
-          <input
-            type={showPassword ? "text" : "password"}
-            placeholder="Mật khẩu"
-            className={styleLogin["input_password"]}
-            value={form.password_hash}
-            name="password_hash"
-            onChange={handleChange}
-          />
-          <Image
-            src={
-              showPassword
-                ? "/image/login/mdi_eye_on.svg"
-                : "/image/login/mdi_eye-off.svg"
-            }
-            alt="Toggle visibility"
-            width={24}
-            height={24}
-            className={
-              showPassword ? styleLogin["eyeIcon2"] : styleLogin["eyeIcon1"]
-            }
-            onClick={() => setShowPassword(!showPassword)}
-          />
-        </div>
+        {/* Login Form */}
+        <form
+          className={styleLogin["form"]}
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleBtn();
+          }}
+        >
+          {/* Email Input */}
+          <div className={styleLogin["formGroup"]}>
+            <label htmlFor="email">Email hoặc số điện thoại</label>
+            <div className={styleLogin["inputWrapper"]}>
+              <input
+                id="email"
+                type="text"
+                placeholder="Nhập email hoặc số điện thoại"
+                className={styleLogin["input"]}
+                value={form.email}
+                name="email"
+                onChange={handleChange}
+                onKeyPress={handleKeyPress}
+                disabled={loading}
+                aria-required="true"
+                aria-label="Email hoặc số điện thoại"
+              />
+            </div>
+          </div>
 
-        <div className={styleLogin["forgotLink"]}>
-          <Link
-            href="/auth/forgotPassword/confirmEmail"
-            className={styleLogin["forgotLinkText"]}
-          >
-            Quên mật khẩu
-          </Link>
-        </div>
+          {/* Password Input */}
+          <div className={styleLogin["formGroup"]}>
+            <label htmlFor="password">Mật khẩu</label>
+            <div className={styleLogin["passwordWrapper"]}>
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Nhập mật khẩu"
+                className={styleLogin["input"]}
+                value={form.password_hash}
+                name="password_hash"
+                onChange={handleChange}
+                onKeyPress={handleKeyPress}
+                disabled={loading}
+                aria-required="true"
+                aria-label="Mật khẩu"
+              />
+              <button
+                type="button"
+                className={styleLogin["togglePassword"]}
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                title={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+              >
+                <Icon
+                  icon={showPassword ? "mdi:eye" : "mdi:eye-off"}
+                  style={{ color: "#D5D5DF" }}
+                  width={20}
+                  height={20}
+                />
+              </button>
+            </div>
+          </div>
 
-        <div className={styleLogin["centeredButtonRow"]}>
+          {/* Forgot Password Link */}
+          <div className={styleLogin["forgotPassword"]}>
+            <Link href="/auth/forgotPassword/confirmEmail">Quên mật khẩu?</Link>
+          </div>
+
+          {/* Login Button */}
           <button
-            className={styleLogin["btnLogin"]}
-            onClick={() => handleBtn()}
+            type="submit"
+            className={`${styleLogin["loginButton"]} ${loading ? styleLogin["loading"] : ""}`}
             disabled={loading}
+            title="Đăng nhập"
           >
-            <p className={styleLogin["btnTextLarge"]}>Đăng nhập</p>
+            {loading ? "Đang đăng nhập..." : "Đăng nhập"}
           </button>
+        </form>
+
+        {/* Divider */}
+        <div className={styleLogin["divider"]}>
+          <span>Hoặc đăng nhập bằng</span>
         </div>
 
-        <div className={styleLogin["cardline"]}>
-          <div className={styleLogin["line"]}></div>
-          <span className={styleLogin["linetext"]}>Hoặc đăng nhập bằng</span>
-          <div className={styleLogin["line"]}></div>
-        </div>
-
-        <div className={styleLogin["flexGap10"]}>
+        {/* Social Login Buttons */}
+        <div className={styleLogin["socialLogin"]}>
           <button
-            className={styleLogin["btnIcon"]}
+            type="button"
+            className={styleLogin["socialButton"]}
             title="Đăng nhập với Google"
+            aria-label="Đăng nhập với Google"
           >
             <Image
               src="/image/login/IconGoogle.png"
               alt="Google"
-              width={32}
-              height={32}
-              className={styleLogin["imgIcon"]}
+              width={20}
+              height={20}
             />
+            <span>Google</span>
           </button>
           <button
-            className={styleLogin["btnIcon"]}
+            type="button"
+            className={styleLogin["socialButton"]}
             title="Đăng nhập với Facebook"
+            aria-label="Đăng nhập với Facebook"
           >
             <Image
               src="/image/login/IconFacebook.png"
               alt="Facebook"
-              width={32}
-              height={32}
-              className={styleLogin["imgIcon"]}
+              width={20}
+              height={20}
             />
+            <span>Facebook</span>
           </button>
         </div>
 
-        <div className={styleLogin["flexRow"]}>
-          <p className={styleLogin["bold18"]}>Chưa có tài khoản ? </p>
-          <Link href="/auth/register" className={styleLogin["bold18Blue"]}>
-            {" "}
-            Đăng ký tài khoản mới
-          </Link>
+        {/* Register Link */}
+        <div className={styleLogin["register"]}>
+          Chưa có tài khoản?
+          <Link href="/auth/register">Đăng ký tài khoản mới</Link>
         </div>
       </div>
     </div>
   );
-};
-
-export default Home;
+}

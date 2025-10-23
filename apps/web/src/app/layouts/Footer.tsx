@@ -1,5 +1,5 @@
 "use client";
-import styles from "@/styles/layout/footer.module.scss";
+import styles from "./footer.module.scss";
 const footer = () => {
   return (
     <div className={styles.footerBar}>

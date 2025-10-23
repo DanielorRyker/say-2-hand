@@ -1,8 +1,8 @@
 "use client";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import Header from "@/components/layouts/Header";
-import Footer from "@/components/layouts/Footer";
+import Header from "@/app/layouts/Header";
+import Footer from "@/app/layouts/Footer";
 
 export default function ClientLayout({
   children,

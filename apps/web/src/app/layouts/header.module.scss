@@ -1,5 +1,5 @@
-@use '../abstracts/variables.scss'as vars;
-@use '../abstracts/colors.scss'as colors;
+@use '../../styles/abstracts/variables.scss'as vars;
+@use '../../styles/abstracts/colors.scss'as colors;
 
 /* ==========================================
    SAY2HAND - HEADER STYLES
@@ -266,16 +266,37 @@
     margin-top: vars.$spacing-xs;
     animation: slideDown 0.2s ease;
     min-width: 200px;
+    max-height: 320px;
+    overflow: auto;
   }
 
   .dropdown-item {
     border-radius: vars.$radius-md;
-    padding: vars.$spacing-sm vars.$spacing-md;
+    padding: 8px 12px;
     font-size: vars.$font-size-sm;
     display: flex;
     align-items: center;
-    transition: all 0.15s ease;
+    gap: 10px;
+    transition: background 0.15s ease, transform 0.12s ease;
     font-weight: vars.$font-weight-medium;
+
+    .dropdown-item-icon {
+      flex-shrink: 0;
+      color: #9ca3af;
+      width: 18px;
+      height: 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .dropdown-item-label {
+      flex: 1 1 auto;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: colors.$solid-text-primary;
+    }
 
     &:hover {
       background: linear-gradient(90deg, #eff6ff 0%, #dbeafe 100%);
@@ -448,7 +469,7 @@
 .headerBtnText {
   font-size: vars.$font-size-lg;
   font-weight: vars.$font-weight-bold;
-  color: colors.$solid-text-white;
+  color: colors.$solid-text-primary;
   white-space: nowrap;
   text-align: center;
   margin: 0;
@@ -522,10 +543,6 @@
     min-width: 40px;
   }
 
-  .headerBtnText {
-    display: none;
-  }
-
   .btnLogin {
     width: 50px;
   }
@@ -576,10 +593,6 @@
   .searchIcon {
     width: 20px;
     height: 20px;
-  }
-
-  .inputSearch {
-    font-size: vars.$font-size-sm;
   }
 
   .clearSearchBtn {

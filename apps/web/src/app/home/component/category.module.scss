@@ -16,7 +16,7 @@
 
 .categoryList {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(6, minmax(140px, 1fr));
   gap: vars.$spacing-lg;
   padding: vars.$spacing-lg;
 
@@ -53,6 +53,7 @@
     padding: 2px;
     background: colors.$primary-light;
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     opacity: 0;

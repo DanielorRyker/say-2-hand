@@ -1,11 +1,10 @@
 "use client";
 import NavDropdown from "react-bootstrap/NavDropdown";
 // import "@/styles/globals.scss";
-import headerStyles from "@/styles/layout/header.module.scss";
+import headerStyles from "./header.module.scss";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
-import ConversationsSidebar from "@/components/conversation/ConversationsSidebar";
 import { io, Socket } from "socket.io-client";
 import axios from "axios";
 import { Icon } from "@iconify/react";
@@ -43,11 +42,14 @@ const Header = () => {
   // Xử lý search
   const handleSearch = (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-    } else {
-      router.push("/search");
+    const params = new URLSearchParams();
+    if (searchQuery.trim()) params.set("q", searchQuery.trim());
+    if (selectedProvince) {
+      params.set("province", selectedProvince.name);
+      params.set("provinceCode", String(selectedProvince.code));
     }
+    const query = params.toString();
+    router.push(`/search${query ? `?${query}` : ""}`);
   };
 
   const handleBtn = () => {
@@ -55,10 +57,61 @@ const Header = () => {
   };
 
   const [selectedItem, setSelectedItem] = useState("Tp. Hồ Chí Minh"); // Tiêu đề ban đầu
+  const [selectedProvince, setSelectedProvince] = useState<{
+    code: number;
+    name: string;
+  } | null>(null);
+  const [provinces, setProvinces] = useState<{ code: number; name: string }[]>(
+    []
+  );
+  const [provincesLoading, setProvincesLoading] = useState(false);
+  const [provincesError, setProvincesError] = useState<string | null>(null);
 
-  const handleSelect = (value: string) => {
-    setSelectedItem(value);
-  };
+  // Load persisted selected province from localStorage (store as JSON {code,name})
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("selectedProvince");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && parsed.name) {
+          setSelectedItem(parsed.name);
+          setSelectedProvince({ code: parsed.code, name: parsed.name });
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  // Fetch provinces list from open API
+  useEffect(() => {
+    let mounted = true;
+    const fetchProvinces = async () => {
+      setProvincesLoading(true);
+      setProvincesError(null);
+      try {
+        const res = await axios.get("https://provinces.open-api.vn/api/v2/");
+        if (!mounted) return;
+        // API returns array of {code, name, division_type, codename, phone_code}
+        const mapped = (res.data || []).map((p: any) => ({
+          code: p.code,
+          name: p.name,
+        }));
+        setProvinces(mapped);
+      } catch (err: any) {
+        console.error("Failed to fetch provinces", err);
+        if (mounted) setProvincesError(String(err?.message || err));
+      } finally {
+        if (mounted) setProvincesLoading(false);
+      }
+    };
+
+    fetchProvinces();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
   //Conversation
   interface IConversation {
     _id: string;
@@ -149,7 +202,7 @@ const Header = () => {
     return () => {
       socket.off("conversation_updated", handleUpdate);
     };
-  }, [socket, user?._id]);
+  }, [socket, user?._id, fetchConversations]);
 
   //tổng tin chưa đọc
   const [totalUnread, setTotalUnread] = useState(0);
@@ -194,13 +247,20 @@ const Header = () => {
   };
   //Mở trang tin nhắn
   const handleMessage = () => {
-    localStorage.setItem("conversation", JSON.stringify(conversationsData[0]));
-    router.push(`/conversation/${conversationsData[0]._id}`);
+    if (!conversationsData || conversationsData.length === 0) {
+      console.warn("No conversations available");
+      return;
+    }
+    const firstConv = conversationsData[0];
+    if (!firstConv || !firstConv._id) {
+      console.warn("First conversation missing _id", firstConv);
+      return;
+    }
+    localStorage.setItem("conversation", JSON.stringify(firstConv));
+    router.push(`/conversation/${firstConv._id}`);
   };
 
-  const avatarUrl = user
-    ? process.env.NEXT_PUBLIC_URL_GCS + user.avatar
-    : "/image/header/carbon_user-avatar-filled-alt.svg";
+  // avatarUrl removed (unused) — the JSX uses inline expression instead
 
   return (
     <div
@@ -302,53 +362,47 @@ const Header = () => {
                 }
                 id="location-nav-dropdown"
               >
-                <NavDropdown.Item onClick={() => handleSelect("Hà Nội")}>
-                  <Icon
-                    icon="mdi:map-marker-outline"
-                    width={16}
-                    height={16}
-                    style={{ marginRight: "8px" }}
-                  />
-                  Hà Nội
-                </NavDropdown.Item>
-                <NavDropdown.Item
-                  onClick={() => handleSelect("Tp. Hồ Chí Minh")}
-                >
-                  <Icon
-                    icon="mdi:map-marker-outline"
-                    width={16}
-                    height={16}
-                    style={{ marginRight: "8px" }}
-                  />
-                  Tp. Hồ Chí Minh
-                </NavDropdown.Item>
-                <NavDropdown.Item onClick={() => handleSelect("Vĩnh Long")}>
-                  <Icon
-                    icon="mdi:map-marker-outline"
-                    width={16}
-                    height={16}
-                    style={{ marginRight: "8px" }}
-                  />
-                  Vĩnh Long
-                </NavDropdown.Item>
-                <NavDropdown.Item onClick={() => handleSelect("Cần Thơ")}>
-                  <Icon
-                    icon="mdi:map-marker-outline"
-                    width={16}
-                    height={16}
-                    style={{ marginRight: "8px" }}
-                  />
-                  Cần Thơ
-                </NavDropdown.Item>
-                <NavDropdown.Item onClick={() => handleSelect("Thanh Hóa")}>
-                  <Icon
-                    icon="mdi:map-marker-outline"
-                    width={16}
-                    height={16}
-                    style={{ marginRight: "8px" }}
-                  />
-                  Thanh Hóa
-                </NavDropdown.Item>
+                {provincesLoading && (
+                  <NavDropdown.Item disabled>Đang tải...</NavDropdown.Item>
+                )}
+                {provincesError && (
+                  <NavDropdown.Item disabled>Lỗi tải tỉnh</NavDropdown.Item>
+                )}
+                {!provincesLoading &&
+                  !provincesError &&
+                  provinces.length === 0 && (
+                    <NavDropdown.Item disabled>
+                      Không có dữ liệu
+                    </NavDropdown.Item>
+                  )}
+
+                {provinces.map((p) => (
+                  <NavDropdown.Item
+                    key={p.code}
+                    onClick={() => {
+                      setSelectedItem(p.name);
+                      setSelectedProvince({ code: p.code, name: p.name });
+                      // persist full object
+                      try {
+                        localStorage.setItem(
+                          "selectedProvince",
+                          JSON.stringify({ code: p.code, name: p.name })
+                        );
+                      } catch {
+                        // ignore
+                      }
+                    }}
+                  >
+                    <span className="dropdown-item-icon">
+                      <Icon
+                        icon="mdi:map-marker-outline"
+                        width={16}
+                        height={16}
+                      />
+                    </span>
+                    <span className="dropdown-item-label">{p.name}</span>
+                  </NavDropdown.Item>
+                ))}
               </NavDropdown>
             </div>
             <button

@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { Post, PostDocument } from './schemas/post.schema';
 import { InjectModel } from '@nestjs/mongoose';
@@ -20,7 +16,9 @@ export class PostsService {
     private messageService: MessagesService,
   ) {}
 
-  async create(createPostDto: CreatePostDto) {
+ 
+
+async create(createPostDto: CreatePostDto) {
     const {
       author_id,
       category_id,
@@ -36,27 +34,20 @@ export class PostsService {
     } = createPostDto;
 
     // ✅ Validate ObjectIds
-    if (
-      !Types.ObjectId.isValid(author_id) ||
-      !Types.ObjectId.isValid(category_id)
-    ) {
+    if (!Types.ObjectId.isValid(author_id) || !Types.ObjectId.isValid(category_id)) {
       throw new BadRequestException('Invalid author_id or category_id');
     }
 
+    
     const locationData: any = {};
     if (location) {
-      const loc = location as any;
+      const { address, geo } = location;
+      locationData.address = address || '';
 
-      locationData.address = loc.address || '';
-
-      if (loc.detail_address) locationData.detail_address = loc.detail_address;
-      if (loc.ward) locationData.ward = loc.ward;
-      if (loc.province) locationData.province = loc.province;
-
-      if (loc.geo?.coordinates?.length === 2) {
+      if (geo?.coordinates?.length === 2) {
         locationData.geo = {
           type: 'Point',
-          coordinates: loc.geo.coordinates, // [lng, lat]
+          coordinates: geo.coordinates, // [lng, lat]
         };
       }
     }
@@ -80,12 +71,16 @@ export class PostsService {
     return newPost.save();
   }
 
+  
+
+
+  
+
   findAll() {
-    return this.postModel
-      .find()
-      .populate('author_id', 'full_name avatar') // lấy thông tin user
+    return this.postModel.find()
+     .populate('author_id', 'full_name avatar') // lấy thông tin user
       .populate('category_id', 'name') // lấy tên category
-      .exec();
+    .exec();
   }
 
   findAllSortOldest() {
@@ -129,7 +124,7 @@ export class PostsService {
 
   async findAllForHome() {
     return this.postModel
-      .find({ status: { $in: ['active', 'completed'] } })
+       .find({ status: { $in: ['active', 'completed'] } })
       .populate('author_id', 'full_name avatar') // lấy thông tin user
       .populate('category_id', 'name') // lấy tên category
       .sort({ updatedAt: -1 })
@@ -145,11 +140,12 @@ export class PostsService {
 
     // 2️⃣ Tìm tất cả conversation có post_id = postId
     const conversations = await this.conversationService.findByPostId(postId);
+     
 
     if (conversations.length > 0) {
       const conversationIds: Types.ObjectId[] = conversations.map(
-        (c) => c._id as Types.ObjectId,
-      );
+          (c) => c._id as Types.ObjectId
+        );
 
       // 3️⃣ Xóa toàn bộ message thuộc những conversation này
       await this.messageService.removeByConversationIds(conversationIds);
@@ -161,21 +157,22 @@ export class PostsService {
     // 5️⃣ Xóa bài post
     await this.postModel.findByIdAndDelete(postId);
 
-    return {
-      message: 'Post and related conversations/messages deleted successfully',
-    };
+    return { message: 'Post and related conversations/messages deleted successfully' };
   }
 
   //Tìm theo favories
   async findByIds(ids: string[]): Promise<Post[]> {
-    // Chuyển string sang ObjectId để tìm trong MongoDB
-    const objectIds = ids.map((id) => new Types.ObjectId(id));
+  // Chuyển string sang ObjectId để tìm trong MongoDB
+  const objectIds = ids.map((id) => new Types.ObjectId(id));
 
-    return this.postModel
-      .find({ _id: { $in: objectIds } })
-      .populate('author_id', 'full_name avatar') // lấy thông tin user
-      .populate('category_id', 'name') // lấy tên category
-      .sort({ updatedAt: -1 })
-      .exec();
-  }
+  return this.postModel
+    .find({ _id: { $in: objectIds } })
+    .populate('author_id', 'full_name avatar') // lấy thông tin user
+    .populate('category_id', 'name') // lấy tên category
+    .sort({ updatedAt: -1 })
+    .exec();
+}
+
+
+
 }
