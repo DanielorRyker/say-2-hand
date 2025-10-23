@@ -145,27 +145,39 @@ async deleteFileOrFolder(filePath: string) {
   const bucket = this.storage.bucket(this.bucketName);
 
   try {
-    // Kiểm tra xem đây có phải là "thư mục" (prefix) không
-    const [files] = await bucket.getFiles({
-      prefix: filePath.endsWith('/') ? filePath : `${filePath}/`,
-    });
+    //  Tách phần cuối để slugify (chỉ slugify tên bài viết)
+
+    // const normalizedPath = [...parts, slugifiedLast].join('/');
+    const normalizedPath = this.slugify(filePath)
+
+    //  Thêm "/" để tìm tất cả file con
+    const prefix = normalizedPath.endsWith('/')
+      ? normalizedPath
+      : `${normalizedPath}/`;
+
+    console.log(' Đang xóa:', prefix);
+
+    const [files] = await bucket.getFiles({ prefix });
 
     if (files.length > 0) {
-      // Nếu có file bên trong là thư mục xóa hết
+      // Xóa thư mục và tất cả file con
       await Promise.all(files.map((file) => file.delete()));
-      console.log(` Đã xóa thư mục "${filePath}" cùng ${files.length} file con.`);
-      return { message: `Đã xóa thư mục ${filePath} và tất cả nội dung.` };
+      console.log(` Đã xóa thư mục "${normalizedPath}" cùng ${files.length} file con.`);
+      return { message: `Đã xóa thư mục ${normalizedPath} và toàn bộ nội dung.` };
     } else {
-      // Nếu không có file nào thử xóa như 1 file cụ thể
-      await bucket.file(filePath).delete();
-      console.log(` Đã xóa file: ${filePath}`);
-      return { message: `Đã xóa file ${filePath}` };
+      // Nếu không có file nào, thử xóa 1 file cụ thể
+      await bucket.file(normalizedPath).delete();
+      console.log(` Đã xóa file: ${normalizedPath}`);
+      return { message: `Đã xóa file ${normalizedPath}` };
     }
   } catch (error: any) {
     console.error(` Lỗi khi xóa ${filePath}:`, error.message);
     throw new Error(`Không thể xóa ${filePath}: ${error.message}`);
   }
 }
+
+
+
 
     slugify(input: string): string {
       return input

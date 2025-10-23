@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { Bell, CheckCircle } from "lucide-react";
 import axios from "axios";
 import styles from "./notification.module.scss"; 
-import headerStyles from "@/styles/layout/header.module.scss";
+import headerStyles from "@/app/layouts/header.module.scss";
 import Image from "next/image";
 import { io, Socket } from "socket.io-client";
 

@@ -199,8 +199,9 @@ const handlePostAction = async (typeAction: "approve" | "reject" | "delete", pos
       );
     } else {
       // Nếu là delete thì xóa bài
-     await axios.post(`http://localhost:8080/api/deleteIMG`, {
-      bucket: `posts/${post.author_id._id}/${post.title}`,
+      console.log(`posts/${post.author_id._id}/${post.title}/`)
+     await axios.post(`http://localhost:8080/api/upload/deleteIMG`, {
+      bucket: `posts/${post.author_id._id}/${post.title}/`,
     });
 
 
