@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Post,
   UploadedFile,
   UploadedFiles,
@@ -51,5 +52,15 @@ export class UploadController {
     const filenames = await this.uploadService.uploadImgs(files, bucket);
     return { filenames };
   }
+
+   @Post('deleteIMG')
+    async deleteIMG(@Body('bucket') bucket: string) {
+      console.log('🪣 Bucket cần xóa:', bucket);
+      const result = await this.uploadService.deleteFileOrFolder(bucket);
+      return result;
+    }
+
+
+
   
 }

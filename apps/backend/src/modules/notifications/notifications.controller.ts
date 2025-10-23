@@ -20,18 +20,43 @@ export class NotificationsController {
   findByUserId(@Param('userId') id: string) {
     return this.notificationsService.findByUserId(id);
   }
+
+  @Get('transaction/:userId')
+  findTransaction(@Param('userId') id: string) {
+    return this.notificationsService.findTransaction(id);
+  }
+
+  @Get('moderation/:userId')
+  findModeration(@Param('userId') id: string) {
+    return this.notificationsService.findModeration(id);
+  }
+
+  @Get('system/:userId')
+  findSystem(@Param('userId') id: string) {
+    return this.notificationsService.findSystem(id);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.notificationsService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateNotificationDto: UpdateNotificationDto) {
-    return this.notificationsService.update(+id, updateNotificationDto);
+  @Patch('read-all/:id')
+  updateRead(@Param('id') id: string ) {
+    return this.notificationsService.readAll(id);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.notificationsService.remove(+id);
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateNotificationDto: UpdateNotificationDto) {
+    return this.notificationsService.update(id, updateNotificationDto);
   }
+
+@Delete(':receiver_id/:related_id')
+remove(
+  @Param('receiver_id') receiver_id: string,
+  @Param('related_id') related_id: string,
+) {
+  return this.notificationsService.remove(receiver_id, related_id);
+}
+
 }

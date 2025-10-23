@@ -5,7 +5,7 @@ import headerStyles from "@/styles/layout/header.module.scss";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
-import ConversationsSidebar from "@/components/conversation/ConversationsSidebar";
+import NotificationPopup from "@/app/notification/NotificationPopup";
 import { io, Socket } from "socket.io-client";
 import axios from "axios";
 import { Icon } from "@iconify/react";
@@ -402,21 +402,8 @@ const Header = () => {
             )}
           </button>
 
-          <button
-            className={headerStyles.btnHeader}
-            type="button"
-            title="Thông báo"
-            aria-label="Thông báo"
-          >
-            <Image
-              src="/image/header/Notification Icon.svg"
-              alt="Thông báo"
-              className={headerStyles.img}
-              width={24}
-              height={24}
-            />
-          </button>
-
+         
+            <NotificationPopup/>
           {user ? (
             <>
               <button

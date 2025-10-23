@@ -6,6 +6,8 @@ import { Model, Types } from 'mongoose';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { ConversationsService } from '../conversations/conversations.service';
 import { MessagesService } from '../messages/messages.service';
+import {NotificationsService} from '../notifications/notifications.service';
+
 
 @Injectable()
 export class PostsService {
@@ -14,6 +16,8 @@ export class PostsService {
     private postModel: Model<PostDocument>,
     private conversationService: ConversationsService,
     private messageService: MessagesService,
+    private notificationsService:NotificationsService,
+
   ) {}
 
  
@@ -71,37 +75,48 @@ async create(createPostDto: CreatePostDto) {
     return newPost.save();
   }
 
-  
-
-
-  
 
   findAll() {
     return this.postModel.find()
-     .populate('author_id', 'full_name avatar') // lấy thông tin user
-      .populate('category_id', 'name') // lấy tên category
+    .populate('author_id', 'full_name avatar') 
+    .populate('category_id', 'name')
     .exec();
   }
 
   findAllSortOldest() {
-    return this.postModel.find().sort({ createdAt: -1 }).exec();
+    return this.postModel.find().sort({ createdAt: -1 })
+    .populate('author_id', 'full_name avatar') 
+    .populate('category_id', 'name')
+    .exec();
   }
 
   findAllPending() {
-    return this.postModel.find({ status: 'pending_approval' }).exec();
+    return this.postModel.find({ status: 'pending_approval' })
+    .populate('author_id', 'full_name avatar') 
+    .populate('category_id', 'name')
+    .exec();
   }
 
   findAllActive() {
-    return this.postModel.find({ status: 'active' }).exec();
+    return this.postModel.find({ status: 'active' })
+    .populate('author_id', 'full_name avatar') 
+    .populate('category_id', 'name')
+    .exec();
   }
 
   findAllRejected() {
-    return this.postModel.find({ status: 'rejected' }).exec();
+    return this.postModel.find({ status: 'rejected' })
+    .populate('author_id', 'full_name avatar') 
+    .populate('category_id', 'name')
+    .exec();
   }
 
-  findOne(id: number) {
-    return this.postModel.findById(id).exec();
-  }
+  findOne(id: string) {
+    return this.postModel.findById(id)
+    .populate('author_id', 'full_name avatar') 
+    .populate('category_id', 'name') 
+    .exec();
+}
 
   update(id: string, updatePostDto: UpdatePostDto) {
     return this.postModel
@@ -132,13 +147,13 @@ async create(createPostDto: CreatePostDto) {
   }
 
   async removePost(postId: string) {
-    // 1️⃣ Kiểm tra xem post có tồn tại không
+    //  Kiểm tra xem post có tồn tại không
     const post = await this.postModel.findById(postId);
     if (!post) {
       throw new NotFoundException('Post not found');
     }
 
-    // 2️⃣ Tìm tất cả conversation có post_id = postId
+    //  Tìm tất cả conversation có post_id = postId
     const conversations = await this.conversationService.findByPostId(postId);
      
 
@@ -147,14 +162,18 @@ async create(createPostDto: CreatePostDto) {
           (c) => c._id as Types.ObjectId
         );
 
-      // 3️⃣ Xóa toàn bộ message thuộc những conversation này
+      //  Xóa toàn bộ message thuộc những conversation này
       await this.messageService.removeByConversationIds(conversationIds);
 
-      // 4️⃣ Xóa luôn các conversation
+      //  Xóa luôn các conversation
       await this.conversationService.removeByIds(conversationIds);
-    }
 
-    // 5️⃣ Xóa bài post
+      
+    }
+    // Xóa thông báo liên quan
+    // await this.notificationsService.remove(post.author_id.toString(), postId)
+
+    //  Xóa bài post
     await this.postModel.findByIdAndDelete(postId);
 
     return { message: 'Post and related conversations/messages deleted successfully' };

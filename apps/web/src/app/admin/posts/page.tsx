@@ -2,6 +2,7 @@
 import styleAdmin from "@/styles/pages/admin/admin.module.scss";
 import axios from "axios";
 import { useState, useEffect } from "react";
+import { io, Socket } from "socket.io-client";
 
 const Home = () => {
   //lấy dữ liệu
@@ -56,19 +57,22 @@ const Home = () => {
   distance_km?: number;
 }
 
+//Lấy user hiện tại
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    setCurrentUser(userData ? JSON.parse(userData) : null);
+  }, []);
+
   const [postsData, setPostsData] = useState<Post[]>([]);
 
   useEffect(() => {
     async function fetchPosts() {
-      const res = await axios.get("http://localhost:8080/api/posts/");
+      const res = await axios.get("http://localhost:8080/api/posts/oldest");
       setPostsData(res.data); // res.data là danh sách posts
     }
     fetchPosts();
   }, []);
-
-
-
-
 
   // Phân trang
   const pageSize = 10;
@@ -80,13 +84,13 @@ const Home = () => {
   );
 
   // Sort và filter
-  const handleSortByNewest = async () => {
+  const handleSortByOldest = async () => {
     const res = await axios.get("http://localhost:8080/api/posts");
     setPostsData(res.data);
     setCurrentPage(1); // reset về trang 1
   };
 
-  const handleSortByOldest = async () => {
+  const handleSortByNewest = async () => {
     const res = await axios.get("http://localhost:8080/api/posts/oldest");
     setPostsData(res.data);
     setCurrentPage(1);
@@ -109,35 +113,110 @@ const Home = () => {
     setPostsData(res.data);
     setCurrentPage(1);
   };
+  //Socket
+    const [socket, setSocket] = useState<Socket | null>(null);
+    useEffect(() => {
+      // Kết nối socket.io tới BE (NestJS WebSocketGateway)
+      const newSocket = io("http://localhost:8080", {
+        transports: ["websocket"], 
+      });
+  
+      setSocket(newSocket);
+  
+      newSocket.on("connect", () => {
+        console.log("Connected to socket:", newSocket.id);
+      });
+  
+      newSocket.on("disconnect", () => {
+        console.log("Disconnected from socket");
+      });
+  
+      // cleanup khi unmount
+      return () => {
+        newSocket.disconnect();
+      };
+    }, []);
 
-  // Xử lý xóa bài đăng
-  //1.Chấp thuận
-  const handleActivePost = async (postId: string) => {
-    await axios.patch(`http://localhost:8080/api/posts/${postId}`, {
-      status: "active",
+
+
+const handlePostAction = async (typeAction: "approve" | "reject" | "delete", post: Post) => {
+  try {
+    let newStatus = "";
+    let notificationTitle = "";
+    let notificationBody = "";
+    let deeplink = `/posts/${post._id}`;
+
+    socket?.emit("join_user", { userId: post.author_id._id });
+    socket?.emit("send_message", {
+      receiverId: post.author_id._id, 
     });
-    setPostsData(
-      postsData.map((post) =>
-        post._id === postId ? { ...post, status: "active" } : post,
-      ),
-    );
-  };
-  //2.Từ chối
-  const handleRejectPost = async (postId: string) => {
-    await axios.patch(`http://localhost:8080/api/posts/${postId}`, {
-      status: "rejected",
+
+    // 🎯 Xác định hành động
+    switch (typeAction) {
+      case "approve":
+        newStatus = "active";
+        notificationTitle = "Bài đăng của bạn đã được duyệt";
+        notificationBody = `Bài đăng ${post.title}`;
+        break;
+
+      case "reject":
+        newStatus = "rejected";
+        notificationTitle = "Bài đăng của bạn bị từ chối";
+        notificationBody = `Bài đăng ${post.title}`;
+        break;
+
+      case "delete":
+        newStatus = ""; // delete không cần cập nhật status trước
+        notificationTitle = "Bài đăng của bạn đã bị xóa bởi admin";
+        notificationBody = `Bài đăng ${post.title}`;
+        deeplink = "";
+        break;
+    }
+
+      //  Gửi thông báo cho người đăng
+     await axios.post(`http://localhost:8080/api/notifications`, {
+      receiver_id: post.author_id._id,
+      sender_id: currentUser._id,
+      title: notificationTitle,
+      body: notificationBody,
+      type: "moderation",
+      related_id: post._id,
+      deeplink,
+      channel: "in_app",
+      is_read: false,
     });
-    setPostsData(
-      postsData.map((post) =>
-        post._id === postId ? { ...post, status: "rejected" } : post,
-      ),
-    );
-  };
-  //3.Xóa
-  const handleDeletePost = async (postId: string) => {
-    await axios.delete(`http://localhost:8080/api/posts/${postId}`);
-    setPostsData(postsData.filter((post) => post._id !== postId));
-  };
+    // Nếu không phải delete thì cập nhật trạng thái bài viết
+    if (typeAction !== "delete") {
+      await axios.patch(`http://localhost:8080/api/posts/${post._id}`, {
+        status: newStatus,
+      });
+
+      // Cập nhật local state
+      setPostsData((prev) =>
+        prev.map((p) =>
+          p._id === post._id ? { ...p, status: newStatus } : p
+        )
+      );
+    } else {
+      // Nếu là delete thì xóa bài
+     await axios.post(`http://localhost:8080/api/deleteIMG`, {
+      bucket: `posts/${post.author_id._id}/${post.title}`,
+    });
+
+
+
+      await axios.delete(`http://localhost:8080/api/posts/${post._id}`);
+      setPostsData((prev) => prev.filter((p) => p._id !== post._id));
+    }
+
+
+
+  } catch (error) {
+    console.error(` Lỗi khi xử lý bài đăng (${typeAction}):`, error);
+  }
+};
+
+
   return (
     <div className={styleAdmin.container}>
       <h2>Danh sách các bài đăng</h2>
@@ -211,7 +290,7 @@ const Home = () => {
                       Reject
                     </button>
                     <button
-                      onClick={() => handleDeletePost(post._id)}
+                      onClick={() => handlePostAction('delete',post)}
                       className={styleAdmin.btnRemove}
                     >
                       Remove
@@ -220,19 +299,19 @@ const Home = () => {
                 ) : (
                   <>
                     <button
-                      onClick={() => handleActivePost(post._id)}
+                      onClick={() => handlePostAction('approve',post)}
                       className={styleAdmin.btnEdit}
                     >
                       Active
                     </button>
                     <button
-                      onClick={() => handleRejectPost(post._id)}
+                      onClick={() => handlePostAction('reject',post)}
                       className={styleAdmin.btnEdit}
                     >
                       Reject
                     </button>
                     <button
-                      onClick={() => handleDeletePost(post._id)}
+                     onClick={() => handlePostAction('delete',post)}
                       className={styleAdmin.btnRemove}
                     >
                       Remove

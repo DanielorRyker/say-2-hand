@@ -23,7 +23,7 @@ export class Notification {
   })
   type: string; // loại thông báo
 
-  @Prop({ type: Types.ObjectId, required: false })
+  @Prop({ type: Types.ObjectId, required: false ,ref: 'Post'})
   related_id?: Types.ObjectId; // id linh hoạt: post/conversation/transaction/report
 
   @Prop({ required: false })

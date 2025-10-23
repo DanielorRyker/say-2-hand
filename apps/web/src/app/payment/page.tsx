@@ -30,23 +30,6 @@ const PaymentPage: React.FC = () => {
       try {
         console.log("Fetching post data for ID:", postId);
 
-        // Thử lấy từ sessionStorage trước (nhanh hơn)
-        const cachedData = sessionStorage.getItem(`selectedPost_${postId}`);
-        if (cachedData) {
-          try {
-            const parsed = JSON.parse(cachedData);
-            console.log(
-              "✅ Using cached post data from sessionStorage:",
-              parsed
-            );
-            setPostData(parsed);
-            setLoading(false);
-            return; // Dùng cache, không cần gọi API
-          } catch (parseError) {
-            console.error("❌ Error parsing cached data:", parseError);
-          }
-        }
-
         // Nếu không có cache, gọi API
         console.log("📡 No cache found, fetching from API...");
         const res = await axios.get(

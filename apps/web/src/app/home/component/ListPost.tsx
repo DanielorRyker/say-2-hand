@@ -282,6 +282,10 @@ export const ListPost: React.FC = () => {
             id={`itemCard-${data._id}`}
             className={`${styles["item-card"]} ${styles.card}`}
             onClick={() => {
+              if (!currentUser) {
+              alert("Vui lòng đăng nhập để xem chi tiết bài đăng.");
+              return; // Dừng luôn, không chuyển trang
+            }
               try {
                 sessionStorage.setItem(
                   `selectedPost_${data._id}`,

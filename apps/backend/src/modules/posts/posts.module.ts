@@ -5,11 +5,13 @@ import { Post, PostSchema } from './schemas/post.schema';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConversationsModule } from '../conversations/conversations.module';
 import { MessagesModule } from '../messages/messages.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
-    forwardRef(() => ConversationsModule), // ✅ dùng forwardRef
+    forwardRef(() => ConversationsModule), 
     forwardRef(() => MessagesModule),
+    forwardRef(() => NotificationsModule),
     MongooseModule.forFeature([
       { name: Post.name, schema: PostSchema, collection: 'posts' },
     ]),

@@ -140,6 +140,33 @@ export class UploadService {
       return results; // Trả về mảng tên file
     }
 
+    //Xóa ảnh
+async deleteFileOrFolder(filePath: string) {
+  const bucket = this.storage.bucket(this.bucketName);
+
+  try {
+    // Kiểm tra xem đây có phải là "thư mục" (prefix) không
+    const [files] = await bucket.getFiles({
+      prefix: filePath.endsWith('/') ? filePath : `${filePath}/`,
+    });
+
+    if (files.length > 0) {
+      // Nếu có file bên trong là thư mục xóa hết
+      await Promise.all(files.map((file) => file.delete()));
+      console.log(` Đã xóa thư mục "${filePath}" cùng ${files.length} file con.`);
+      return { message: `Đã xóa thư mục ${filePath} và tất cả nội dung.` };
+    } else {
+      // Nếu không có file nào thử xóa như 1 file cụ thể
+      await bucket.file(filePath).delete();
+      console.log(` Đã xóa file: ${filePath}`);
+      return { message: `Đã xóa file ${filePath}` };
+    }
+  } catch (error: any) {
+    console.error(` Lỗi khi xóa ${filePath}:`, error.message);
+    throw new Error(`Không thể xóa ${filePath}: ${error.message}`);
+  }
+}
+
     slugify(input: string): string {
       return input
         .normalize('NFD') // tách dấu

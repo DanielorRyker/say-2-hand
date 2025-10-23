@@ -1127,40 +1127,6 @@ export const DetailPost: React.FC = () => {
                                 return;
                               }
 
-                              // Lưu dữ liệu vào sessionStorage trước khi navigate
-                              try {
-                                const dataToStore = {
-                                  _id: postData.post._id,
-                                  post_id: postData.post._id,
-                                  title: postData.post.title,
-                                  price: postData.post.price,
-                                  condition: postData.post.condition,
-                                  transaction_type:
-                                    postData.post.transaction_type,
-                                  images: postData.post.image_urls,
-                                  location: postData.location,
-                                  author_id: postData.user,
-                                };
-                                sessionStorage.setItem(
-                                  `selectedPost_${postData.post._id}`,
-                                  JSON.stringify(dataToStore)
-                                );
-                                console.log(
-                                  "✅ Saved post data to sessionStorage:",
-                                  {
-                                    postId: postData.post._id,
-                                    title: postData.post.title,
-                                    hasImages: dataToStore.images?.length > 0,
-                                  }
-                                );
-                              } catch (err) {
-                                console.error(
-                                  "❌ Error saving to sessionStorage:",
-                                  err
-                                );
-                                // Không block navigation, user vẫn có thể tiếp tục
-                              }
-                              // Nếu là bán -> chuyển đến trang thanh toán
                               router.push(
                                 `/payment?postId=${postData.post._id}`
                               );

@@ -34,19 +34,62 @@ export class NotificationsService {
   findByUserId(userId: string){
     return this.notificationModel
     .find({receiver_id: new Types.ObjectId(userId)})
+    .populate('sender_id')
+    .populate('related_id')
     .sort({ updatedAt: -1 })
     .exec();
+  }
+
+  findTransaction(userId: string){
+    return this.notificationModel
+    .find({receiver_id: new Types.ObjectId(userId),type: 'transaction'})
+    .populate('sender_id')
+    .populate('related_id')
+    .sort({ updatedAt: -1 })
+    .exec();
+  }
+
+    findModeration(userId: string){
+    return this.notificationModel
+    .find({receiver_id: new Types.ObjectId(userId),type: 'moderation'})
+    .populate('sender_id')
+    .populate('related_id')
+    .sort({ updatedAt: -1 })
+    .exec();
+  }
+
+    findSystem(userId: string){
+    return this.notificationModel
+    .find({receiver_id: new Types.ObjectId(userId),type: 'system'})
+    .populate('sender_id')
+    .populate('related_id')
+    .sort({ updatedAt: -1 })
+    .exec();
+  }
+
+  async readAll(userId: string ){
+    return this.notificationModel.updateMany(
+      { receiver_id: new Types.ObjectId(userId), is_read: false },
+      { $set: { is_read: true } }
+  )
   }
 
   findOne(id: number) {
     return `This action returns a #${id} notification`;
   }
 
-  update(id: number, updateNotificationDto: UpdateNotificationDto) {
-    return `This action updates a #${id} notification`;
+  update(userId: string , updateNotificationDto: UpdateNotificationDto) {
+    return this.notificationModel.updateMany(
+      {receiver_id:userId},
+      {
+        ...updateNotificationDto
+    })
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} notification`;
+  async remove(receiver_id: string, related_id: string) {
+     return this.notificationModel.deleteMany({
+      receiver_id,
+      related_id,
+    });
   }
 }
