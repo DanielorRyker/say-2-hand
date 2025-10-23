@@ -15,15 +15,13 @@ import {
 import L from "leaflet";
 import stylesBasicForm from "./BasicInfoForm.module.scss";
 
-import { parseAddress, normalizeProvinceName } from "../../../../lib/address";
+import { formatAddress as sharedFormatAddress } from "../../../../lib/address";
 
 type Suggestion = {
   display_name: string;
   lat: string;
   lon: string;
   boundingbox?: string[];
-  // original Nominatim address object when available
-  addressObj?: Record<string, any>;
 };
 
 // component trợ giúp để di chuyển bản đồ chương trình khi tọa độ thay đổi
@@ -41,12 +39,11 @@ export default function MapPicker({
   address,
   onChangeAddress,
   onSelectCoords,
-  onSelectAddressDetails,
 }: {
   address: string;
   onChangeAddress: (s: string) => void;
   onSelectCoords: (lat: number, lon: number) => void;
-  onSelectAddressDetails?: (details: {
+  onSelectAddressDetails: (details: {
     detail: string;
     ward: string;
     province: string;
@@ -208,8 +205,6 @@ export default function MapPicker({
           display_name: formatAddress(
             stripLeadingQuery(cleanDisplayName(d.display_name), qtrim)
           ),
-          // attach address object for structured parsing when available
-          addressObj: (d as any).address || undefined,
         }));
         setSuggestions(cleaned);
         return;
@@ -496,12 +491,7 @@ export default function MapPicker({
       const url = `https://nominatim.openstreetmap.org/search?${params.toString()}`;
       const res = await fetch(url, { headers: { "Accept-Language": "vi,en" } });
       if (!res.ok) return null;
-      const raw = (await res.json()) as any[];
-      // preserve address object from nominatim into Suggestion.addressObj
-      const data = (raw || []).map((d) => ({
-        ...d,
-        addressObj: d.address || undefined,
-      })) as Suggestion[];
+      const data = (await res.json()) as Suggestion[];
       saveSessionCache(key, data || []);
       return data;
     } catch (error) {
@@ -529,11 +519,7 @@ export default function MapPicker({
       const url = `https://nominatim.openstreetmap.org/search?${params.toString()}`;
       const res = await fetch(url, { headers: { "Accept-Language": "vi,en" } });
       if (!res.ok) return null;
-      const raw = (await res.json()) as any[];
-      const data = (raw || []).map((d) => ({
-        ...d,
-        addressObj: d.address || undefined,
-      })) as Suggestion[];
+      const data = (await res.json()) as Suggestion[];
       saveSessionCache(key, data || []);
       return data;
     } catch (error) {
@@ -570,77 +556,12 @@ export default function MapPicker({
       const data = await res.json();
       if (data && data.display_name)
         data.display_name = cleanDisplayName(data.display_name);
-      // attach address object if present
-      if (data && data.address) data.addressObj = data.address;
       return data; // contains display_name, address, etc.
     } catch {
       // network or parsing error: swallow and return null (do not rethrow)
       return null;
     }
   };
-
-  // Map Nominatim structured address object to our detail/ward/province fields
-  function mapNominatimAddressToDetails(
-    address: Record<string, any> | undefined
-  ) {
-    if (!address) return { detail: "", ward: "", province: "" };
-
-    // detail: combine house_number + road-like keys
-    const roadKeys = [
-      "road",
-      "street",
-      "residential",
-      "pedestrian",
-      "footway",
-      "cycleway",
-      "path",
-      "highway",
-    ];
-    const road = roadKeys.map((k) => address[k]).find(Boolean) || "";
-    const house = address["house_number"] || address["housenumber"] || "";
-    const detailParts: string[] = [];
-    if (house) detailParts.push(String(house).trim());
-    if (road) detailParts.push(String(road).trim());
-    // sometimes city_district contains useful smaller area names; include if present and not duplicate
-    const cityDistrict = address["city_district"] || address["quarter"] || "";
-    if (cityDistrict && !detailParts.includes(cityDistrict))
-      detailParts.push(String(cityDistrict).trim());
-
-    const detail = detailParts.join(" ").trim();
-
-    // ward: try suburb/neighbourhood/quarter/village/hamlet
-    const wardKeys = [
-      "suburb",
-      "neighbourhood",
-      "quarter",
-      "village",
-      "hamlet",
-      "ward",
-    ];
-    const ward = wardKeys.map((k) => address[k]).find(Boolean) || "";
-
-    // province: prefer state, then city, then county
-    const provinceKeys = ["state", "province", "city", "county", "region"];
-    const provinceRaw = provinceKeys.map((k) => address[k]).find(Boolean) || "";
-    let province = String(provinceRaw || "").trim();
-
-    // Normalize common variants for major cities (e.g., HCM) to include 'Thành phố'
-    try {
-      const low = province.toLowerCase();
-      if (/(hồ chí minh|ho chi minh|\bhcm\b|tp\.?\s*hcm)/i.test(low)) {
-        province = "Thành phố Hồ Chí Minh";
-      }
-      // other normalization rules can be added here if needed
-    } catch {}
-
-    return {
-      detail: detail,
-      ward: ward,
-      province: province,
-    };
-  }
-
-  // use normalizeProvinceName imported from shared lib
 
   function cleanDisplayName(s: string) {
     if (!s || typeof s !== "string") return s;
@@ -724,24 +645,6 @@ export default function MapPicker({
     const lon = Number(s.lon);
     onSelectCoords(lat, lon);
     setCenter([lat, lon]);
-    // Prefer structured address from Nominatim if available
-    try {
-      let details = null as any;
-      if ((s as any).addressObj) {
-        details = mapNominatimAddressToDetails((s as any).addressObj);
-      } else {
-        details = parseAddress(s.display_name || "");
-      }
-      if (onSelectAddressDetails) {
-        onSelectAddressDetails({
-          detail: details.detail,
-          ward: details.ward,
-          province: normalizeProvinceName(details.province),
-        });
-      }
-    } catch {
-      // ignore parse errors
-    }
   }
 
   // helper đã bỏ: cuộn được xử lý bằng hover/click chuột
@@ -794,21 +697,6 @@ export default function MapPicker({
             setSelected(improved);
             setQuery(moved);
             onChangeAddress(moved);
-            try {
-              let details = null as any;
-              if ((rev as any).addressObj) {
-                details = mapNominatimAddressToDetails((rev as any).addressObj);
-              } else {
-                details = parseAddress(moved || "");
-              }
-              if (onSelectAddressDetails) {
-                onSelectAddressDetails({
-                  detail: details.detail,
-                  ward: details.ward,
-                  province: normalizeProvinceName(details.province),
-                });
-              }
-            } catch {}
           }
         } catch (err) {
           // network or reverse geocode error: log and continue with coords-only marker

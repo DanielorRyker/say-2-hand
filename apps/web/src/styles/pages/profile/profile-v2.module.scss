@@ -1,0 +1,434 @@
+// ===========================
+// Profile V2 Modern UI
+// Gradient Design System
+// ===========================
+
+@keyframes bgCircles {
+
+    0%,
+    100% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    33% {
+        transform: translate(30px, -50px) scale(1.1);
+    }
+
+    66% {
+        transform: translate(-20px, 20px) scale(0.9);
+    }
+}
+
+@keyframes cardSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes avatarPulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 0 0 20px rgba(59, 130, 246, 0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: linear-gradient(135deg, #bfdbfe 0%, #ddd6fe 50%, #a7f3d0 100%);
+    position: relative;
+    overflow: hidden;
+
+    &::before,
+    &::after {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.1));
+        animation: bgCircles 20s ease-in-out infinite;
+    }
+
+    &::before {
+        width: 400px;
+        height: 400px;
+        top: -100px;
+        left: -100px;
+    }
+
+    &::after {
+        width: 500px;
+        height: 500px;
+        bottom: -150px;
+        right: -150px;
+        animation-delay: -10s;
+    }
+}
+
+.gradientBorder {
+    padding: 3px;
+    background: linear-gradient(135deg, #3b82f6, #10b981);
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(59, 130, 246, 0.3);
+    animation: cardSlideUp 0.6s ease-out;
+    position: relative;
+    z-index: 1;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.95);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    border-radius: 22px;
+    padding: 48px 40px;
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    align-items: center;
+}
+
+.avatarSection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    animation: fadeIn 0.8s ease-out;
+}
+
+.avatarWrapper {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    padding: 4px;
+    background: linear-gradient(135deg, #3b82f6, #10b981);
+    animation: avatarPulse 2s ease-in-out infinite;
+}
+
+.avatar {
+    width: 132px;
+    height: 132px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid white;
+    display: block;
+}
+
+.avatarPlaceholder {
+    width: 132px;
+    height: 132px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #10b981);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 4px solid white;
+    font-size: 48px;
+    font-weight: 700;
+    color: white;
+}
+
+.userName {
+    font-size: 28px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #3b82f6, #10b981);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-align: center;
+    margin: 0;
+}
+
+.userRole {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 16px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.1));
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #3b82f6;
+}
+
+.infoSection {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    animation: fadeIn 1s ease-out;
+}
+
+.infoCard {
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(16, 185, 129, 0.05));
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: all 0.3s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.15);
+    }
+}
+
+.infoItem {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 15px;
+}
+
+.infoIcon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    opacity: 0.7;
+}
+
+.infoLabel {
+    font-weight: 600;
+    color: #334155;
+    min-width: 100px;
+}
+
+.infoValue {
+    color: #64748b;
+    word-break: break-word;
+}
+
+.infoEmpty {
+    color: #94a3b8;
+    font-style: italic;
+}
+
+.buttonGroup {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    animation: fadeIn 1.2s ease-out;
+}
+
+.btnPrimary {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #3b82f6, #10b981);
+    border: none;
+    border-radius: 14px;
+    font-size: 15px;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 30px rgba(59, 130, 246, 0.4);
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+}
+
+.btnSecondary {
+    width: 100%;
+    padding: 2px;
+    background: linear-gradient(135deg, #3b82f6, #10b981);
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+}
+
+.btnSecondaryInner {
+    background: white;
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btnSecondaryText {
+    font-size: 15px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #3b82f6, #10b981);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.btnLogout {
+    width: 100%;
+    padding: 2px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    animation: fadeIn 1.4s ease-out;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+}
+
+.btnLogoutInner {
+    background: white;
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btnLogoutText {
+    font-size: 15px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.divider {
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.2), transparent);
+    margin: 8px 0;
+}
+
+// ===========================
+// Responsive Design
+// ===========================
+
+@media (max-width: 640px) {
+    .card {
+        padding: 36px 28px;
+        gap: 28px;
+    }
+
+    .avatarWrapper {
+        width: 120px;
+        height: 120px;
+    }
+
+    .avatar,
+    .avatarPlaceholder {
+        width: 112px;
+        height: 112px;
+    }
+
+    .userName {
+        font-size: 24px;
+    }
+
+    .infoCard {
+        padding: 16px;
+    }
+
+    .infoLabel {
+        min-width: 80px;
+        font-size: 14px;
+    }
+
+    .infoValue {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 12px;
+    }
+
+    .card {
+        padding: 32px 24px;
+        gap: 24px;
+    }
+
+    .avatarWrapper {
+        width: 100px;
+        height: 100px;
+    }
+
+    .avatar,
+    .avatarPlaceholder {
+        width: 92px;
+        height: 92px;
+        font-size: 36px;
+    }
+
+    .userName {
+        font-size: 22px;
+    }
+
+    .userRole {
+        font-size: 12px;
+        padding: 5px 12px;
+    }
+
+    .infoCard {
+        padding: 14px;
+    }
+
+    .infoItem {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .infoLabel {
+        min-width: auto;
+    }
+}

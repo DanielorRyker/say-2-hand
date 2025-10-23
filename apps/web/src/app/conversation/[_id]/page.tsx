@@ -8,19 +8,21 @@ import { io, Socket } from "socket.io-client";
 import { useRouter } from "next/navigation";
 
 export default function ChatPage() {
-   const router = useRouter();
+  const router = useRouter();
   // user hiện tại
 
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [selectedImage, setSelectedImage] = useState<string | File | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | File | null>(
+    null
+  );
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   // --- cleanup preview
-useEffect(() => {
-  return () => {
-    if (previewImage) URL.revokeObjectURL(previewImage);
-  };
-}, [previewImage]);
+  useEffect(() => {
+    return () => {
+      if (previewImage) URL.revokeObjectURL(previewImage);
+    };
+  }, [previewImage]);
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -45,12 +47,12 @@ useEffect(() => {
       condition: "new" | "used";
       transaction_type: "sell" | "buy";
       status: "active" | "inactive";
-       images: {
-          _id: string;
-          url: string;
-          alt?: string;
-          tags: string[];
-        }[];
+      images: {
+        _id: string;
+        url: string;
+        alt?: string;
+        tags: string[];
+      }[];
       address: string;
       createdAt: string;
       updatedAt: string;
@@ -78,7 +80,7 @@ useEffect(() => {
     conversation_key: string;
     createdAt: string;
     updatedAt: string;
-    unreadCount: number,
+    unreadCount: number;
     __v?: number;
   }
 
@@ -172,8 +174,6 @@ useEffect(() => {
       localStorage.setItem("conversation", JSON.stringify(selected));
 
       markConversationAsRead(selected);
-
-      
     }
   };
 
@@ -184,7 +184,7 @@ useEffect(() => {
   useEffect(() => {
     // Kết nối socket.io tới BE (NestJS WebSocketGateway)
     const newSocket = io("http://localhost:8080", {
-      transports: ["websocket"], 
+      transports: ["websocket"],
     });
 
     setSocket(newSocket);
@@ -203,100 +203,94 @@ useEffect(() => {
     };
   }, []);
 
-useEffect(() => {
-  if (!socket || !conversation?._id || !currentUser?._id) return;
+  useEffect(() => {
+    if (!socket || !conversation?._id || !currentUser?._id) return;
 
-  // Join cả phòng hội thoại và phòng user
-  socket.emit("join_conversation", { conversationId: conversation._id });
-  socket.emit("join_user", { userId: currentUser._id });
+    // Join cả phòng hội thoại và phòng user
+    socket.emit("join_conversation", { conversationId: conversation._id });
+    socket.emit("join_user", { userId: currentUser._id });
 
-  // Khi nhận tin nhắn trong cuộc trò chuyện đang mở
-  const handleReceiveMessage = (msg: any) => {
-    if (msg.conversation_id === conversation._id) {
+    // Khi nhận tin nhắn trong cuộc trò chuyện đang mở
+    const handleReceiveMessage = (msg: any) => {
+      if (msg.conversation_id === conversation._id) {
+        //Đánh dấu đã đọc
+        axios.patch(
+          `http://localhost:8080/api/messages/mark-as-read/${conversation._id}`,
+          { userId: currentUser._id }
+        );
+        // ✅ Thêm vào danh sách tin nhắn hiện tại
+        setMessagesData((prev) => {
+          if (prev.some((m) => m._id === msg._id)) return prev;
+          return [...prev, msg];
+        });
 
-      //Đánh dấu đã đọc
-      axios.patch(
-      `http://localhost:8080/api/messages/mark-as-read/${conversation._id}`,
-      { userId: currentUser._id }
-    );
-      // ✅ Thêm vào danh sách tin nhắn hiện tại
-      setMessagesData((prev) => {
-        if (prev.some((m) => m._id === msg._id)) return prev;
-        return [...prev, msg];
-      });
-
-      // ✅ Cập nhật last_message cho conversation hiện tại
-      setConversationsData((prev) =>
-        prev.map((c) =>
-          c._id === msg.conversation_id ? { ...c, last_message: msg } : c
-        )
-      );
-    }
-  };
-
-  // Khi có tin nhắn đến cuộc trò chuyện KHÁC (chưa join)
-  const handleConversationUpdated = (data: any) => {
-  setConversationsData((prev) =>
-    prev.map((c) => {
-      if (c._id === data.conversationId) {
-        // Nếu conversation đang mở, giữ unreadCount = 0
-        const unread =
-          conversation?._id === data.conversationId
-            ? 0
-            : (c.unreadCount || 0) + (data.unreadIncrement || 1);
-
-        return {
-          ...c,
-          unreadCount: unread,
-          last_message: {
-            text: data.text,
-            created_at: data.createdAt,
-            sender_id: data.sender_id,
-          },
-        };
+        // ✅ Cập nhật last_message cho conversation hiện tại
+        setConversationsData((prev) =>
+          prev.map((c) =>
+            c._id === msg.conversation_id ? { ...c, last_message: msg } : c
+          )
+        );
       }
-      return c;
-    })
-  );
-};
+    };
 
+    // Khi có tin nhắn đến cuộc trò chuyện KHÁC (chưa join)
+    const handleConversationUpdated = (data: any) => {
+      setConversationsData((prev) =>
+        prev.map((c) => {
+          if (c._id === data.conversationId) {
+            // Nếu conversation đang mở, giữ unreadCount = 0
+            const unread =
+              conversation?._id === data.conversationId
+                ? 0
+                : (c.unreadCount || 0) + (data.unreadIncrement || 1);
 
-  socket.on("receive_message", handleReceiveMessage);
-  socket.on("conversation_updated", handleConversationUpdated);
+            return {
+              ...c,
+              unreadCount: unread,
+              last_message: {
+                text: data.text,
+                created_at: data.createdAt,
+                sender_id: data.sender_id,
+              },
+            };
+          }
+          return c;
+        })
+      );
+    };
 
-  return () => {
-    socket.off("receive_message", handleReceiveMessage);
-    socket.off("conversation_updated", handleConversationUpdated);
-  };
-}, [socket, conversation?._id, currentUser?._id]);
+    socket.on("receive_message", handleReceiveMessage);
+    socket.on("conversation_updated", handleConversationUpdated);
 
+    return () => {
+      socket.off("receive_message", handleReceiveMessage);
+      socket.off("conversation_updated", handleConversationUpdated);
+    };
+  }, [socket, conversation?._id, currentUser?._id]);
 
   /// Gửi tin nhắn
-
-
-    
 
   const handleSendMessage = async () => {
     if (!text.trim() && !selectedImage) return;
     if (!conversation?._id || !currentUser?._id) return;
 
     try {
-       let finalText = text;
-    let type: "text" | "image" = "text";
+      let finalText = text;
+      let type: "text" | "image" = "text";
 
-    // Nếu có ảnh thì upload
-    if (selectedImage && selectedImage instanceof File) {
-      const filename = await uploadImage(selectedImage);
-      finalText = filename; // BE trả về filename
-      type = "image";
-    }
+      // Nếu có ảnh thì upload
+      if (selectedImage && selectedImage instanceof File) {
+        const filename = await uploadImage(selectedImage);
+        finalText = filename; // BE trả về filename
+        type = "image";
+      }
 
-    const payload = {
-      conversation_id: conversation._id,
-      sender_id: currentUser._id,
-      type,
-      text: finalText,
-    };
+      const payload = {
+        conversation_id: conversation._id,
+        sender_id: currentUser._id,
+        type,
+        text: finalText,
+      };
 
       const res = await axios.post(
         "http://localhost:8080/api/messages",
@@ -307,8 +301,8 @@ useEffect(() => {
       if (socket) {
         socket.emit("send_message", {
           conversationId: conversation._id,
-          receiverId:otherUser?._id ,
-          unreadIncrement:1,
+          receiverId: otherUser?._id,
+          unreadIncrement: 1,
           ...res.data,
         });
       }
@@ -330,57 +324,49 @@ useEffect(() => {
   }, [messagesData]);
 
   //Gửi ảnh
-    const uploadImage = async (file: File, bucket = "conversation") => {
+  const uploadImage = async (file: File, bucket = "conversation") => {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("bucket", bucket);
 
-    const res = await axios.post("http://localhost:8080/api/upload/img", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const res = await axios.post(
+      "http://localhost:8080/api/upload/img",
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
 
     return res.data.filename; // BE trả về filename
   };
-  
 
-useEffect(() => {
-  if (!conversation || !currentUser?._id || !socket) return;
-  // Tự động mark-as-read khi load conversation đầu tiên
-  markConversationAsRead(conversation);
-}, [conversation?._id, currentUser?._id, socket]);
+  useEffect(() => {
+    if (!conversation || !currentUser?._id || !socket) return;
+    // Tự động mark-as-read khi load conversation đầu tiên
+    markConversationAsRead(conversation);
+  }, [conversation?._id, currentUser?._id, socket]);
 
-const markConversationAsRead = async (conv: IConversation) => {
-  if (!conv?._id || !currentUser?._id || !socket) return;
+  const markConversationAsRead = async (conv: IConversation) => {
+    if (!conv?._id || !currentUser?._id || !socket) return;
 
-  try {
-   
-    await axios.patch(
-      `http://localhost:8080/api/messages/mark-as-read/${conv._id}`,
-      { userId: currentUser._id }
-    );
+    try {
+      await axios.patch(
+        `http://localhost:8080/api/messages/mark-as-read/${conv._id}`,
+        { userId: currentUser._id }
+      );
 
-    socket.emit("send_message", {
-      
-      receiverId: currentUser?._id,
-    
-    });
+      socket.emit("send_message", {
+        receiverId: currentUser?._id,
+      });
 
-    setConversationsData(prev =>
-      prev.map(c =>
-        c._id === conv._id ? { ...c, unreadCount: 0 } : c
-      )
-    );
-    setConversation(prev => prev ? { ...prev, unreadCount: 0 } : prev);
-
-  } catch (err) {
-    console.error("Error marking messages as read:", err);
-  }
-};
-
-
-
-  
-  
+      setConversationsData((prev) =>
+        prev.map((c) => (c._id === conv._id ? { ...c, unreadCount: 0 } : c))
+      );
+      setConversation((prev) => (prev ? { ...prev, unreadCount: 0 } : prev));
+    } catch (err) {
+      console.error("Error marking messages as read:", err);
+    }
+  };
 
   return (
     <div className={cvstStyles.container}>
@@ -409,8 +395,9 @@ const markConversationAsRead = async (conv: IConversation) => {
                 >
                   <Image
                     src={
-                      i.post_id.images[0].url
-                        ? process.env.NEXT_PUBLIC_URL_GCS + i.post_id.images[0].url
+                      i.post_id?.images?.[0]?.url
+                        ? process.env.NEXT_PUBLIC_URL_GCS +
+                          i.post_id.images[0].url
                         : "/image/header/carbon_user-avatar-filled-alt.svg"
                     }
                     alt="Post"
@@ -420,14 +407,15 @@ const markConversationAsRead = async (conv: IConversation) => {
                   />
 
                   {otherUser && (
-                    <div style={{width:"100%"}}>
+                    <div style={{ width: "100%" }}>
                       <p className={cvstStyles.title}>{i.post_id.title}</p>
 
                       <div className={cvstStyles.conversationItemHeader}>
                         <Image
                           src={
                             otherUser.avatar
-                              ? process.env.NEXT_PUBLIC_URL_GCS + otherUser.avatar
+                              ? process.env.NEXT_PUBLIC_URL_GCS +
+                                otherUser.avatar
                               : "/image/header/carbon_user-avatar-filled-alt.svg"
                           }
                           alt="Avatar"
@@ -439,26 +427,26 @@ const markConversationAsRead = async (conv: IConversation) => {
                           {otherUser.full_name || "Người dùng"}
                         </p>
                       </div>
-                      
+
                       <div className={cvstStyles.messageLayour}>
                         <p className={cvstStyles.lastMessage}>
-                          {i.last_message?.sender_id?.full_name}: {i.last_message?.text}
+                          {i.last_message?.sender_id?.full_name}:{" "}
+                          {i.last_message?.text}
                         </p>
-                        {
-                        i.unreadCount!=0 ?
-                        <p className={cvstStyles.unreadCount}>{i.unreadCount}</p>
-                        :
-                        <p></p>
-                        }
+                        {i.unreadCount != 0 ? (
+                          <p className={cvstStyles.unreadCount}>
+                            {i.unreadCount}
+                          </p>
+                        ) : (
+                          <p></p>
+                        )}
                       </div>
-                      
                     </div>
                   )}
                 </div>
               );
             })}
         </div>
-
       </aside>
 
       {/* Chat area */}
@@ -468,25 +456,28 @@ const markConversationAsRead = async (conv: IConversation) => {
           <div>
             <Image
               src={
-                conversation?.post_id.images[0].url
-                  ? process.env.NEXT_PUBLIC_URL_GCS + conversation.post_id.images[0].url
+                conversation?.post_id?.images?.[0]?.url
+                  ? process.env.NEXT_PUBLIC_URL_GCS +
+                    conversation.post_id.images[0].url
                   : "/image/header/carbon_user-avatar-filled-alt.svg"
               }
               alt="Post"
               className={cvstStyles.squareImage}
               width={80}
               height={80}
-               onClick={() => {
-              const postId = conversation?.post_id?._id;
-              if (!postId) return;
-              try {
-                sessionStorage.setItem(
-                  `selectedPost_${postId}`,
-                  JSON.stringify(conversation?.post_id)
+              onClick={() => {
+                const postId = conversation?.post_id?._id;
+                if (!postId) return;
+                try {
+                  sessionStorage.setItem(
+                    `selectedPost_${postId}`,
+                    JSON.stringify(conversation?.post_id)
+                  );
+                } catch {}
+                router.push(
+                  `/post/detailPost?postId=${encodeURIComponent(postId)}`
                 );
-              } catch {}
-              router.push(`/post/detailPost?postId=${encodeURIComponent(postId)}`);
-            }}
+              }}
             />
           </div>
 
@@ -513,10 +504,13 @@ const markConversationAsRead = async (conv: IConversation) => {
           )}
         </div>
 
-       {/* Messages */}
+        {/* Messages */}
         <div className={cvstStyles.messages}>
           {messagesData.map((msg) => {
-            const isMe = msg.sender_id._id === currentUser._id;
+            const isMe =
+              msg?.sender_id?._id && currentUser?._id
+                ? msg.sender_id._id === currentUser._id
+                : false;
             if (msg.type !== "text" && msg.type !== "image") return null;
             return (
               <div
@@ -527,8 +521,8 @@ const markConversationAsRead = async (conv: IConversation) => {
                       ? cvstStyles.meText
                       : cvstStyles.meImage
                     : msg.type === "text"
-                    ? cvstStyles.otherText
-                    : cvstStyles.otherImage
+                      ? cvstStyles.otherText
+                      : cvstStyles.otherImage
                 }`}
               >
                 {msg.type === "text" ? (
@@ -537,91 +531,89 @@ const markConversationAsRead = async (conv: IConversation) => {
                   <Image
                     width={200}
                     height={200}
-                    src={msg.text ? process.env.NEXT_PUBLIC_URL_GCS + msg.text : ""} 
+                    src={
+                      msg.text ? process.env.NEXT_PUBLIC_URL_GCS + msg.text : ""
+                    }
                     alt="message"
                     className={cvstStyles.messageImage}
                   />
                 )}
               </div>
             );
-          })
-          }
+          })}
 
-        {/* ref để scroll xuống cuối */}
-        <div ref={endRef} />
-      </div>
-
+          {/* ref để scroll xuống cuối */}
+          <div ref={endRef} />
+        </div>
 
         {/* Input */}
-<div className={cvstStyles.chatInput}>
-  {/* Nếu chưa có ảnh thì hiển thị input chữ */}
-  {!previewImage ? (
-    <input
-      type="text"
-      placeholder="Type a message..."
-      className={cvstStyles.input}
-      value={text}
-      onChange={(e) => setText(e.target.value)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter") handleSendMessage();
-      }}
-    />
-  ) : (
-    <div className={cvstStyles.previewWrapper}>
-      <img
-        src={previewImage}
-        alt="Preview"
-        className={cvstStyles.previewImage}
-      />
-      <button
-        className={cvstStyles.removeBtn}
-        onClick={() => {
-          URL.revokeObjectURL(previewImage);
-          setSelectedImage(null);
-          setPreviewImage(null);
-        }}
-      >
-        ✕
-      </button>
-    </div>
-  )}
+        <div className={cvstStyles.chatInput}>
+          {/* Nếu chưa có ảnh thì hiển thị input chữ */}
+          {!previewImage ? (
+            <input
+              type="text"
+              placeholder="Type a message..."
+              className={cvstStyles.input}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleSendMessage();
+              }}
+            />
+          ) : (
+            <div className={cvstStyles.previewWrapper}>
+              <img
+                src={previewImage}
+                alt="Preview"
+                className={cvstStyles.previewImage}
+              />
+              <button
+                className={cvstStyles.removeBtn}
+                onClick={() => {
+                  URL.revokeObjectURL(previewImage);
+                  setSelectedImage(null);
+                  setPreviewImage(null);
+                }}
+              >
+                ✕
+              </button>
+            </div>
+          )}
 
-  {/* input file ẩn */}
-  <input
-    type="file"
-    accept="image/*"
-    style={{ display: "none" }}
-    id="fileInput"
-    onChange={(e) => {
-      const file = e.target.files?.[0];
-      if (file) {
-        if (previewImage) URL.revokeObjectURL(previewImage);
-        const url = URL.createObjectURL(file);
-        setSelectedImage(file);
-        setPreviewImage(url);
-      }
-    }}
-  />
+          {/* input file ẩn */}
+          <input
+            type="file"
+            accept="image/*"
+            style={{ display: "none" }}
+            id="fileInput"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                if (previewImage) URL.revokeObjectURL(previewImage);
+                const url = URL.createObjectURL(file);
+                setSelectedImage(file);
+                setPreviewImage(url);
+              }
+            }}
+          />
 
-  {/* Nút camera */}
-  <button
-    className={cvstStyles.sendImgBtn}
-    onClick={() => document.getElementById("fileInput")?.click()}
-  >
-    <Image
-      src={"/image/profile/camera.svg"}
-      alt="Attach"
-      width={24}
-      height={24}
-    />
-  </button>
+          {/* Nút camera */}
+          <button
+            className={cvstStyles.sendImgBtn}
+            onClick={() => document.getElementById("fileInput")?.click()}
+          >
+            <Image
+              src={"/image/profile/camera.svg"}
+              alt="Attach"
+              width={24}
+              height={24}
+            />
+          </button>
 
-  <button className={cvstStyles.sendBtn} onClick={handleSendMessage}>
-    Send
-  </button>
-</div>
-
-        
+          <button className={cvstStyles.sendBtn} onClick={handleSendMessage}>
+            Send
+          </button>
+        </div>
       </main>
     </div>
   );

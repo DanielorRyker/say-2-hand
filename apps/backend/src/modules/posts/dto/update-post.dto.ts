@@ -28,6 +28,18 @@ class LocationDto {
   address?: string;
 
   @IsOptional()
+  @IsString()
+  detail_address?: string;
+
+  @IsOptional()
+  @IsString()
+  ward?: string;
+
+  @IsOptional()
+  @IsString()
+  province?: string;
+
+  @IsOptional()
   @ValidateNested()
   @Type(() => GeoPointDto)
   geo?: GeoPointDto;

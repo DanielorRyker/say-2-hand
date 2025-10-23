@@ -275,6 +275,17 @@ export default function CategoryForm({
               },
             }))
           }
+          onSelectAddressDetails={(details: any) =>
+            setFormData((fd: any) => ({
+              ...fd,
+              location: {
+                ...fd.location,
+                detail_address: details.detail,
+                ward: details.ward,
+                province: details.province,
+              },
+            }))
+          }
         />
       </div>
 

@@ -1,13 +1,10 @@
 import { Body, Controller, Post, Get, Query, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
+import { VerifyOtpDto } from './dto/verify-otp.dto';
+import { VerifyResetPasswordDto } from './dto/verify-reset-password.dto';
 import { MailerService } from '@nestjs-modules/mailer';
 import { JwtAuthGuard } from 'src/common/jwt/jwt-auth.guard';
-
-export class VerifyOtpDto {
-  email: string;
-  otp: string;
-}
 
 @Controller('auth')
 export class AuthController {
@@ -45,15 +42,12 @@ export class AuthController {
   }
 
   @Post('verify')
-  async verifyOtp(@Body() body: any) {
-    const email = body.email;
-    const otp = body.otp;
-
-    return this.authService.verifiAccount(otp, email);
+  async verifyOtp(@Body() verifyOtpDto: VerifyOtpDto) {
+    return this.authService.verifiAccount(verifyOtpDto.otp, verifyOtpDto.email);
   }
 
   //Gửi mail để đổi mật khẩu
-  @UseGuards(JwtAuthGuard)
+  // Removed @UseGuards(JwtAuthGuard) - user is not authenticated in forgot password flow
   @Get('mailResetPassword/')
   async sendMailResetPassword(@Query('email') email: string) {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -76,11 +70,11 @@ export class AuthController {
   }
 
   @Post('verifyResetPassword')
-  async verifyOtpResetPassword(@Body() body: any) {
-    const email = body.email;
-    const otp = body.otp;
-    const password = body.password;
-
-    return this.authService.verifiResetPassword(otp, email, password);
+  async verifyOtpResetPassword(@Body() dto: VerifyResetPasswordDto) {
+    return this.authService.verifiResetPassword(
+      dto.otp,
+      dto.email,
+      dto.password,
+    );
   }
 }

@@ -1,90 +1,180 @@
 "use client";
 import { useRouter } from "next/navigation";
-
-import styleLogin from "@/styles/pages/auth/login.module.scss";
-import styleVerification from "@/styles/pages/auth/verification.module.scss";
+import Link from "next/link";
+import styles from "@/styles/pages/auth/forgotPassword-v2.module.scss";
 import axios from "axios";
 import { useState } from "react";
 
-const Home = () => {
+export default function ForgotPassword() {
   const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
 
-  const [form, setForm] = useState({ email: "", password_hash: "" });
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setEmail(e.target.value);
+    if (error) setError(""); // Clear error when user types
   };
 
-  const handleBtnLogin = () => {
-    router.push("/auth/login");
-  };
+  const handleSubmit = async () => {
+    // Validation
+    if (!email || email.trim() === "") {
+      setError("Vui lòng nhập email");
+      return;
+    }
 
-  // bấm nút xác nhận
-  const handleBtn = async () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError("Email không hợp lệ");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
     try {
-      const res = await axios.get(
-        `http://localhost:8080/api/users/exist/${form.email}`,
+      // Check if email exists
+      const existRes = await axios.get(
+        `http://localhost:8080/api/users/exist/${email}`
       );
 
-      if (res.data === true) {
-        localStorage.setItem("email", form.email);
-
-        await axios.get(`http://localhost:8080/api/auth/mailResetPassword`, {
-          params: { email: form.email },
-        });
-
-        alert("Mã OTP đã được gửi đến mail của bạn");
-        router.push("/auth/forgotPassword/changePassword");
-      } else {
-        alert("Email không tồn tại");
+      if (existRes.data !== true) {
+        setError("Email không tồn tại trong hệ thống");
+        setLoading(false);
+        return;
       }
-    } catch (error) {
-      alert("Có lỗi xảy ra vui lòng thử lại !");
-      console.error(error);
+
+      // Send OTP email
+      await axios.get(`http://localhost:8080/api/auth/mailResetPassword`, {
+        params: { email },
+      });
+
+      // Store email and show success
+      localStorage.setItem("email", email);
+      setSuccess(true);
+
+      // Redirect after 2 seconds
+      setTimeout(() => {
+        router.push("/auth/forgotPassword/changePassword");
+      }, 2000);
+    } catch (err: any) {
+      console.error(err);
+      setLoading(false);
+      if (err.response?.status === 404) {
+        setError("Email không tồn tại trong hệ thống");
+      } else {
+        setError("Có lỗi xảy ra, vui lòng thử lại sau");
+      }
     }
   };
 
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !loading && !success) {
+      handleSubmit();
+    }
+  };
+
+  const handleBackToLogin = () => {
+    router.push("/auth/login");
+  };
+
   return (
-    <div className={styleLogin["container"]}>
-      <div className={styleVerification["card"]}>
-        <div>
-          <p className={styleLogin["title"]}>Quên mật khẩu ?</p>
-        </div>
+    <div className={styles["container"]}>
+      <div className={styles["gradientBorder"]}>
+        <div className={styles["card"]}>
+          {/* Header with Icon */}
+          <div className={styles["header"]}>
+            <h1>Quên mật khẩu?</h1>
+            <p>
+              Hãy nhập email của bạn và chúng tôi sẽ gửi mã OTP để đặt lại mật
+              khẩu.
+            </p>
+          </div>
 
-        <div className={styleLogin["gradientBorder"]}>
-          <input
-            type="text"
-            placeholder="Nhập email đã quên mật khẩu"
-            className={styleLogin["input"]}
-            value={form.email}
-            name="email"
-            onChange={handleChange}
-          />
-        </div>
+          {/* Error Alert */}
+          {error && (
+            <div className={styles["alertError"]} role="alert">
+              {error}
+            </div>
+          )}
 
-        <div
-          className={styleLogin["centeredButtonRow"]}
-          onClick={() => handleBtn()}
-        >
-          <button className={styleLogin["btnLogin"]}>
-            <p className={styleLogin["btnTextLarge"]}>Xác nhận</p>
-          </button>
-        </div>
+          {/* Success Alert */}
+          {success && (
+            <div className={styles["alertSuccess"]} role="alert">
+              Mã OTP đã được gửi đến email của bạn. Đang chuyển hướng...
+            </div>
+          )}
 
-        <div
-          className={
-            styleLogin["gradientBorder"] + " " + styleLogin["centeredButtonRow"]
-          }
-        >
-          <button
-            className={styleLogin["btnLogin"] + " " + styleLogin["btnGray"]}
-            onClick={() => handleBtnLogin()}
+          {/* Form */}
+          <form
+            className={styles["form"]}
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSubmit();
+            }}
           >
-            <p className={styleLogin["btnTextLarge"]}>Quay lại đăng nhập</p>
-          </button>
+            {/* Email Input */}
+            <div className={styles["formGroup"]}>
+              <label htmlFor="email">Email</label>
+              <div className={styles["inputWrapper"]}>
+                <input
+                  id="email"
+                  type="email"
+                  placeholder="Nhập email đã đăng ký"
+                  value={email}
+                  onChange={handleChange}
+                  onKeyPress={handleKeyPress}
+                  disabled={loading || success}
+                  aria-required="true"
+                  aria-label="Email"
+                  className={error ? styles["error"] : ""}
+                />
+              </div>
+            </div>
+
+            {/* Button Group */}
+            <div
+              className={`${styles["buttonGroup"]} ${loading ? styles["loading"] : ""}`}
+            >
+              <button
+                type="submit"
+                className={styles["submitButton"]}
+                disabled={loading || success}
+                title="Gửi mã OTP"
+              >
+                {loading
+                  ? "Đang gửi..."
+                  : success
+                    ? "Đã gửi mã OTP"
+                    : "Gửi mã OTP"}
+              </button>
+
+              <button
+                type="button"
+                className={styles["backButton"]}
+                onClick={handleBackToLogin}
+                disabled={loading}
+                title="Quay lại đăng nhập"
+              >
+                Quay lại đăng nhập
+              </button>
+            </div>
+          </form>
+
+          {/* Info Section */}
+          <div className={styles["infoSection"]}>
+            <p className={styles["infoText"]}>
+              Chưa nhận được mã? Kiểm tra hộp thư spam hoặc thử lại sau vài
+              phút.
+            </p>
+            <div className={styles["helpLinks"]}>
+              <Link href="/auth/register">Đăng ký tài khoản mới</Link>
+              <Link href="/help">Trợ giúp</Link>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
-};
-
-export default Home;
+}

@@ -17,15 +17,6 @@ class Location {
   @Prop()
   address?: string; // địa chỉ chuỗi do user nhập
 
-  @Prop()
-  detail_address?: string; // địa chỉ chi tiết
-
-  @Prop()
-  ward?: string; // phường
-
-  @Prop()
-  province?: string; // tỉnh
-
   @Prop({ type: GeoPoint })
   geo?: GeoPoint; // GeoJSON Point nếu người dùng chọn trên bản đồ
 }

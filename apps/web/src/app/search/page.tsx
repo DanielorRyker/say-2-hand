@@ -4,6 +4,7 @@
 import React, { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "./search.module.scss";
+import { parseAddress } from "@/lib/address";
 import { Icon } from "@iconify/react";
 import { apiClient } from "@/lib/api-client";
 import FilterModal from "./components/FilterModal";
@@ -98,6 +99,8 @@ const SORT_OPTIONS = [
   { value: "nearest", label: "Gần nhất", icon: "mdi:map-marker" },
   { value: "price_asc", label: "Giá thấp đến cao", icon: "mdi:arrow-up" },
   { value: "price_desc", label: "Giá cao đến thấp", icon: "mdi:arrow-down" },
+  { value: "province_asc", label: "Tỉnh (A→Z)", icon: "mdi:alphabetical" },
+  { value: "province_desc", label: "Tỉnh (Z→A)", icon: "mdi:alphabetical" },
 ];
 
 function SearchPageContent() {
@@ -121,6 +124,9 @@ function SearchPageContent() {
 
   // Filter states - lấy từ URL params
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
+  const [filterProvinceParam, setFilterProvinceParam] = useState<string | null>(
+    searchParams.get("province")
+  );
   const [selectedTransactionTypes, setSelectedTransactionTypes] = useState<
     string[]
   >([]);
@@ -145,6 +151,7 @@ function SearchPageContent() {
   useEffect(() => {
     const query = searchParams.get("q") || "";
     setSearchQuery(query);
+    setFilterProvinceParam(searchParams.get("province"));
   }, [searchParams]);
 
   // Fetch categories
@@ -213,6 +220,27 @@ function SearchPageContent() {
   const applyFilters = React.useCallback(() => {
     let filtered = [...postsData];
 
+    // If province query param present, filter posts by parsed province token
+    const provinceParam = (filterProvinceParam || "").trim();
+    const normalizeForCompare = (s: string) =>
+      s
+        ? s
+            .normalize("NFD")
+            .replace(/\p{Diacritic}/gu, "")
+            .toLowerCase()
+            .replace(/[^a-z0-9 ]/g, "")
+            .trim()
+        : "";
+    const provinceParamNorm = normalizeForCompare(provinceParam);
+    if (provinceParamNorm) {
+      filtered = filtered.filter((post) => {
+        const parsed = parseAddress(post.location?.address || "");
+        const prov = parsed.province || "";
+        const provNorm = normalizeForCompare(prov);
+        return provNorm && provNorm === provinceParamNorm;
+      });
+    }
+
     // Search query
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -274,6 +302,20 @@ function SearchPageContent() {
       case "price_desc":
         filtered.sort((a, b) => (b.price || 0) - (a.price || 0));
         break;
+      case "province_asc":
+        filtered.sort((a, b) => {
+          const pa = parseAddress(a.location?.address || "").province || "";
+          const pb = parseAddress(b.location?.address || "").province || "";
+          return pa.localeCompare(pb, "vi");
+        });
+        break;
+      case "province_desc":
+        filtered.sort((a, b) => {
+          const pa = parseAddress(a.location?.address || "").province || "";
+          const pb = parseAddress(b.location?.address || "").province || "";
+          return pb.localeCompare(pa, "vi");
+        });
+        break;
     }
 
     setFilteredPosts(filtered);
@@ -285,6 +327,7 @@ function SearchPageContent() {
     selectedCategories,
     priceRange,
     sortBy,
+    filterProvinceParam,
   ]);
 
   useEffect(() => {

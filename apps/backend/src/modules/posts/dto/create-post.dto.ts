@@ -26,6 +26,18 @@ class LocationDto {
   address?: string;
 
   @IsOptional()
+  @IsString()
+  detail_address?: string;
+
+  @IsOptional()
+  @IsString()
+  ward?: string;
+
+  @IsOptional()
+  @IsString()
+  province?: string;
+
+  @IsOptional()
   @ValidateNested()
   @Type(() => GeoPointDto)
   geo?: GeoPointDto;
@@ -69,8 +81,14 @@ export class CreatePostDto {
   @Type(() => ImageDto)
   images: ImageDto[];
 
-  @IsEnum(['new', 'used'])
-  condition: 'new' | 'used';
+  @IsEnum(['new', 'like_new', 'used', 'minor_flaw', 'for_repair', 'for_parts'])
+  condition:
+    | 'new'
+    | 'like_new'
+    | 'used'
+    | 'minor_flaw'
+    | 'for_repair'
+    | 'for_parts';
 
   @IsEnum(['sell', 'exchange', 'give away'])
   transaction_type: 'sell' | 'exchange' | 'give away';

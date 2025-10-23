@@ -3,6 +3,33 @@ import { Document } from 'mongoose';
 
 export type UserDocument = User & Document;
 
+// Interface cho địa chỉ
+export class Address {
+  @Prop({ type: String })
+  label?: string; // Nhà riêng, Văn phòng, etc.
+
+  @Prop({ type: String, required: true })
+  address: string;
+
+  @Prop({ type: Boolean, default: false })
+  is_default: boolean;
+}
+
+// Interface cho tài khoản ngân hàng
+export class BankAccount {
+  @Prop({ type: String, required: true })
+  bank_name: string; // Tên ngân hàng
+
+  @Prop({ type: String, required: true })
+  account_number: string; // Số tài khoản
+
+  @Prop({ type: String, required: true })
+  account_holder: string; // Tên chủ tài khoản
+
+  @Prop({ type: Boolean, default: false })
+  is_default: boolean;
+}
+
 @Schema({
   timestamps: true,
   collection: 'users',
@@ -35,11 +62,17 @@ export class User {
   @Prop({ type: Boolean, default: false })
   phone_verified: boolean;
 
-  @Prop({ type: String })
-  address?: string;
+  @Prop({ type: [Address], default: [] })
+  addresses?: Address[];
 
   @Prop({ type: String })
   description?: string;
+
+  @Prop({ type: Date })
+  date_of_birth?: Date;
+
+  @Prop({ type: [BankAccount], default: [] })
+  bank_accounts?: BankAccount[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

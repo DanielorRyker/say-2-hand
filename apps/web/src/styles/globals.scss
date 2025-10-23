@@ -311,22 +311,24 @@ body {
    ========================================== */
 
 .gradient-text {
-  background-clip: text;
   -webkit-background-clip: text;
+  background-clip: text;
+
   -webkit-text-fill-color: transparent;
 }
 
 .gradient-text-primary {
   background: var(--primary-dark);
-  background-clip: text;
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .gradient-text-secondary {
   background: var(--secondary-main);
-  background-clip: text;
   -webkit-background-clip: text;
+  background-clip: text;
+
   -webkit-text-fill-color: transparent;
 }
 

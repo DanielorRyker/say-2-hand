@@ -1,140 +1,300 @@
+/* ===========================
+   PROFILE USER PAGE - MODERN DESIGN
+   =========================== */
+
+/* Container với gradient background */
+.container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+    background: linear-gradient(135deg, #bfdbfe 0%, #a7f3d0 100%);
+    background-size: 200% 200%;
+    animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+
+    0%,
+    100% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+/* Gradient border wrapper */
+.gradientBorder {
+    width: 100%;
+    max-width: 600px;
+    padding: 3px;
+    border-radius: 32px;
+    background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    animation: cardSlideUp 0.6s ease-out;
+}
+
+@keyframes cardSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Main card */
+.card {
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 30px;
+    padding: 48px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+}
+
+/* Avatar section */
+.cardAvatarBackground {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%);
+    padding: 4px;
+    box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+    animation: avatarPulse 3s ease-in-out infinite;
+}
+
+@keyframes avatarPulse {
+
+    0%,
+    100% {
+        box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+        transform: scale(1);
+    }
+
+    50% {
+        box-shadow: 0 15px 40px rgba(59, 130, 246, 0.5);
+        transform: scale(1.02);
+    }
+}
+
+.avatarImg {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid white;
+}
+
+/* Title */
+.title {
+    font-size: 32px;
+    font-weight: 700;
+    background: linear-gradient(90deg, #3b82f6 0%, #10b981 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-align: center;
+    margin: 0;
+}
+
+/* Info section */
+.cardAllInfo {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.cardInfo {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+    background: rgba(243, 244, 246, 0.6);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+
+    &:hover {
+        background: rgba(243, 244, 246, 0.9);
+        transform: translateX(4px);
+    }
+}
+
+.iconImg {
+    flex-shrink: 0;
+    margin-top: 2px;
+    filter: grayscale(100%) opacity(0.7);
+}
+
 .bold {
-  font-weight: bold;
+    font-weight: 700;
+    color: #374151;
+    font-size: 15px;
+    margin: 0;
+    flex-shrink: 0;
 }
 
 .boldNoWrap {
-  font-weight: bold;
-  white-space: nowrap;
+    font-weight: 700;
+    color: #374151;
+    font-size: 15px;
+    margin: 0;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .wordBreak {
-  word-wrap: break-word;
-  max-width: 300px;
-}
-.container {
-  background-size: cover;
-  background-repeat: no-repeat;
-  height: auto;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background-color: #F4F4F4;
-
-  padding-Top:150px;
-  padding-bottom: 20px;
+    word-break: break-word;
+    color: #6b7280;
+    font-size: 15px;
+    margin: 0;
+    line-height: 1.6;
 }
 
-.gradientBorder {
-  display: block; 
-  position: relative;
-  padding: 1px;
-  border-radius: 30px;
-  background: linear-gradient(to right, #2DE099, #3B82F6);
-    width: 90%;
-  max-width: 900px;   
+.describe {
+    color: #6b7280;
+    font-size: 15px;
+    margin: 0;
+    line-height: 1.6;
 }
 
-.card{
-  width: 100%;
-  /* max-width: 900px; */
-  height: auto;
-  border-radius: 30px;
-  background-color: #EEEEEE;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  
-  /* padding: 20px; */
-}
-
-.cardAvatarBackground{
+/* Buttons */
+.btnProfile {
     width: 100%;
-    height: 20%;
-     background-image: url("/Background.png");
-     border-radius: 30px 30px 0 0;
-     display: flex;
-     justify-content: center;
-     align-items: center;
-}
-
-.avatarImg{
-    width: 200px;
-    height: 200px;
-    padding: 10px;
-}
-
-.title {
-  font-size: 40px;
-  font-weight: bold;
-  margin-bottom: 20px;
-   text-align: center;
-}
-
-.cardAllInfo{
+    max-width: 400px;
+    height: 52px;
+    background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%);
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
+    transition: all 0.3s ease;
     display: flex;
-   flex-direction: column;
-   
-   /* align-items: center; */
-    
-}
+    align-items: center;
+    justify-content: center;
 
-.describe{
-  overflow-wrap: break-word; /* cho text tự xuống dòng */
-  word-break: break-word;
-  max-width: 500px;
-}
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 32px rgba(59, 130, 246, 0.4);
+    }
 
-.cardInfo{
-    display: flex;
-    gap: 5px;
-    
+    &:active {
+        transform: translateY(0);
+    }
 }
-
-.iconImg{
-  width: 24px;
-  height: 24px;
-}
-
-.btnProfile{
-  width: 400px;
-  height: 60px;
-  background: linear-gradient(to right, #2DE099, #3B82F6);
-  border-radius: 10;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 20;
-}
-.textBtn{
-  font-weight: bold;
-  margin-top: 12;
-  font-size: 18px;
-}
-
 
 .gradientBorderLogout {
-  display: block; 
-  position: relative;
-  padding: 1px;
-  border-radius: 10;
-  background: linear-gradient(to right, #2DE099, #3B82F6);
-  width: 100%;
-  max-width: 400px;   
-  height: 60px;
-  margin-bottom: 25;
+    width: 100%;
+    max-width: 400px;
+    padding: 2px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
 }
 
-.btnLogout{
-  width: 100%;
-  max-width: 400px;   
-  height: 58px;
-  background: #E5E5E5;
-  border-radius: 10;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  
+.btnLogout {
+    width: 100%;
+    height: 50px;
+    background: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
+    &:hover {
+        background: rgba(239, 68, 68, 0.1);
+        transform: translateY(-2px);
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+
+    .textBtn {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+}
+
+.textBtn {
+    font-size: 16px;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .container {
+        padding: 20px 16px;
+    }
+
+    .gradientBorder {
+        max-width: 100%;
+    }
+
+    .card {
+        padding: 36px 24px;
+    }
+
+    .cardAvatarBackground {
+        width: 120px;
+        height: 120px;
+    }
+
+    .title {
+        font-size: 26px;
+    }
+
+    .cardInfo {
+        flex-direction: column;
+        gap: 8px;
+        padding: 12px;
+    }
+
+    .iconImg {
+        margin-top: 0;
+    }
+
+    .bold,
+    .boldNoWrap {
+        font-size: 14px;
+    }
+
+    .wordBreak,
+    .describe {
+        font-size: 14px;
+    }
+
+    .btnProfile,
+    .gradientBorderLogout {
+        max-width: 100%;
+    }
+
+    .btnProfile {
+        height: 48px;
+    }
+
+    .btnLogout {
+        height: 46px;
+    }
+
+    .textBtn {
+        font-size: 15px;
+    }
 }
