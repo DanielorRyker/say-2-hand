@@ -584,8 +584,11 @@ export default function ChatPage() {
           <input
             type="file"
             accept="image/*"
-            style={{ display: "none" }}
+            hidden
             id="fileInput"
+            title="Attach image"
+            placeholder="Attach image"
+            aria-label="Attach image"
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (file) {
@@ -600,6 +603,8 @@ export default function ChatPage() {
           {/* Nút camera */}
           <button
             className={cvstStyles.sendImgBtn}
+            title="Attach image"
+            aria-label="Attach image"
             onClick={() => document.getElementById("fileInput")?.click()}
           >
             <Image

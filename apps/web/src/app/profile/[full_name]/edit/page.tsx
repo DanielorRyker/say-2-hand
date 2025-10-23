@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import styles from "@/styles/pages/profile/edit-v2.module.scss";
 import { useState, useEffect } from "react";
@@ -48,6 +49,12 @@ const EditProfilePage = () => {
 
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  // Validation state
+  const [formErrors, setFormErrors] = useState<
+    Partial<
+      Record<keyof UserData | "avatar" | "bank_accounts" | "addresses", string>
+    >
+  >({});
 
   // Modals
   const [showAddressModal, setShowAddressModal] = useState(false);
@@ -73,6 +80,7 @@ const EditProfilePage = () => {
   const [selectedWard, setSelectedWard] = useState<number>(0);
   const [street, setStreet] = useState<string>("");
   const [addressError, setAddressError] = useState<string>("");
+  const [fileError, setFileError] = useState<string>("");
 
   const [newBank, setNewBank] = useState<BankAccount>({
     bank_name: "",
@@ -197,61 +205,50 @@ const EditProfilePage = () => {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    // clear related error when user types
+    setFormErrors((prev) => ({ ...prev, [name]: undefined }));
+    setForm({ ...form, [name]: value });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0] || null;
-    setFile(selected);
+    setFileError("");
     if (selected) {
-      setPreview(URL.createObjectURL(selected));
-    }
-  };
-
-  const handleUploadAvatar = async () => {
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("userId", form._id);
-
-    try {
-      setLoading(true);
-      const res = await axios.post(
-        "http://localhost:8080/api/upload/avatar",
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
-
-      const imageUrl = res.data.url;
-      const avatarPath = imageUrl.split("say2hand/")[1];
-
-      setForm((prev) => ({ ...prev, avatar: avatarPath }));
-      alert("Upload ảnh thành công!");
-
-      // Refresh user data
-      const token = localStorage.getItem("access_token");
-      const userRes = await axios.get(
-        `http://localhost:8080/api/users/find/${form.email}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      localStorage.setItem("user", JSON.stringify(userRes.data));
-    } catch (err: any) {
-      if (err.response?.status === 401) {
-        alert("Phiên đăng nhập đã kết thúc, vui lòng đăng nhập lại!");
-        router.push("/auth/login");
-      } else {
-        console.error("Upload failed:", err);
-        alert("Upload ảnh thất bại!");
+      // validate file type and size
+      const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "image/gif",
+      ];
+      const maxSize = 2 * 1024 * 1024; // 2MB
+      if (!allowedTypes.includes(selected.type)) {
+        setFileError(
+          "Loại tệp không hợp lệ. Vui lòng chọn ảnh JPG/PNG/WEBP/GIF."
+        );
+        setFile(null);
+        setPreview(null);
+        return;
       }
-    } finally {
-      setLoading(false);
+      if (selected.size > maxSize) {
+        setFileError("Kích thước tệp quá lớn. Vui lòng chọn ảnh <= 2MB.");
+        setFile(null);
+        setPreview(null);
+        return;
+      }
+
+      setFile(selected);
+      setPreview(URL.createObjectURL(selected));
+      // clear avatar error
+      setFormErrors((prev) => ({ ...prev, avatar: undefined }));
+    } else {
+      setFile(null);
+      setPreview(null);
     }
   };
+
+  // Avatar upload handled inside handleSubmit when saving the profile
 
   // Build full address from selections
   const buildFullAddress = (): string => {
@@ -351,6 +348,8 @@ const EditProfilePage = () => {
     setShowAddressModal(false);
     resetAddressForm();
     setEditingAddressIndex(null);
+    // clear address related errors
+    setFormErrors((prev) => ({ ...prev, addresses: undefined }));
   };
 
   const removeAddress = (index: number) => {
@@ -382,12 +381,30 @@ const EditProfilePage = () => {
   };
 
   const saveBank = () => {
+    // Basic required checks
     if (
       !newBank.bank_name.trim() ||
       !newBank.account_number.trim() ||
       !newBank.account_holder.trim()
     ) {
       alert("Vui lòng điền đầy đủ thông tin!");
+      return;
+    }
+
+    // Account number: digits only, reasonable length (6-20)
+    const acct = newBank.account_number.replace(/\s+/g, "");
+    if (!/^\d{6,20}$/.test(acct)) {
+      alert("Số tài khoản không hợp lệ. Vui lòng nhập 6-20 chữ số.");
+      return;
+    }
+
+    // Prevent duplicate account numbers
+    const existing = form.bank_accounts || [];
+    const duplicateIndex = existing.findIndex(
+      (b) => b.account_number.replace(/\s+/g, "") === acct
+    );
+    if (duplicateIndex !== -1 && duplicateIndex !== editingBankIndex) {
+      alert("Số tài khoản này đã tồn tại trong hồ sơ.");
       return;
     }
 
@@ -415,6 +432,8 @@ const EditProfilePage = () => {
       is_default: false,
     });
     setEditingBankIndex(null);
+    // clear bank related errors
+    setFormErrors((prev) => ({ ...prev, bank_accounts: undefined }));
   };
 
   const removeBank = (index: number) => {
@@ -425,8 +444,93 @@ const EditProfilePage = () => {
   };
 
   const handleSubmit = async () => {
-    if (!form.full_name || !form.email) {
-      alert("Vui lòng nhập đầy đủ thông tin bắt buộc!");
+    // Run client-side validation
+    const errors: Record<string, string> = {};
+    if (!form.full_name || !form.full_name.trim()) {
+      errors.full_name = "Họ và tên là bắt buộc.";
+    } else if (form.full_name.trim().length < 2) {
+      errors.full_name = "Họ và tên quá ngắn.";
+    }
+
+    // phone number optional but if present must be valid VN format
+    if (form.phone_number && form.phone_number.trim()) {
+      const phone = form.phone_number.replace(/\s+/g, "");
+      const vnPhone = /^(?:\+?84|0)(?:3|5|7|8|9)\d{8}$/;
+      if (!vnPhone.test(phone)) {
+        errors.phone_number = "Số điện thoại không hợp lệ.";
+      }
+    }
+
+    // date_of_birth: not future and reasonable age (>= 13)
+    if (form.date_of_birth) {
+      const dob = new Date(form.date_of_birth);
+      const now = new Date();
+      if (isNaN(dob.getTime())) {
+        errors.date_of_birth = "Ngày sinh không hợp lệ.";
+      } else if (dob > now) {
+        errors.date_of_birth = "Ngày sinh không thể là tương lai.";
+      } else {
+        const age = Math.floor(
+          (now.getTime() - dob.getTime()) / (365.25 * 24 * 3600 * 1000)
+        );
+        if (age < 13) {
+          errors.date_of_birth = "Bạn phải từ 13 tuổi trở lên.";
+        }
+      }
+    }
+
+    // description max length
+    if (form.description && form.description.length > 1000) {
+      errors.description = "Phần giới thiệu quá dài (tối đa 1000 ký tự).";
+    }
+
+    // addresses validation: if present, each must have non-empty address
+    if (form.addresses && form.addresses.length > 0) {
+      for (let i = 0; i < form.addresses.length; i++) {
+        const a = form.addresses[i];
+        if (!a.address || !a.address.trim()) {
+          errors.addresses = `Địa chỉ #${i + 1} chưa đầy đủ.`;
+          break;
+        }
+      }
+    }
+
+    // bank accounts validation: if present, each must be valid
+    if (form.bank_accounts && form.bank_accounts.length > 0) {
+      const seen = new Set<string>();
+      for (let i = 0; i < form.bank_accounts.length; i++) {
+        const b = form.bank_accounts[i];
+        if (!b.bank_name || !b.account_number || !b.account_holder) {
+          errors.bank_accounts = `Tài khoản ngân hàng #${i + 1} chưa đầy đủ.`;
+          break;
+        }
+        const acct = b.account_number.replace(/\s+/g, "");
+        if (!/^\d{6,20}$/.test(acct)) {
+          errors.bank_accounts = `Tài khoản #${i + 1} có số không hợp lệ.`;
+          break;
+        }
+        if (seen.has(acct)) {
+          errors.bank_accounts = `Tồn tại số tài khoản trùng lặp: ${acct}`;
+          break;
+        }
+        seen.add(acct);
+      }
+    }
+
+    // avatar file error (from file validation)
+    if (fileError) {
+      errors.avatar = fileError;
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      // scroll to first error (basic) — try to focus first invalid input
+      const firstKey = Object.keys(errors)[0];
+      const el = document.querySelector(
+        `[name="${firstKey}"]`
+      ) as HTMLElement | null;
+      if (el && typeof el.focus === "function") el.focus();
+      alert(Object.values(errors)[0]);
       return;
     }
 
@@ -434,10 +538,97 @@ const EditProfilePage = () => {
       setLoading(true);
       const token = localStorage.getItem("access_token");
 
-      await axios.patch(`http://localhost:8080/api/users/`, form, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      if (!token) {
+        alert(
+          "Bạn cần đăng nhập để cập nhật thông tin. Vui lòng đăng nhập lại."
+        );
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("user");
+        router.push("/auth/login");
+        return;
+      }
 
+      // Build a minimal payload from current form; avoid sending server-only fields
+      const payload: any = {
+        full_name: form.full_name,
+        phone_number: form.phone_number,
+        description: form.description,
+      };
+
+      // date_of_birth: convert to Date object if present (server DTO expects Date)
+      if (form.date_of_birth) {
+        const d = new Date(form.date_of_birth);
+        if (!isNaN(d.getTime())) payload.date_of_birth = d;
+      }
+
+      // addresses: include only when user has added addresses
+      if (form.addresses && form.addresses.length > 0) {
+        payload.addresses = form.addresses;
+      }
+
+      // bank accounts: include when present
+      if (form.bank_accounts && form.bank_accounts.length > 0) {
+        payload.bank_accounts = form.bank_accounts;
+      }
+
+      // If user selected a new avatar file, upload it first and set avatar URL in payload
+      if (file) {
+        try {
+          const fd = new FormData();
+          fd.append("file", file);
+          fd.append("userId", form._id);
+          const uploadRes = await axios.post(
+            "http://localhost:8080/api/upload/avatar",
+            fd,
+            { headers: { "Content-Type": "multipart/form-data" } }
+          );
+          const imageUrl = uploadRes.data?.url;
+          if (imageUrl) {
+            // Some backends expect a relative path (stored in GCS). If the upload
+            // service returns a full URL using NEXT_PUBLIC_URL_GCS, strip that prefix.
+            const gcsPrefix = process.env.NEXT_PUBLIC_URL_GCS || "";
+            const normalizedAvatar =
+              gcsPrefix && imageUrl.startsWith(gcsPrefix)
+                ? imageUrl.replace(gcsPrefix, "")
+                : imageUrl;
+
+            payload.avatar = normalizedAvatar;
+            // update local UI state to reflect new avatar
+            setForm((prev) => ({ ...prev, avatar: normalizedAvatar }));
+            setPreview(imageUrl);
+          }
+        } catch (uploadErr: any) {
+          console.error(
+            "Avatar upload failed:",
+            uploadErr?.response || uploadErr
+          );
+          // Continue — don't block profile save on avatar failure, but inform user
+          alert(
+            "Không thể tải ảnh đại diện. Thao tác lưu sẽ tiếp tục mà không cập nhật ảnh."
+          );
+        }
+      }
+
+      // Log payload and request info (token masked) for debugging
+      console.group("Profile update - request");
+      const maskedToken = token ? token.substring(0, 8) + "..." : null;
+      console.log("masked token:", maskedToken);
+      console.log("payload:", payload);
+      console.groupEnd();
+
+      // Send profile update
+      // include _id so backend can find the document
+      if (form._id) payload._id = form._id;
+      const patchRes = await axios.patch(
+        `http://localhost:8080/api/users/`,
+        payload,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      console.log("Patch response:", patchRes.status, patchRes.data);
+
+      // Refresh user from server
       const userRes = await axios.get(
         `http://localhost:8080/api/users/find/${form.email}`,
         {
@@ -446,12 +637,35 @@ const EditProfilePage = () => {
       );
 
       localStorage.setItem("user", JSON.stringify(userRes.data));
-      alert("Cập nhật thành công!");
+      // notify other parts of the app in the same tab that the user changed
+      try {
+        window.dispatchEvent(new Event("user-updated"));
+      } catch {
+        // ignore if dispatch not allowed in some environments
+      }
+      console.log("Cập nhật thành công!");
       router.push(`/profile/${form.full_name}`);
     } catch (err: any) {
-      if (err.response?.status === 401) {
-        alert("Phiên đăng nhập đã kết thúc, vui lòng đăng nhập lại!");
-        router.push("/auth/login");
+      // Improved error reporting
+      if (err.response) {
+        console.error(
+          "Update failed - response:",
+          err.response.status,
+          err.response.data
+        );
+        // extra diagnostics
+        console.error("Axios error config:", err.config);
+        console.error("Axios error request:", err.request);
+        console.error("Axios error response:", err.response);
+        if (err.response.status === 401) {
+          alert("Phiên đăng nhập đã kết thúc, vui lòng đăng nhập lại!");
+          router.push("/auth/login");
+          return;
+        }
+        // Show server-provided message if available
+        const serverMsg =
+          err.response.data?.message || JSON.stringify(err.response.data);
+        alert(`Cập nhật thất bại: ${serverMsg}`);
       } else {
         console.error("Update failed:", err);
         alert("Cập nhật thất bại!");
@@ -485,10 +699,15 @@ const EditProfilePage = () => {
             <div className={styles.avatarSection}>
               <div className={styles.avatarWrapper}>
                 {preview ? (
-                  <div
-                    className={`${styles.avatar} ${styles.avatarImage}`}
-                    style={{ backgroundImage: `url(${preview})` }}
-                  />
+                  <div className={`${styles.avatar} ${styles.avatarImage}`}>
+                    <Image
+                      src={preview}
+                      alt="Avatar preview"
+                      width={120}
+                      height={120}
+                      className={styles.avatarImg}
+                    />
+                  </div>
                 ) : (
                   <div className={styles.avatarPlaceholder}>
                     {getInitials(form.full_name || "U")}
@@ -508,16 +727,13 @@ const EditProfilePage = () => {
                   📷
                 </label>
               </div>
-              {file && (
-                <button
-                  className={styles.btnPrimary}
-                  onClick={handleUploadAvatar}
-                  disabled={loading}
-                  type="button"
-                >
-                  Upload ảnh
-                </button>
+              {/* Avatar/File errors */}
+              {(fileError || formErrors.avatar) && (
+                <div className={styles.errorMessage} role="alert">
+                  {fileError || formErrors.avatar}
+                </div>
               )}
+              {/* Avatar is uploaded automatically when user saves the profile (no separate Upload button) */}
             </div>
 
             {/* Basic Info */}
@@ -539,6 +755,11 @@ const EditProfilePage = () => {
                       placeholder="Nguyễn Văn A"
                     />
                   </div>
+                  {formErrors.full_name && (
+                    <div className={styles.errorMessage}>
+                      {formErrors.full_name}
+                    </div>
+                  )}
                 </div>
 
                 <div className={styles.inputGroup}>
@@ -567,6 +788,11 @@ const EditProfilePage = () => {
                       placeholder="0912345678"
                     />
                   </div>
+                  {formErrors.phone_number && (
+                    <div className={styles.errorMessage}>
+                      {formErrors.phone_number}
+                    </div>
+                  )}
                 </div>
 
                 <div className={styles.inputGroup}>
@@ -581,6 +807,11 @@ const EditProfilePage = () => {
                       title="Chọn ngày sinh"
                     />
                   </div>
+                  {formErrors.date_of_birth && (
+                    <div className={styles.errorMessage}>
+                      {formErrors.date_of_birth}
+                    </div>
+                  )}
                 </div>
 
                 <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
@@ -594,6 +825,11 @@ const EditProfilePage = () => {
                       placeholder="Chia sẻ một chút về bạn..."
                     />
                   </div>
+                  {formErrors.description && (
+                    <div className={styles.errorMessage}>
+                      {formErrors.description}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -635,6 +871,11 @@ const EditProfilePage = () => {
                   </div>
                 ))}
               </div>
+              {formErrors.addresses && (
+                <div className={styles.errorMessage}>
+                  {formErrors.addresses}
+                </div>
+              )}
               <button
                 className={styles.btnAdd}
                 onClick={() => openAddressModal()}
@@ -686,6 +927,11 @@ const EditProfilePage = () => {
                   </div>
                 ))}
               </div>
+              {formErrors.bank_accounts && (
+                <div className={styles.errorMessage}>
+                  {formErrors.bank_accounts}
+                </div>
+              )}
               <button
                 className={styles.btnAdd}
                 onClick={() => openBankModal()}
@@ -766,9 +1012,7 @@ const EditProfilePage = () => {
                 />
                 <span className={styles.toggleText}>
                   {useApiV2 ? (
-                    <strong>
-                      ✅ Cấu trúc 2025 (34 tỉnh, mô hình 2 cấp - bỏ Quận/Huyện)
-                    </strong>
+                    <strong>Trước sáp nhập</strong>
                   ) : (
                     <strong>📋 Cấu trúc cũ (63 tỉnh, mô hình 3 cấp)</strong>
                   )}

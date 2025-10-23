@@ -14,7 +14,12 @@ const ProfilePage = () => {
     full_name: string;
     role: string;
     phone_number: string;
-    address: string;
+    address?: string;
+    addresses?: {
+      label?: string;
+      address: string;
+      is_default?: boolean;
+    }[];
     description: string;
     avatar: string;
   } | null>(null);
@@ -25,6 +30,27 @@ const ProfilePage = () => {
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
+    // Listen for changes to localStorage from other tabs
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "user") {
+        const newVal = e.newValue;
+        if (newVal) setUser(JSON.parse(newVal));
+      }
+    };
+
+    // Custom event for same-tab updates (dispatched from the edit page)
+    const handleUserUpdated = () => {
+      const fresh = localStorage.getItem("user");
+      if (fresh) setUser(JSON.parse(fresh));
+    };
+
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener("user-updated", handleUserUpdated);
+
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("user-updated", handleUserUpdated);
+    };
   }, []);
 
   if (!mounted) return null;
@@ -53,6 +79,18 @@ const ProfilePage = () => {
       .join("")
       .toUpperCase()
       .slice(0, 2);
+  };
+
+  const getDisplayAddress = (u: typeof user) => {
+    if (!u) return null;
+    // prefer structured addresses array
+    if (u.addresses && u.addresses.length > 0) {
+      const def = u.addresses.find((a) => a.is_default);
+      const pick = def || u.addresses[0];
+      return pick.address || pick.label || null;
+    }
+    // fallback to old single string field
+    return u.address || null;
   };
 
   return (
@@ -140,12 +178,12 @@ const ProfilePage = () => {
                 <span className={styleProfile["infoLabel"]}>Địa chỉ:</span>
                 <span
                   className={
-                    user?.address
+                    getDisplayAddress(user)
                       ? styleProfile["infoValue"]
                       : styleProfile["infoEmpty"]
                   }
                 >
-                  {user?.address || "Đang cập nhật"}
+                  {getDisplayAddress(user) || "Đang cập nhật"}
                 </span>
               </div>
 

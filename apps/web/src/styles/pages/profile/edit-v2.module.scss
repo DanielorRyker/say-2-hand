@@ -50,8 +50,9 @@
 
 .card {
     background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+
     border-radius: 24px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
     padding: 40px;
@@ -106,6 +107,17 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+    /* When using an <img> or Next.js Image inside, hide overflow so the image
+       is clipped to the circular avatar shape. */
+    overflow: hidden;
+}
+
+.avatarImg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    border-radius: 50%;
 }
 
 .avatarPlaceholder {
@@ -469,8 +481,8 @@
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
     display: flex;
     align-items: center;
     justify-content: center;
