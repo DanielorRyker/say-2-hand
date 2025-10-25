@@ -673,7 +673,7 @@
   min-width: 120px;
   height: 50px;
   border-radius: vars.$radius-full;
-  background: colors.$ui-button-primary-2;
+  background: colors.$ui-button-primary;
   @include vars.flex-center;
   padding: 0 vars.$spacing-lg;
   box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
