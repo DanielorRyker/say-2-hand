@@ -648,13 +648,8 @@
 
 /* User dropdown */
 .userDropDown {
-  min-width: 120px;
-  height: 50px;
   border-radius: vars.$radius-full;
-  background: rgba(255, 255, 255, 0.12);
   @include vars.flex-center;
-  gap: vars.$spacing-sm;
-  padding: 0 vars.$spacing-md;
   cursor: pointer;
   transition: all vars.$transition-base;
   -webkit-backdrop-filter: blur(10px);
@@ -662,7 +657,6 @@
   @include colors.glass-effect(10px, 0.12);
 
   &:hover {
-    background: rgba(255, 255, 255, 0.18);
     transform: translateY(-2px);
   }
 

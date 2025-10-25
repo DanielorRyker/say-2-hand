@@ -305,4 +305,115 @@ export class TransactionsService {
       data: transaction,
     };
   }
+
+  // Admin: Lấy tất cả giao dịch với filter
+  async getAllTransactionsForAdmin(status?: string) {
+    const query: Record<string, any> = {};
+    if (status) {
+      query.status = status;
+    }
+
+    const transactions = await this.transactionModel
+      .find(query)
+      .populate({
+        path: 'post_id',
+        select: 'title images price transaction_type status',
+      })
+      .populate({
+        path: 'seller_id',
+        select: 'full_name email phone avatar',
+      })
+      .populate({
+        path: 'buyer_id',
+        select: 'full_name email phone avatar',
+      })
+      .sort({ createdAt: -1 })
+      .exec();
+
+    return {
+      message: 'All transactions retrieved successfully',
+      data: transactions,
+    };
+  }
+
+  // Admin: Lấy thống kê giao dịch
+  async getTransactionStatistics() {
+    const totalTransactions = await this.transactionModel.countDocuments();
+    const pendingCount = await this.transactionModel.countDocuments({
+      status: 'pending',
+    });
+    const shippingCount = await this.transactionModel.countDocuments({
+      status: 'shipping',
+    });
+    const completedCount = await this.transactionModel.countDocuments({
+      status: 'completed',
+    });
+    const cancelledCount = await this.transactionModel.countDocuments({
+      status: 'cancelled',
+    });
+
+    // Tính tổng doanh thu từ các giao dịch hoàn thành
+    const totalRevenue = await this.transactionModel.aggregate([
+      { $match: { status: 'completed' } },
+      { $group: { _id: null, total: { $sum: '$amount' } } },
+    ]);
+
+    return {
+      message: 'Transaction statistics retrieved successfully',
+      data: {
+        total: totalTransactions,
+        pending: pendingCount,
+        shipping: shippingCount,
+        completed: completedCount,
+        cancelled: cancelledCount,
+        totalRevenue: totalRevenue[0]?.total || 0,
+      },
+    };
+  }
+
+  // Admin: Cập nhật trạng thái giao dịch
+  async updateTransactionStatus(id: string, status: string, note?: string) {
+    const transaction = await this.transactionModel.findById(id);
+
+    if (!transaction) {
+      throw new NotFoundException(`Transaction with id ${id} not found`);
+    }
+
+    const validStatuses = ['pending', 'shipping', 'completed', 'cancelled'];
+    if (!validStatuses.includes(status)) {
+      throw new BadRequestException(`Invalid status: ${status}`);
+    }
+
+    transaction.status = status;
+
+    if (status === 'cancelled') {
+      transaction.cancelled_at = new Date();
+      if (note) {
+        transaction.cancel_reason = note;
+      }
+      transaction.payment_status = 'refunded';
+
+      // Cập nhật trạng thái post về active
+      await this.postModel.findByIdAndUpdate(transaction.post_id, {
+        status: 'active',
+      });
+    } else if (status === 'shipping') {
+      transaction.shipped_at = new Date();
+    } else if (status === 'completed') {
+      transaction.completed_at = new Date();
+
+      // Cập nhật trạng thái post thành completed
+      await this.postModel.findByIdAndUpdate(transaction.post_id, {
+        status: 'completed',
+        completed_at: new Date(),
+      });
+    }
+
+    await transaction.save();
+
+    return {
+      message: 'Transaction status updated successfully',
+      data: transaction,
+    };
+  }
 }

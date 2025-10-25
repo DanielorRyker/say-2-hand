@@ -84,6 +84,31 @@ export class TransactionsController {
     return this.transactionsService.completeOrder(id);
   }
 
+  // Admin: Lấy tất cả giao dịch với filter
+  @Get('admin/all')
+  getAllTransactionsForAdmin(@Query('status') status?: string) {
+    return this.transactionsService.getAllTransactionsForAdmin(status);
+  }
+
+  // Admin: Lấy thống kê giao dịch
+  @Get('admin/statistics')
+  getTransactionStatistics() {
+    return this.transactionsService.getTransactionStatistics();
+  }
+
+  // Admin: Cập nhật trạng thái giao dịch
+  @Patch('admin/:id/status')
+  updateTransactionStatus(
+    @Param('id') id: string,
+    @Body() body: { status: string; note?: string },
+  ) {
+    return this.transactionsService.updateTransactionStatus(
+      id,
+      body.status,
+      body.note,
+    );
+  }
+
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.transactionsService.remove(id);
