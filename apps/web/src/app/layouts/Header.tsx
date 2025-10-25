@@ -187,6 +187,14 @@ const Header = () => {
       newSocket.disconnect();
     };
   }, []);
+
+  useEffect(() => {
+  if (socket && user?._id) {
+    console.log("Joining user socket room:", user._id);
+    socket.emit("join_user", { userId: user._id });
+  }
+}, [socket, user?._id]);
+
   // Lắng nghe receive_message => reload API
   useEffect(() => {
     if (!socket || !user?._id) return;
@@ -205,6 +213,7 @@ const Header = () => {
       socket.off("conversation_updated", handleUpdate);
     };
   }, [socket, user?._id, fetchConversations]);
+  
 
   //tổng tin chưa đọc
   const [totalUnread, setTotalUnread] = useState(0);

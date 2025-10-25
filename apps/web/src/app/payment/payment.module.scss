@@ -1113,15 +1113,20 @@
 //QR
 .qrContainer{
     position: fixed;
-    height: 400px;
-    width: 400px;
+    height: 500px;
+    width: 500px;
     background: linear-gradient(90deg, #f3f4f6 25%, #e9eef3 50%, #f3f4f6 75%);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);   
     border-radius: 12px;
     top: 50%;             /* canh từ mép trên 50% */
     left: 50%;            /* canh từ mép trái 50% */
     transform: translate(-50%, -50%); /* kéo phần tử về trung tâm thực sự */
-    }
+    display: flex;
+    justify-content: center; 
+    align-items: center; 
+    flex-direction: column;
+    gap:10px
+}
 
  .overlay {
   position: fixed;       /* cố định toàn màn hình */
@@ -1130,5 +1135,23 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;         /* đảm bảo nằm trên các element khác */
+  z-index: 1000;       
+}
+
+.qrImg{
+    width: 400px;                   
+
+  border-radius: 10px;           
+  object-fit: contain;
+  background: #f8fafc;            
+             
+  box-shadow: 0 0 8px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease;
+}
+
+.qrLabel{
+    font-weight: 500;
+    color: #10b981;
+    font-size: 18;
+    
 }

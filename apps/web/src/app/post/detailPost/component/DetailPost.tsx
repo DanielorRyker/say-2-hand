@@ -1055,14 +1055,14 @@ export const DetailPost: React.FC = () => {
                 <div className={`${styles["desktop-sticky-sidebar"]}`}>
                   <div className={`${styles["seller-card"]}`}>
                     <div className={`${styles["seller-head"]}`}>
-                      <img
-                        src={
-                          postData.user.avata
-                            ? base + postData.user.avatar
-                            : "/image/header/carbon_user-avatar-filled-alt.svg"
-                        }
-                        alt="seller"
-                      />
+                     <img
+                      src={
+                        postData.user.avatar
+                          ? base + postData.user.avatar
+                          : "/image/header/carbon_user-avatar-filled-alt.svg"
+                      }
+                      alt="Your Avatar"
+                    />
                       <div>
                         <div className={`${styles["seller-name"]}`}>
                           {postData.user.full_name}{" "}

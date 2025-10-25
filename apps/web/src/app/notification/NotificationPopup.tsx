@@ -121,29 +121,67 @@ export default function NotificationPopup() {
   };
 
   //Socket
-  // Socket connect
+  
   const [socket, setSocket] = useState<Socket | null>(null);
-  useEffect(() => {
-    // Kết nối socket.io tới BE (NestJS WebSocketGateway)
-    const newSocket = io("http://localhost:8080", {
-      transports: ["websocket"],
-    });
+  // useEffect(() => {
+  //   // Kết nối socket.io tới BE (NestJS WebSocketGateway)
+  //   const newSocket = io("http://localhost:8080", {
+  //     transports: ["websocket"],
+  //   });
 
-    setSocket(newSocket);
+  //   setSocket(newSocket);
 
-    newSocket.on("connect", () => {
-      console.log("Connected to socket:", newSocket.id);
-    });
+  //   newSocket.on("connect", () => {
+  //     console.log("Connected to socket:", newSocket.id);
+  //   });
 
-    newSocket.on("disconnect", () => {
-      console.log("Disconnected from socket");
-    });
+  //   newSocket.on("disconnect", () => {
+  //     console.log("Disconnected from socket");
+  //   });
 
-    // cleanup khi unmount
-    return () => {
-      newSocket.disconnect();
-    };
-  }, []);
+  //   // cleanup khi unmount
+  //   return () => {
+  //     newSocket.disconnect();
+  //   };
+  // }, []);
+  // Khởi tạo socket
+useEffect(() => {
+  const newSocket = io("http://localhost:8080", {
+    transports: ["websocket"],
+  });
+  setSocket(newSocket);
+
+  newSocket.on("connect", () => {
+    console.log("Connected to socket:", newSocket.id);
+  });
+
+  newSocket.on("disconnect", () => {
+    console.log("Disconnected from socket");
+  });
+
+  return () => {
+    newSocket.disconnect();
+  };
+}, []);
+
+// Join user khi đã có socket và user
+useEffect(() => {
+  if (!socket || !currentUser?._id) return;
+
+  console.log("Joining user room:", currentUser._id);
+  socket.emit("join_user", { userId: currentUser._id });
+
+  // Optional: gửi lại khi socket reconnect
+  socket.on("connect", () => {
+    console.log("Reconnect detected, rejoining user room:", currentUser._id);
+    socket.emit("join_user", { userId: currentUser._id });
+  });
+
+  return () => {
+    socket.off("connect");
+  };
+}, [socket, currentUser?._id]);
+
   // Lắng nghe receive_message => reload API
   useEffect(() => {
     if (!socket || !currentUser?._id) return;

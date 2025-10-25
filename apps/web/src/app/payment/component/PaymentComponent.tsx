@@ -5,6 +5,8 @@ import axios from "axios";
 import Link from "next/link";
 import styles from "../payment.module.scss";
 import { Icon } from "@iconify/react";
+import { io, Socket } from "socket.io-client";
+import QRCode from "react-qr-code";
 // import axios from "axios"; // TODO: Sẽ dùng khi backend có endpoint /api/payments
 
 interface PaymentMethod {
@@ -101,10 +103,15 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
   const [processing, setProcessing] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
     //QR
-  const [openQR, setOpenQR] = useState(false);
+  // const [openQR, setOpenQR] = useState(false);
   const [qrURL, setQrURL] = useState<string | undefined>(undefined);
   const popupRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
+
+   // QR payment flow
+  const [qrLoading, setQrLoading] = useState(false);
+  const [qrModalOpen, setQrModalOpen] = useState(false);
+  const [qrData, setQrData] = useState<any>(null);
 
     //  Ẩn popup khi click ra ngoài
     useEffect(() => {
@@ -112,16 +119,43 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
         const target = e.target as Node;
        if (popupRef.current && popupRef.current.contains(target)) return;
        if (overlayRef.current && overlayRef.current.contains(target)) return;
-        setOpenQR(false);
+        setQrModalOpen(false);
       };
       document.addEventListener("click", handleClickOutside);
       return () => document.removeEventListener("click", handleClickOutside);
     }, []);
 
    useEffect(() => {
-  if (openQR) document.body.style.overflow = "hidden";
+  if (qrModalOpen) document.body.style.overflow = "hidden";
   else document.body.style.overflow = "auto";
-}, [openQR]);
+}, [qrModalOpen]);
+
+//countdown
+const [countdown, setCountdown] = useState(60);
+
+useEffect(() => {
+    if (!qrModalOpen) return; // chỉ chạy khi popup mở
+
+    // reset lại khi popup mở
+    setCountdown(10);
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+           setQrModalOpen(false);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer); // dọn dẹp khi đóng popup
+  }, [qrModalOpen]);
+
+ 
+
+ 
 
 
   // Address states
@@ -132,16 +166,37 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
   const [customAddress, setCustomAddress] = useState("");
   const [saveCustomAddress, setSaveCustomAddress] = useState(false);
 
-  // QR payment flow
-  const [qrLoading, setQrLoading] = useState(false);
-  const [qrModalOpen, setQrModalOpen] = useState(false);
-  const [qrData, setQrData] = useState<any>(null);
+ 
 
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat("vi-VN", {
       style: "currency",
       currency: "VND",
     }).format(amount);
+
+     //Socket
+        const [socket, setSocket] = useState<Socket | null>(null);
+        useEffect(() => {
+          // Kết nối socket.io tới BE (NestJS WebSocketGateway)
+          const newSocket = io("http://localhost:8080", {
+            transports: ["websocket"], 
+          });
+      
+          setSocket(newSocket);
+      
+          newSocket.on("connect", () => {
+            console.log("Connected to socket:", newSocket.id);
+          });
+      
+          newSocket.on("disconnect", () => {
+            console.log("Disconnected from socket");
+          });
+      
+          // cleanup khi unmount
+          return () => {
+            newSocket.disconnect();
+          };
+        }, []);
 
   // Normalize data structure (handle both API and cache formats)
   const normalizedPost = React.useMemo(() => {
@@ -252,6 +307,11 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
         deeplink: "",
         channel: "in_app",
         is_read: false
+      });
+
+       socket?.emit("send_message", {
+          receiverId:normalizedPost.author_id?._id || normalizedPost.author_id,
+          message:'Notification'
       });
 
       // Redirect đến success page
@@ -707,7 +767,7 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
               </button>
 
               {/* QR failure modal */}
-              {/* {qrModalOpen && (
+              {qrModalOpen! && (
                 <div
                   className={styles["qr-modal-overlay"]}
                   onClick={() => setQrModalOpen(true)}
@@ -775,7 +835,7 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
                     </div>
                   </div>
                 </div>
-              )} */}
+              )}
             </>
           ) : (
             <button
@@ -844,7 +904,12 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
       onClick={(e) => (e.stopPropagation() ,handlePayment())} 
       onMouseDown={(e) => e.stopPropagation()}
     >
-      <img src={qrURL} alt="" />
+     
+         <img src={qrURL} alt="" className={styles["qrImg"]}/>
+      
+         <p className={styles["qrLabel"]}>Quét để thanh toán {countdown}</p>
+    
+      
     </div>
   </div>
 )}

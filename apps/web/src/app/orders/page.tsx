@@ -7,6 +7,7 @@ import { Icon } from "@iconify/react";
 import type { Transaction } from "@repo/types";
 import styles from "./orders.module.scss";
 import { useToast } from "@/components/ui/toast/ToastContext";
+import { io, Socket } from "socket.io-client";
 
 type TabType = "all" | "pending" | "shipping" | "completed" | "cancelled";
 
@@ -18,6 +19,30 @@ const OrdersPage = () => {
   const [activeTab, setActiveTab] = useState<TabType>("all");
   const [orders, setOrders] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
+
+  //Socket
+    const [socket, setSocket] = useState<Socket | null>(null);
+    useEffect(() => {
+      // Kết nối socket.io tới BE (NestJS WebSocketGateway)
+      const newSocket = io("http://localhost:8080", {
+        transports: ["websocket"], 
+      });
+  
+      setSocket(newSocket);
+  
+      newSocket.on("connect", () => {
+        console.log("Connected to socket:", newSocket.id);
+      });
+  
+      newSocket.on("disconnect", () => {
+        console.log("Disconnected from socket");
+      });
+  
+      // cleanup khi unmount
+      return () => {
+        newSocket.disconnect();
+      };
+    }, []);
 
   // Load user từ localStorage
   useEffect(() => {
@@ -67,7 +92,7 @@ const OrdersPage = () => {
       );
       addToast({
         type: "success",
-        message: "Đã xác nhận gửi hàng — đơn sẽ được giao trong 5s.",
+        message: "Đã xác nhận gửi hàng",
       });
 
       console.log('oder:',order)
@@ -106,6 +131,12 @@ const OrdersPage = () => {
       is_read: false,
     });
 
+      // socket?.emit("join_user",  order.buyer_id._id, );
+        socket?.emit("send_message", {
+            receiverId: order.buyer_id._id, 
+            message:'Notification'
+        });
+
     console.log("✅ Gửi thông báo thành công cho người bán");
   } catch (error) {
     console.error("❌ Gửi thông báo cho người bán thất bại:", error);
@@ -131,6 +162,12 @@ const OrdersPage = () => {
           deeplink: "",
           channel: "in_app",
           is_read: false
+        });
+
+          // socket?.emit("join_user",  order.buyer_id._id, );
+          socket?.emit("send_message", {
+              receiverId: order.buyer_id._id, 
+              message:'Notification'
         });
       } catch (error) {
         alert('Gửi thông báo cho người mua thất bại')
