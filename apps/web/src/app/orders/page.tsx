@@ -60,17 +60,23 @@ const OrdersPage = () => {
   }, [user, activeTab, fetchOrders]);
 
   // Xử lý gửi hàng
-  const handleShipOrder = async (orderId: string) => {
+  const handleShipOrder = async (order: Transaction) => {
     try {
-      await axios.post(
-        `http://localhost:8080/api/transactions/${orderId}/ship`
-      );
+      // await axios.post(
+      //   `http://localhost:8080/api/transactions/${order._id}/ship`
+      // );
       addToast({
         type: "success",
         message: "Đã xác nhận gửi hàng — đơn sẽ được giao trong 5s.",
       });
+
+      // console.log('oder:',order)
+      await handleSendNotificationShip(order);
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      await handlerSendNotificationComplete(order);
       // Backend sẽ tự hoàn tất sau 5s; chỉ refresh để hiển thị 'shipping' ngay
       fetchOrders(activeTab === "all" ? undefined : activeTab);
+
     } catch (error: any) {
       addToast({
         type: "error",
@@ -78,6 +84,58 @@ const OrdersPage = () => {
       });
     }
   };
+  
+  //Gửi thông báo
+ const handleSendNotificationShip = async (order: Transaction) => {
+  if (!order || !order.post_id || !user?._id) {
+    console.warn("Thiếu dữ liệu khi gửi thông báo vận chuyển", order);
+    return;
+  }
+
+  try {
+    await axios.post("http://localhost:8080/api/notifications", {      
+      receiver_id: order.post_id.author_id, 
+      sender_id: user._id,
+      title: "Đơn hàng của bạn đang được vận chuyển",
+      body: `Đơn hàng "${order.post_id.title}" sắp đến, vui lòng chuẩn bị nhận hàng.`,
+      type: "transaction",
+      related_id: order._id,
+      related_model: "Transaction",
+      deeplink: `/transactions/${order._id}`, 
+      channel: "in_app",
+      is_read: false,
+    });
+
+    console.log("✅ Gửi thông báo thành công cho người bán");
+  } catch (error) {
+    console.error("❌ Gửi thông báo cho người bán thất bại:", error);
+    alert("Gửi thông báo cho người bán thất bại");
+  }
+};
+
+  
+    const handlerSendNotificationComplete = async (order: Transaction)=>{
+       if (!order || !order.post_id || !user?._id) {
+        console.warn("Thiếu dữ liệu khi gửi thông báo vận chuyển", order);
+        return;
+      }
+      try {
+         await axios.post("http://localhost:8080/api/notifications", {      
+          receiver_id: order.post_id.author_id,
+          sender_id: user._id,
+          title: "Đơn hàng đã hoàn tất",
+          body: `Đơn hàng "${order.post_id.title}" đã được giao`,
+          type: "transaction",
+          related_id: order._id,
+          related_model:"Transaction",
+          deeplink: "",
+          channel: "in_app",
+          is_read: false
+        });
+      } catch (error) {
+        alert('Gửi thông báo cho người mua thất bại')
+      }
+    }
 
   // no client-side auto-complete timers; backend schedules completion
 
@@ -348,7 +406,7 @@ const OrdersPage = () => {
                       <>
                         <button
                           className={styles.btnShip}
-                          onClick={() => handleShipOrder(order._id)}
+                          onClick={() => handleShipOrder(order)}
                         >
                           <Icon
                             icon="mdi:truck-delivery"

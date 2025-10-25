@@ -1105,7 +1105,7 @@ export const DetailPost: React.FC = () => {
 
                   <div className={`${styles["spacer-sm"]}`} />
 
-                  <div className={`${styles["cta-box"]}`}>
+                  <div className={postData?.post?.status === "active" ? `${styles["cta-box"]}`:  `${styles["cta-box"]} ${styles["unClick"]}`}>
                     {postData.post.author_id !== currentUser._id ? (
                       <>
                         <button
@@ -1183,35 +1183,9 @@ export const DetailPost: React.FC = () => {
                         </button>
                       </>
                     ) : (
-                      <button
-                        type="button"
-                        className={`${styles["chat-btn"]} ${styles["ripple-target"]}`}
-                        disabled={postData?.post?.status === "completed"}
-                        onClick={() => {
-                          if (postData?.post?.status === "completed") return;
-                          handleCompletedPost(postData.post._id!);
-                        }}
-                      >
-                        <Icon
-                          icon="lucide:message-square"
-                          width={16}
-                          height={16}
-                        />
-                        &nbsp; Xác nhận đã thanh lý
-                      </button>
+                      <div></div>
                     )}
 
-                    {/* <button
-                      type="button"
-                      className={`${styles["fav-btn"]} ${isFavorite ? styles["active"] : ""} ${styles["ripple-target"]}`}
-                      onClick={(e) => {
-                        createRipple(e as any);
-                        toggleFavorite();
-                      }}
-                    >
-                      <Icon icon="lucide:heart" width={16} height={16} />
-                      &nbsp; {isFavorite ? "Đã Lưu Yêu Thích" : "Lưu Yêu Thích"}
-                    </button> */}
                   </div>
 
                   <div className={`${styles["spacer-sm"]}`} />

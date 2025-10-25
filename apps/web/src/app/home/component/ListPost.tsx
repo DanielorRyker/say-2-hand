@@ -99,7 +99,7 @@ export const ListPost: React.FC = () => {
   useEffect(() => {
     async function fetchPosts() {
       try {
-        const res = await apiClient.get("/posts/postmap");
+        const res = await apiClient.get("/posts/active");
         if (res.data && Array.isArray(res.data)) {
           setPostsData(res.data);
         } else {

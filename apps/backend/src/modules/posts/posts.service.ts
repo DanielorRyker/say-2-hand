@@ -110,6 +110,7 @@ export class PostsService {
     return this.postModel.find({ status: 'active' })
     .populate('author_id', 'full_name avatar') 
     .populate('category_id', 'name')
+     .sort({ updatedAt: -1 })
     .exec();
   }
 

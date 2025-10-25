@@ -39,6 +39,7 @@ const OrderDetailPage = () => {
       const response = await axios.get(
         `http://localhost:8080/api/transactions/${orderId}/detail`
       );
+      
       setOrder(response.data.data);
     } catch (error) {
       console.error("Error fetching order detail:", error);
@@ -56,13 +57,17 @@ const OrderDetailPage = () => {
   // Xử lý gửi hàng
   const handleShipOrder = async () => {
     try {
-      await axios.post(
-        `http://localhost:8080/api/transactions/${orderId}/ship`
-      );
+      // await axios.post(
+      //   `http://localhost:8080/api/transactions/${orderId}/ship`
+      // );
       addToast({
         type: "success",
         message: "Đã xác nhận gửi hàng — hệ thống sẽ tự hoàn tất trong 5s.",
       });
+       console.log('oder:',order)
+      await handleSendNotificationShip();
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      await handlerSendNotificationComplete();
       // refresh detail so UI shows 'shipping' while backend completes
       fetchOrderDetail();
     } catch (error: any) {
@@ -72,6 +77,58 @@ const OrderDetailPage = () => {
       });
     }
   };
+
+ //Gửi thông báo
+ const handleSendNotificationShip = async () => {
+  if (!order || !order.post_id || !user?._id) {
+    console.warn("Thiếu dữ liệu khi gửi thông báo vận chuyển", order);
+    return;
+  }
+
+  try {
+    await axios.post("http://localhost:8080/api/notifications", {      
+      receiver_id: order.post_id.author_id, 
+      sender_id: user._id,
+      title: "Đơn hàng của bạn đang được vận chuyển",
+      body: `Đơn hàng "${order.post_id.title}" sắp đến, vui lòng chuẩn bị nhận hàng.`,
+      type: "transaction",
+      related_id: order._id,
+      related_model: "Transaction",
+      deeplink: `/transactions/${order._id}`, 
+      channel: "in_app",
+      is_read: false,
+    });
+
+    console.log("✅ Gửi thông báo thành công cho người bán");
+  } catch (error) {
+    console.error("❌ Gửi thông báo cho người bán thất bại:", error);
+    alert("Gửi thông báo cho người bán thất bại");
+  }
+};
+
+  
+    const handlerSendNotificationComplete = async ()=>{
+       if (!order || !order.post_id || !user?._id) {
+        console.warn("Thiếu dữ liệu khi gửi thông báo vận chuyển", order);
+        return;
+      }
+      try {
+         await axios.post("http://localhost:8080/api/notifications", {      
+          receiver_id: order.post_id.author_id,
+          sender_id: user._id,
+          title: "Đơn hàng đã hoàn tất",
+          body: `Đơn hàng "${order.post_id.title}" đã được giao`,
+          type: "transaction",
+          related_id: order._id,
+          related_model:"Transaction",
+          deeplink: "",
+          channel: "in_app",
+          is_read: false
+        });
+      } catch (error) {
+        alert('Gửi thông báo cho người mua thất bại')
+      }
+    }
 
   // Xử lý huỷ đơn
   const handleCancelOrder = async () => {

@@ -2,8 +2,8 @@
 export interface Transaction {
   _id: string;
   post_id:
-    | string
-    | {
+    
+     {
         _id: string;
         title: string;
         description?: string;

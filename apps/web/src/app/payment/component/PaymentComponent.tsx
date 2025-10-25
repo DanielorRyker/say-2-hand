@@ -189,18 +189,25 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
       // Simulate payment processing (2s delay)
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      // TODO: Integrate with real payment gateway
-      // Tạm thời mock payment - backend chưa có endpoint /api/payments
-      // await axios.post("http://localhost:8080/api/payments", {
-      //   user_id: currentUser._id,
-      //   post_id: normalizedPost._id,
-      //   amount: normalizedPost.price,
-      //   payment_method: selectedMethod,
-      // });
+    
+      
+      
+      //Tạo Transaction và Thông báo cho người bán
+        const res =await axios.post("http://localhost:8080/api/transactions", {      
+        post_id:  normalizedPost._id,
+        seller_id: normalizedPost.author_id?._id || normalizedPost.author_id,
+        buyer_id: currentUser._id,
+        amount: normalizedPost.price,
+        currency: "VND",
+        payment_gateway: "vnpay", 
+        payment_method: selectedMethod, 
+        payment_status: "paid", 
+        transaction_ref: "VNPAY202510200002", //
+        status: "pending"
+      });
 
-      // Lưu thông tin giao dịch vào sessionStorage để hiển thị ở success page
       const transactionData = {
-        transactionId: `TXN${Date.now()}`,
+        transactionId: res.data.data.transaction_ref,
         postId: normalizedPost._id,
         postTitle: normalizedPost.title,
         amount: normalizedPost.price,
@@ -219,21 +226,8 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
         "lastTransaction",
         JSON.stringify(transactionData)
       );
-      console.log("✅ Payment successful! Transaction:", transactionData);
-      //Tạo Transaction và Thông báo cho người bán
-        const res =await axios.post("http://localhost:8080/api/transactions", {      
-        post_id:  normalizedPost._id,
-        seller_id: normalizedPost.author_id?._id || normalizedPost.author_id,
-        buyer_id: currentUser._id,
-        amount: normalizedPost.price,
-        currency: "VND",
-        payment_gateway: "vnpay", 
-        payment_method: selectedMethod, 
-        payment_status: "paid", 
-        transaction_ref: "VNPAY202510200002", //
-        status: "pending"
-      });
-      console.log("Transaction API response:", res.data);
+
+      //Tạo Transaction và Thông báo cho người mua
        await axios.post("http://localhost:8080/api/notifications", {      
         receiver_id: normalizedPost.author_id?._id || normalizedPost.author_id,
         sender_id: currentUser._id,
