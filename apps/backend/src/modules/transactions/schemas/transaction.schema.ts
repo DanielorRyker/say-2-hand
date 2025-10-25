@@ -44,6 +44,39 @@ export class Transaction {
 
   @Prop({ type: String })
   cancel_reason?: string;
+
+  // Địa chỉ giao hàng
+  @Prop({
+    type: {
+      receiver_name: String,
+      receiver_phone: String,
+      address: String,
+      district: String,
+      province: String,
+      province_code: Number,
+    },
+  })
+  shipping_address?: {
+    receiver_name?: string;
+    receiver_phone?: string;
+    address?: string;
+    district?: string;
+    province?: string;
+    province_code?: number;
+  };
+
+  // Timeline timestamps
+  @Prop({ type: Date })
+  paid_at?: Date;
+
+  @Prop({ type: Date })
+  shipped_at?: Date;
+
+  @Prop({ type: Date })
+  completed_at?: Date;
+
+  @Prop({ type: Date })
+  cancelled_at?: Date;
 }
 
 export const TransactionSchema = SchemaFactory.createForClass(Transaction);

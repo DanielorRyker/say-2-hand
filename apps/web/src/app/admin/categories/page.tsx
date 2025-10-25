@@ -197,13 +197,15 @@ const Home = () => {
         />
         {/* Chọn ảnh */}
         {preview ? (
-          <div>
+          <div className={styleAdmin.imgCategory}>
             <input
               type="file"
               accept="image/*"
               id="upload-avatar"
               onChange={handleFileChange}
-              style={{ display: "none" }}
+              hidden
+              title="Upload category image"
+              aria-label="Upload category image"
             />
             <label htmlFor="upload-avatar">
               <Image
@@ -224,7 +226,9 @@ const Home = () => {
               accept="image/*"
               id="upload-avatar"
               onChange={handleFileChange}
-              style={{ display: "none" }}
+              hidden
+              title="Upload category image"
+              aria-label="Upload category image"
             />
             <label htmlFor="upload-avatar">
               <Image
@@ -243,7 +247,7 @@ const Home = () => {
           Thêm
         </button>
       </div>
-      <table style={{ borderCollapse: "collapse", width: "90%" }}>
+      <table className={styleAdmin.table}>
         <thead>
           <tr>
             <th className={styleAdmin.tbheader}>#</th>
@@ -267,6 +271,9 @@ const Home = () => {
                       className={styleAdmin.tableInput}
                       value={editForm[field] || ""}
                       onChange={(e) => handleFieldChange(field, e.target.value)}
+                      title={`Edit ${field}`}
+                      placeholder={`Enter ${field}`}
+                      aria-label={`Edit ${field}`}
                     />
                   ) : (
                     category[field] || ""
@@ -276,11 +283,20 @@ const Home = () => {
               <td className={styleAdmin.tbrow}>
                 {editingCategoryId === category._id ? (
                   <>
+                    <label
+                      htmlFor={`edit-upload-${category._id}`}
+                      className={styleAdmin.editFileLabel}
+                    >
+                      Choose image
+                    </label>
                     <input
+                      id={`edit-upload-${category._id}`}
                       type="file"
                       accept="image/*"
                       onChange={handleFileChange}
-                      style={{ width: "100%" }}
+                      className={styleAdmin.tableInput}
+                      title="Upload category image"
+                      aria-label="Upload category image"
                     />
                     {preview && (
                       <Image
@@ -298,7 +314,11 @@ const Home = () => {
                   // Ensure correct image URL
                   <Image
                     loader={imageLoader}
-                    src={category.image ? URL_GCS + category.image : "/image/category/default.svg"}
+                    src={
+                      category.image
+                        ? URL_GCS + category.image
+                        : "/image/category/default.svg"
+                    }
                     alt="category"
                     width={80}
                     height={80}

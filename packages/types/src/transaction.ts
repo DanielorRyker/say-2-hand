@@ -50,6 +50,18 @@ export interface Transaction {
   transaction_ref: string;
   status: "pending" | "shipping" | "completed" | "cancelled";
   cancel_reason?: string;
+  shipping_address?: {
+    receiver_name?: string;
+    receiver_phone?: string;
+    address?: string;
+    district?: string;
+    province?: string;
+    province_code?: number;
+  };
+  paid_at?: Date;
+  shipped_at?: Date;
+  completed_at?: Date;
+  cancelled_at?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
