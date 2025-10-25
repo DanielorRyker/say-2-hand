@@ -58,7 +58,7 @@ const Header = () => {
     router.push("/auth/login");
   };
 
-  const [selectedItem, setSelectedItem] = useState("Tp. Hồ Chí Minh"); // Tiêu đề ban đầu
+  const [selectedItem, setSelectedItem] = useState("Thành phố Hồ Chí Minh"); // Tiêu đề ban đầu
   const [selectedProvince, setSelectedProvince] = useState<{
     code: number;
     name: string;
@@ -294,10 +294,10 @@ const Header = () => {
             }
             id="basic-nav-dropdown"
           >
-            <NavDropdown.Item href="#action/1">
+            <NavDropdown.Header className={headerStyles.categoryHeader}>
               <Icon icon="mdi:view-dashboard" width={20} height={20} />
               <h5>Danh mục</h5>
-            </NavDropdown.Item>
+            </NavDropdown.Header>
             <NavDropdown.Divider />
             <NavDropdown.Item href="#action/1">
               <Icon icon="mdi:car" width={20} height={20} />
@@ -394,47 +394,45 @@ const Header = () => {
                 }
                 id="location-nav-dropdown"
               >
-                {provincesLoading && (
-                  <NavDropdown.Item disabled>Đang tải...</NavDropdown.Item>
-                )}
-                {provincesError && (
-                  <NavDropdown.Item disabled>Lỗi tải tỉnh</NavDropdown.Item>
-                )}
-                {!provincesLoading &&
-                  !provincesError &&
-                  provinces.length === 0 && (
-                    <NavDropdown.Item disabled>
-                      Không có dữ liệu
-                    </NavDropdown.Item>
+                <div className={headerStyles.provinceList}>
+                  {provincesLoading && (
+                    <NavDropdown.Item disabled>Đang tải...</NavDropdown.Item>
                   )}
+                  {provincesError && (
+                    <NavDropdown.Item disabled>Lỗi tải tỉnh</NavDropdown.Item>
+                  )}
+                  {!provincesLoading &&
+                    !provincesError &&
+                    provinces.length === 0 && (
+                      <NavDropdown.Item disabled>
+                        Không có dữ liệu
+                      </NavDropdown.Item>
+                    )}
 
-                {provinces.map((p) => (
-                  <NavDropdown.Item
-                    key={p.code}
-                    onClick={() => {
-                      setSelectedItem(p.name);
-                      setSelectedProvince({ code: p.code, name: p.name });
-                      // persist full object
-                      try {
-                        localStorage.setItem(
-                          "selectedProvince",
-                          JSON.stringify({ code: p.code, name: p.name })
-                        );
-                      } catch {
-                        // ignore
-                      }
-                    }}
-                  >
-                    <span className="dropdown-item-icon">
-                      <Icon
-                        icon="mdi:map-marker-outline"
-                        width={16}
-                        height={16}
-                      />
-                    </span>
-                    <span className="dropdown-item-label">{p.name}</span>
-                  </NavDropdown.Item>
-                ))}
+                  {provinces.map((p) => (
+                    <NavDropdown.Item
+                      key={p.code}
+                      onClick={() => {
+                        setSelectedItem(p.name);
+                        setSelectedProvince({ code: p.code, name: p.name });
+                        // persist full object
+                        try {
+                          localStorage.setItem(
+                            "selectedProvince",
+                            JSON.stringify({ code: p.code, name: p.name })
+                          );
+                        } catch {
+                          // ignore
+                        }
+                      }}
+                    >
+                      <span className="dropdown-item-icon">
+                        <Icon icon="mdi:map-marker" width={16} height={16} />
+                      </span>
+                      <span className="dropdown-item-label">{p.name}</span>
+                    </NavDropdown.Item>
+                  ))}
+                </div>
               </NavDropdown>
             </div>
             <button

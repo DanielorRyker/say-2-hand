@@ -274,36 +274,75 @@
     background: colors.$solid-bg-white;
   }
 
-  .dropdown-item {
+  /* Scrollable list specifically for provinces to keep dropdown compact */
+  .provinceList {
+    max-height: 320px;
+    overflow-y: auto;
+    padding-right: 6px;
+    /* space for scrollbar */
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  /* Custom scrollbar for modern look */
+  .provinceList::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .provinceList::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .provinceList::-webkit-scrollbar-thumb {
+    background: rgba(16, 24, 40, 0.12);
+    border-radius: 8px;
+  }
+
+  /* Firefox scrollbar sizing */
+  .provinceList {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(16, 24, 40, 0.12) transparent;
+  }
+
+
+
+  :global(.dropdown-item) {
     border-radius: vars.$radius-lg;
-    padding: 12px 14px;
+    padding: 10px 12px;
     font-size: vars.$font-size-sm;
     display: flex;
     align-items: center;
     gap: 12px;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
     font-weight: vars.$font-weight-medium;
     position: relative;
     overflow: hidden;
     margin-bottom: 6px;
+    min-height: 44px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
 
-    .dropdown-item-icon {
+    :global(.dropdown-item-icon) {
       flex-shrink: 0;
       color: colors.$solid-primary;
       width: 18px;
       height: 18px;
-      display: inline-flex;
+      display: flex;
       align-items: center;
       justify-content: center;
-      transition: transform 0.2s ease;
+      transition: transform 0.18s ease;
     }
 
-    .dropdown-item-label {
+    :global(.dropdown-item-label) {
       flex: 1 1 auto;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       color: colors.$solid-text-primary;
+      line-height: 1.2;
+      min-width: 0;
+      /* allow truncation inside flex */
     }
 
     &::before {
@@ -318,28 +357,31 @@
       transition: transform 0.18s ease;
     }
 
-    &:hover {
+    &:hover,
+    &:focus,
+    &:focus-visible {
       background: colors.$solid-bg-light;
       color: colors.$solid-primary;
-      transform: translateX(6px);
-      padding-left: 22px;
+      transform: translateY(-2px);
+      box-shadow: vars.$shadow-sm;
 
       &::before {
         transform: scaleY(1);
       }
 
-      .dropdown-item-icon {
-        transform: scale(1.15) rotate(5deg);
+      :global(.dropdown-item-icon) {
+        transform: scale(1.12) rotate(3deg);
       }
 
-      .dropdown-item-label {
+      :global(.dropdown-item-label) {
         color: colors.$solid-primary;
       }
     }
 
     &:active {
       background: colors.$solid-bg-medium;
-      transform: translateX(4px);
+      transform: translateY(0);
+      box-shadow: none;
     }
 
     &:last-child {
@@ -355,14 +397,14 @@
 }
 
 .locationIcon {
-  color: #fbbf24;
+  color: #fb2424;
   flex-shrink: 0;
 }
 
 .headerLocationText {
   font-size: vars.$font-size-sm;
   font-weight: vars.$font-weight-semibold;
-  color: white;
+  color: rgb(0, 0, 0);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -390,10 +432,10 @@
   gap: vars.$spacing-xs;
   height: 48px;
   padding: 0 vars.$spacing-lg;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  background: colors.$ui-header;
   border: none;
   border-radius: vars.$radius-full;
-  color: white;
+  color: colors.$solid-text-white;
   font-weight: vars.$font-weight-bold;
   font-size: vars.$font-size-base;
   cursor: pointer;
@@ -446,6 +488,8 @@
   }
 }
 
+
+
 .menuButton {
   display: flex;
   align-items: center;
@@ -474,12 +518,13 @@
 }
 
 .dropDownCar {
-  background: white;
+  background: colors.$ui-button-primary;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 
   &:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-    background: rgba(255, 255, 255, 0.95);
+    // background: colors.$ui-button-primary;
+    // opacity: 0.8;
   }
 
   .dropdown-toggle {
@@ -497,6 +542,21 @@
     }
   }
 
+  .categoryHeader {
+    display: flex;
+    align-items: center;
+    gap: vars.$spacing-sm;
+    padding: vars.$spacing-md vars.$spacing-lg;
+    color: colors.$solid-text-primary;
+    background: linear-gradient(135deg, #f8fafc 0%, #f0f9ff 100%);
+    border-radius: vars.$radius-lg;
+    margin-bottom: vars.$spacing-sm;
+
+    svg {
+      color: colors.$solid-primary;
+    }
+  }
+
   .dropdown-menu {
     border-radius: vars.$radius-xl;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
@@ -508,7 +568,7 @@
     background: white;
   }
 
-  .dropdown-item {
+  :global(.dropdown-item) {
     border-radius: vars.$radius-lg;
     padding: 12px 16px;
     font-size: vars.$font-size-base;
@@ -613,7 +673,7 @@
   min-width: 120px;
   height: 50px;
   border-radius: vars.$radius-full;
-  background: colors.$ui-button-primary;
+  background: colors.$ui-button-primary-2;
   @include vars.flex-center;
   padding: 0 vars.$spacing-lg;
   box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
@@ -635,7 +695,7 @@
 .headerBtnText {
   font-size: vars.$font-size-lg;
   font-weight: vars.$font-weight-bold;
-  color: white;
+  color: colors.$solid-text-white;
   white-space: nowrap;
   text-align: center;
   margin: 0;
@@ -686,7 +746,7 @@
     background: colors.$solid-bg-white;
   }
 
-  .dropdown-item {
+  :global(.dropdown-item) {
     border-radius: vars.$radius-lg;
     padding: 12px 16px;
     font-size: vars.$font-size-base;
@@ -761,8 +821,8 @@
 }
 
 .imgAvatar {
-  width: 35px;
-  height: 35px;
+  width: 45px;
+  height: 45px;
   border-radius: vars.$radius-full;
   object-fit: cover;
   border: 2px solid colors.$solid-border-light;
