@@ -509,7 +509,7 @@ const Header = () => {
           <NavDropdown
             className={headerStyles.userDropDown}
             title={
-              <span className={headerStyles.headerUserDropdown}>
+              <div className={headerStyles.headerUserDropdown}>
                 <Image
                   src={
                     user?.avatar
@@ -521,14 +521,7 @@ const Header = () => {
                   width={32}
                   height={32}
                 />
-                <Image
-                  src="/image/header/arrow-down.svg"
-                  alt=""
-                  className={headerStyles.img}
-                  width={16}
-                  height={16}
-                />
-              </span>
+              </div>
             }
             id="basic-nav-dropdown"
           >
