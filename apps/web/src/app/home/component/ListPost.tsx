@@ -31,7 +31,64 @@ const CONDITION_MAP: Record<string, { text: string; colorKey: string }> = {
   for_parts: { text: "Đã hư", colorKey: "for_parts" },
 };
 
-export const ListPost: React.FC = () => {
+interface Post {
+  post_id?: string;
+  _id: string;
+  title: string;
+  description: string;
+  images: {
+    _id: string;
+    url: string;
+    alt?: string;
+    tags: string[];
+  }[];
+  condition: string;
+  transaction_type: string;
+  price: number;
+  location: {
+    address: string;
+    geo?: {
+      type: string;
+      coordinates: [number, number];
+    };
+  };
+  custom_fields?: Record<string, string>;
+  tags?: string[];
+  status: string;
+  stats?: {
+    _id?: string;
+    view_count: number;
+    favorite_count: number;
+    chat_count?: number;
+  };
+  moderation?: {
+    _id: string;
+  };
+  author_id: {
+    _id: string;
+    full_name: string;
+    avatar: string;
+  };
+  category_id?: {
+    _id?: string;
+    name?: string;
+  } | null;
+  createdAt: string;
+  updatedAt: string;
+  __v?: number;
+  reputation?: {
+    average_score: number;
+    total_ratings: number;
+  };
+  distance_km?: number;
+}
+
+interface ListPostProps {
+  posts?: Post[]; // Optional: nếu không truyền thì sẽ fetch từ API
+  isLoading?: boolean;
+}
+
+export const ListPost: React.FC<ListPostProps> = ({ posts }) => {
   const router = useRouter();
   //Lấy user hiện tại
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -39,80 +96,33 @@ export const ListPost: React.FC = () => {
     const userData = localStorage.getItem("user");
     setCurrentUser(userData ? JSON.parse(userData) : null);
   }, []);
+
   //Lấy dữ liệu từ database
-
-  interface Post {
-    post_id: string;
-    _id: string;
-    title: string;
-    description: string;
-    images: {
-      _id: string;
-      url: string;
-      alt?: string;
-      tags: string[];
-    }[];
-    condition: string;
-    transaction_type: string;
-    price: number;
-    location: {
-      address: string;
-      geo?: {
-        type: string;
-        coordinates: [number, number];
-      };
-    };
-    custom_fields?: Record<string, string>; // ví dụ: { "màu sắc": "đen", "bộ nhớ": "128GB" }
-    tags?: string[];
-    status: string;
-    stats?: {
-      _id?: string;
-      view_count: number;
-      favorite_count: number;
-      chat_count?: number;
-    };
-    moderation?: {
-      _id: string;
-    };
-    author_id: {
-      _id: string;
-      full_name: string;
-      avatar: string;
-    };
-    category_id?: {
-      _id?: string;
-      name?: string;
-    } | null;
-    createdAt: string;
-    updatedAt: string;
-    __v?: number;
-    reputation?: {
-      average_score: number;
-      total_ratings: number;
-    };
-    distance_km?: number;
-  }
-
   const [postsData, setPostsData] = useState<Post[]>([]);
   const [favoriteData, setFavoriteData] = useState<Post[]>([]);
 
+  // Sử dụng posts từ props nếu có, không thì fetch từ API
   useEffect(() => {
-    async function fetchPosts() {
-      try {
-        const res = await apiClient.get("/posts/active");
-        if (res.data && Array.isArray(res.data)) {
-          setPostsData(res.data);
-        } else {
-          console.error("Invalid response format from posts API");
+    if (posts && posts.length > 0) {
+      setPostsData(posts);
+    } else {
+      async function fetchPosts() {
+        try {
+          const res = await apiClient.get("/posts/active");
+          if (res.data && Array.isArray(res.data)) {
+            setPostsData(res.data);
+          } else {
+            console.error("Invalid response format from posts API");
+            setPostsData([]);
+          }
+        } catch (error) {
+          console.error("Error fetching posts:", error);
           setPostsData([]);
         }
-      } catch (error) {
-        console.error("Error fetching posts:", error);
-        setPostsData([]);
       }
+      fetchPosts();
     }
-    fetchPosts();
-  }, []);
+  }, [posts]);
 
   useEffect(() => {
     if (!currentUser?._id) return; // 🚫 nếu chưa có user thì không gọi
@@ -131,9 +141,12 @@ export const ListPost: React.FC = () => {
 
   //dữ liệu tạm thời
 
-  const checkFavorited = (postId: string) => {
-    return favoriteData.some((fav) => fav.post_id === postId);
-  };
+  const checkFavorited = React.useCallback(
+    (postId: string) => {
+      return favoriteData.some((fav) => fav.post_id === postId);
+    },
+    [favoriteData]
+  );
 
   ////Tính thời gian
   const getRelativeTime = (isoString: string) => {
@@ -283,9 +296,9 @@ export const ListPost: React.FC = () => {
             className={`${styles["item-card"]} ${styles.card}`}
             onClick={() => {
               if (!currentUser) {
-              alert("Vui lòng đăng nhập để xem chi tiết bài đăng.");
-              return; // Dừng luôn, không chuyển trang
-            }
+                alert("Vui lòng đăng nhập để xem chi tiết bài đăng.");
+                return; // Dừng luôn, không chuyển trang
+              }
               try {
                 sessionStorage.setItem(
                   `selectedPost_${data._id}`,
