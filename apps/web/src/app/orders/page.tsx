@@ -62,9 +62,9 @@ const OrdersPage = () => {
   // Xử lý gửi hàng
   const handleShipOrder = async (orderId: string) => {
     try {
-      await axios.post(
-        `http://localhost:8080/api/transactions/${orderId}/ship`
-      );
+      // await axios.post(
+      //   `http://localhost:8080/api/transactions/${orderId}/ship`
+      // );
       addToast({
         type: "success",
         message: "Đã xác nhận gửi hàng — đơn sẽ được giao trong 5s.",

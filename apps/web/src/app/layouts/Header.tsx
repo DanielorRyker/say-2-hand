@@ -9,6 +9,7 @@ import NotificationPopup from "@/app/notification/NotificationPopup";
 import { io, Socket } from "socket.io-client";
 import axios from "axios";
 import { Icon } from "@iconify/react";
+import { API_BASE } from "@/lib/constants";
 
 const Header = () => {
   const router = useRouter();
@@ -151,7 +152,7 @@ const Header = () => {
     if (!user) return;
     try {
       const res = await axios.get(
-        `http://localhost:8080/api/conversations/conversations/${user._id}`
+        `${API_BASE}/api/conversations/conversations/${user._id}`
       );
       setConversationsData(res.data);
     } catch (err) {
@@ -167,7 +168,7 @@ const Header = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
   useEffect(() => {
     // Kết nối socket.io tới BE (NestJS WebSocketGateway)
-    const newSocket = io("http://localhost:8080", {
+    const newSocket = io(API_BASE, {
       transports: ["websocket"],
     });
 
@@ -561,12 +562,12 @@ const Header = () => {
                 <NavDropdown.Divider />
                 <NavDropdown.Item onClick={handleOrders}>
                   <Icon icon="mdi:package-variant" width={20} height={20} />
-                  Quản lý đơn bán
+                  Quản lý đơn hàng
                 </NavDropdown.Item>
                 <NavDropdown.Divider />
                 <NavDropdown.Item onClick={handleMyOrders}>
                   <Icon icon="mdi:shopping" width={20} height={20} />
-                  Quản lý đơn mua
+                  Đơn đã mua
                 </NavDropdown.Item>
                 <NavDropdown.Divider />
                 <NavDropdown.Item onClick={handleLogout}>
@@ -599,9 +600,11 @@ const Header = () => {
                   Quản lý danh mục
                 </NavDropdown.Item>
                 <NavDropdown.Divider />
-                <NavDropdown.Item onClick={() => router.push("/admin/orders")}>
-                  <Icon icon="mdi:shopping" width={20} height={20} />
-                  Quản lý đơn hàng
+                <NavDropdown.Item
+                  onClick={() => router.push("/admin/transactions")}
+                >
+                  <Icon icon="mdi:cash-multiple" width={20} height={20} />
+                  Quản lý giao dịch
                 </NavDropdown.Item>
                 <NavDropdown.Divider />
                 <NavDropdown.Item onClick={handleLogout}>
