@@ -252,6 +252,11 @@ const Header = () => {
     router.push("/orders");
   };
 
+  //Mở trang quản lý đơn mua
+  const handleMyOrders = () => {
+    router.push("/my-orders");
+  };
+
   //Mở trang tin nhắn
   const handleMessage = () => {
     if (!conversationsData || conversationsData.length === 0) {
@@ -555,8 +560,13 @@ const Header = () => {
                 </NavDropdown.Item>
                 <NavDropdown.Divider />
                 <NavDropdown.Item onClick={handleOrders}>
+                  <Icon icon="mdi:package-variant" width={20} height={20} />
+                  Quản lý đơn bán
+                </NavDropdown.Item>
+                <NavDropdown.Divider />
+                <NavDropdown.Item onClick={handleMyOrders}>
                   <Icon icon="mdi:shopping" width={20} height={20} />
-                  Quản lý đơn hàng
+                  Quản lý đơn mua
                 </NavDropdown.Item>
                 <NavDropdown.Divider />
                 <NavDropdown.Item onClick={handleLogout}>

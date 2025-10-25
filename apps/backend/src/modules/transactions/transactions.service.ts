@@ -30,6 +30,7 @@ export class TransactionsService {
         seller_id: new Types.ObjectId(createTransactionDto.seller_id),
         buyer_id: new Types.ObjectId(createTransactionDto.buyer_id),
         transaction_ref: `VNPAY${Date.now()}${Math.floor(Math.random() * 1000)}`,
+        paid_at: new Date(), // Assume payment is made on creation
       });
 
       const savedTransaction = await newTransaction.save();
@@ -194,6 +195,7 @@ export class TransactionsService {
     // Cập nhật trạng thái transaction
     transaction.status = 'cancelled';
     transaction.payment_status = 'refunded';
+    transaction.cancelled_at = new Date();
     if (cancelReason) {
       transaction.cancel_reason = cancelReason;
     }
@@ -225,6 +227,7 @@ export class TransactionsService {
     }
 
     transaction.status = 'shipping';
+    transaction.shipped_at = new Date();
     await transaction.save();
 
     // Schedule auto-complete after 5 seconds (server-side)
@@ -280,6 +283,7 @@ export class TransactionsService {
     }
 
     transaction.status = 'completed';
+    transaction.completed_at = new Date();
     await transaction.save();
 
     // Clear any scheduled auto-complete timer (if present)
