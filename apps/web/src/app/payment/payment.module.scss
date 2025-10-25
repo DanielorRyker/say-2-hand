@@ -536,3 +536,26 @@
         }
     }
 }
+
+//QR
+.qrContainer{
+    position: fixed;
+    height: 400px;
+    width: 400px;
+    background: linear-gradient(90deg, #f3f4f6 25%, #e9eef3 50%, #f3f4f6 75%);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);   
+    border-radius: 12px;
+    top: 50%;             /* canh từ mép trên 50% */
+    left: 50%;            /* canh từ mép trái 50% */
+    transform: translate(-50%, -50%); /* kéo phần tử về trung tâm thực sự */
+    }
+
+ .overlay {
+  position: fixed;       /* cố định toàn màn hình */
+  inset: 0;              /* top:0; bottom:0; left:0; right:0 */
+  background: rgba(0, 0, 0, 0.5); /* nền đen mờ */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;         /* đảm bảo nằm trên các element khác */
+}

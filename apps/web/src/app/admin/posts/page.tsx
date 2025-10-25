@@ -148,7 +148,8 @@ const handlePostAction = async (typeAction: "approve" | "reject" | "delete", pos
 
     socket?.emit("join_user", { userId: post.author_id._id });
     socket?.emit("send_message", {
-      receiverId: post.author_id._id, 
+       receiverId: post.author_id._id, 
+       message:'Notification'
     });
 
     // 🎯 Xác định hành động
@@ -181,6 +182,7 @@ const handlePostAction = async (typeAction: "approve" | "reject" | "delete", pos
       body: notificationBody,
       type: "moderation",
       related_id: post._id,
+      related_model:"Post",
       deeplink,
       channel: "in_app",
       is_read: false,
@@ -200,9 +202,13 @@ const handlePostAction = async (typeAction: "approve" | "reject" | "delete", pos
     } else {
       // Nếu là delete thì xóa bài
       console.log(`posts/${post.author_id._id}/${post.title}/`)
-     await axios.post(`http://localhost:8080/api/upload/deleteIMG`, {
-      bucket: `posts/${post.author_id._id}/${post.title}/`,
-    });
+     try {
+        await axios.post(`http://localhost:8080/api/upload/deleteIMG`, {
+        bucket: `posts/${post.author_id._id}/${post.title}/`,
+      });
+     } catch (error) {
+      alert('không tìm thấy ảnh')
+     }
 
 
 

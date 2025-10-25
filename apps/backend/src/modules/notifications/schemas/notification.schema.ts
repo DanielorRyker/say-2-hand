@@ -23,8 +23,15 @@ export class Notification {
   })
   type: string; // loại thông báo
 
-  @Prop({ type: Types.ObjectId, required: false ,ref: 'Post'})
-  related_id?: Types.ObjectId; // id linh hoạt: post/conversation/transaction/report
+ @Prop({
+  type: Types.ObjectId,
+  required: false,
+  refPath: 'related_model', // tên field sẽ chỉ định model tương ứng
+  })
+  related_id?: Types.ObjectId;
+
+  @Prop({ type: String, required: false, enum: ['Post', 'Transaction', 'User'] })
+  related_model?: string;
 
   @Prop({ required: false })
   deeplink?: string; // đường dẫn để điều hướng trên web (VD: /chat/:id)

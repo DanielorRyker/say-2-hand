@@ -18,6 +18,7 @@ import { ChatGateway } from './common/socket/chat.gateway';
 import { FavoritesModule } from './modules/favorites/favorites.module';
 import { TransactionsModule } from './modules/transactions/transactions.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { QrModule } from './modules/qr/qr.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     FavoritesModule,
     TransactionsModule,
     NotificationsModule,
+    QrModule,
   ],
   controllers: [AppController],
   providers: [AppService, ChatGateway],

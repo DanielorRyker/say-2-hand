@@ -1,9 +1,10 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
 import styles from "../payment.module.scss";
 import { Icon } from "@iconify/react";
+import axios from "axios";
 // import axios from "axios"; // TODO: Sẽ dùng khi backend có endpoint /api/payments
 
 interface PaymentMethod {
@@ -99,6 +100,30 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
   const [selectedMethod, setSelectedMethod] = useState<string>("");
   const [processing, setProcessing] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
+    //QR
+  const [openQR, setOpenQR] = useState(false);
+  const [qrURL, setQrURL] = useState<string | undefined>(undefined);
+  const popupRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+
+    //  Ẩn popup khi click ra ngoài
+    useEffect(() => {
+      const handleClickOutside = (e: MouseEvent) => {
+        const target = e.target as Node;
+       if (popupRef.current && popupRef.current.contains(target)) return;
+       if (overlayRef.current && overlayRef.current.contains(target)) return;
+        setOpenQR(false);
+      };
+      document.addEventListener("click", handleClickOutside);
+      return () => document.removeEventListener("click", handleClickOutside);
+    }, []);
+
+   useEffect(() => {
+  if (openQR) document.body.style.overflow = "hidden";
+  else document.body.style.overflow = "auto";
+}, [openQR]);
+
+
 
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat("vi-VN", {
@@ -177,6 +202,45 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
         JSON.stringify(transactionData)
       );
       console.log("✅ Payment successful! Transaction:", transactionData);
+      //Tạo Transaction và Thông báo cho người bán
+        const res =await axios.post("http://localhost:8080/api/transactions", {      
+        post_id:  normalizedPost._id,
+        seller_id: normalizedPost.author_id?._id || normalizedPost.author_id,
+        buyer_id: currentUser._id,
+        amount: normalizedPost.price,
+        currency: "VND",
+        payment_gateway: "vnpay", 
+        payment_method: selectedMethod, 
+        payment_status: "paid", 
+        transaction_ref: "VNPAY202510200002", //
+        status: "pending"
+      });
+      console.log("Transaction API response:", res.data);
+       await axios.post("http://localhost:8080/api/notifications", {      
+        receiver_id: normalizedPost.author_id?._id || normalizedPost.author_id,
+        sender_id: currentUser._id,
+        title: "Bạn có đơn hàng mới",
+        body: currentUser.full_name +" đã đặt mua sản phẩm "+normalizedPost.title+" của bạn.",
+        type: "transaction",
+        related_id:  res.data.data._id,
+        related_model:"Transaction",
+        deeplink: "",
+        channel: "in_app",
+        is_read: false
+      });
+
+      await axios.post("http://localhost:8080/api/notifications", {      
+        receiver_id: currentUser._id,
+        sender_id: normalizedPost.author_id?._id || normalizedPost.author_id,
+        title: "Mua hàng thành công",
+        body: "Vui lòng chờ "+ normalizedPost.author_id?.full_name +" xác nhận đơn hàng của bạn.",
+        type: "transaction",
+        related_id:  res.data.data._id,
+        related_model:"Transaction",
+        deeplink: "",
+        channel: "in_app",
+        is_read: false
+      });
 
       // Redirect đến success page
       window.location.href = `/payment/success?txn=${transactionData.transactionId}`;
@@ -210,8 +274,33 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
   const serviceFee = Math.round(normalizedPost.price * 0.03); // 3% service fee
   const totalAmount = normalizedPost.price + serviceFee;
 
+ //QR
+  const handleQR = async () =>{
+    const query = new URLSearchParams({
+        accountNo: '2006205431189',
+        accountName:normalizedPost.author_id?.full_name ,
+        amount: normalizedPost.price + Math.round(normalizedPost.price * 0.03),
+        addInfo:'Thanh toan don hang '+normalizedPost.title+' gia '+normalizedPost.price+' vnd',
+      }).toString();
+      
+      
+    const res = await fetch(`http://localhost:8080/api/qr?${query}`);
+      if (!res.ok) {
+        throw new Error('Failed to generate QR');
+      }
+      // Assuming the API returns { url: "..." }
+      const data = await res.json();
+      console.log('query:'+data.qrUrl);
+      setQrURL(data.qrUrl);
+  }
+
+  
+
   return (
-    <div className={styles["payment-container"]}>
+   <div >
+
+   
+    <div className={styles["payment-container"]} ref={popupRef} >
       {/* Header */}
       <div className={styles["payment-header"]}>
         <button
@@ -366,7 +455,10 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
             }`}
             onClick={(e) => {
               createRipple(e);
-              handlePayment();
+              handleQR();
+              setOpenQR(true);
+              
+              // handlePayment();
             }}
             disabled={!selectedMethod || !agreeTerms || processing}
           >
@@ -397,7 +489,30 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
           </p>
         </div>
       </div>
+
+       
     </div>
+
+{openQR && (
+  <div
+    className={styles["overlay"] }
+    
+  >
+    <div 
+      ref={overlayRef}
+      className={styles["qrContainer"]}
+      onClick={(e) => (e.stopPropagation() ,handlePayment())} 
+      onMouseDown={(e) => e.stopPropagation()}
+    >
+      <img src={qrURL} alt="" />
+    </div>
+  </div>
+)}
+
+
+
+</div>
+    
   );
 };
 

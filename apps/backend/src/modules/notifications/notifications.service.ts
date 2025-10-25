@@ -31,40 +31,90 @@ export class NotificationsService {
     return this.notificationModel.find();
   }
 
-  findByUserId(userId: string){
-    return this.notificationModel
-    .find({receiver_id: new Types.ObjectId(userId)})
+  async findByUserId(userId: string) {
+  //  Lấy danh sách thông báo populate theo post
+  const notifications = await this.notificationModel
+    .find({ receiver_id: new Types.ObjectId(userId) })
     .populate('sender_id')
-    .populate('related_id')
+    .populate('related_id') // populate Post hoặc Transaction
     .sort({ updatedAt: -1 })
     .exec();
+
+  //nếu là Transaction thì populate thêm post_id
+  for (const n of notifications) {
+    if (n.related_model === 'Transaction') {
+      await n.populate({
+        path: 'related_id.post_id',
+        model: 'Post',
+      });
+    }
   }
 
-  findTransaction(userId: string){
-    return this.notificationModel
-    .find({receiver_id: new Types.ObjectId(userId),type: 'transaction'})
+  return notifications;
+}
+
+
+  async findTransaction(userId: string){
+    const notifications = await this.notificationModel
+    .find({ receiver_id: new Types.ObjectId(userId),type: 'transaction' })
     .populate('sender_id')
-    .populate('related_id')
+    .populate('related_id') // populate Post hoặc Transaction
     .sort({ updatedAt: -1 })
     .exec();
+
+  //nếu là Transaction thì populate thêm post_id
+  for (const n of notifications) {
+    if (n.related_model === 'Transaction') {
+      await n.populate({
+        path: 'related_id.post_id',
+        model: 'Post',
+      });
+    }
   }
 
-    findModeration(userId: string){
-    return this.notificationModel
-    .find({receiver_id: new Types.ObjectId(userId),type: 'moderation'})
-    .populate('sender_id')
-    .populate('related_id')
-    .sort({ updatedAt: -1 })
-    .exec();
+  return notifications;
   }
 
-    findSystem(userId: string){
-    return this.notificationModel
-    .find({receiver_id: new Types.ObjectId(userId),type: 'system'})
+    async findModeration(userId: string){
+     const notifications = await this.notificationModel
+    .find({ receiver_id: new Types.ObjectId(userId),type: 'moderation' })
     .populate('sender_id')
-    .populate('related_id')
+    .populate('related_id') // populate Post hoặc Transaction
     .sort({ updatedAt: -1 })
     .exec();
+
+  //nếu là Transaction thì populate thêm post_id
+  for (const n of notifications) {
+    if (n.related_model === 'Transaction') {
+      await n.populate({
+        path: 'related_id.post_id',
+        model: 'Post',
+      });
+    }
+  }
+
+  return notifications;
+  }
+
+    async findSystem(userId: string){
+     const notifications = await this.notificationModel
+    .find({ receiver_id: new Types.ObjectId(userId),type: 'system' })
+    .populate('sender_id')
+    .populate('related_id') // populate Post hoặc Transaction
+    .sort({ updatedAt: -1 })
+    .exec();
+
+  //nếu là Transaction thì populate thêm post_id
+  for (const n of notifications) {
+    if (n.related_model === 'Transaction') {
+      await n.populate({
+        path: 'related_id.post_id',
+        model: 'Post',
+      });
+    }
+  }
+
+  return notifications;
   }
 
   async readAll(userId: string ){

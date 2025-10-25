@@ -44,8 +44,8 @@ export class TransactionsService {
     return `This action returns a #${id} transaction`;
   }
 
-  update(id: number, updateTransactionDto: UpdateTransactionDto) {
-    return `This action updates a #${id} transaction`;
+  update(id: string, updateTransactionDto: UpdateTransactionDto) {
+    return this.transactionModel.findByIdAndUpdate(id,updateTransactionDto).exec();
   }
 
   remove(id: number) {

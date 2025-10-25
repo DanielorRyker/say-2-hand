@@ -298,7 +298,7 @@ const Home = () => {
                   // Ensure correct image URL
                   <Image
                     loader={imageLoader}
-                    src={category.image ?? "/image/category/default.svg"}
+                    src={category.image ? URL_GCS + category.image : "/image/category/default.svg"}
                     alt="category"
                     width={80}
                     height={80}

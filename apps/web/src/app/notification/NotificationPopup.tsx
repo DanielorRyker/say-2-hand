@@ -8,6 +8,34 @@ import headerStyles from "@/app/layouts/header.module.scss";
 import Image from "next/image";
 import { io, Socket } from "socket.io-client";
 
+type RelatedPost = {
+  _id: string;
+  author_id: string;
+  category_id: string;
+  title: string;
+  description: string;
+  images: {
+    _id: string;
+    url: string;
+    alt?: string;
+    tags: string[];
+  }[];
+};
+
+type RelatedTransaction = {
+  _id: string;
+  post_id: RelatedPost;
+  seller_id: string;
+  buyer_id: string;
+  amount: number;
+  currency: string;
+  payment_gateway: string;
+  payment_method: string;
+  payment_status: string;
+  transaction_ref: string;
+  status: string;
+};
+
 type Notification = {
   _id: string;
   title: string;
@@ -21,18 +49,8 @@ type Notification = {
     full_name: string;
     avatar: string;
   };
-  related_id?:{
-    post_id: string;
-    _id: string;
-    title: string;
-    description: string;
-    images: {
-      _id: string;
-      url: string;
-      alt?: string;
-      tags: string[];
-    }[];
-  }
+  related_model?: string;
+  related_id?: RelatedPost | RelatedTransaction ;
 };
 
 export default function NotificationPopup() {
@@ -165,6 +183,9 @@ useEffect(() => {
      
     };
 
+  useEffect(() => {
+  fillerNotification(); // tự động lọc lại mỗi khi filter thay đổi
+}, [filter]);
 
   const handleClick = (type: string) => {
     if (filter === type) {
@@ -228,13 +249,13 @@ const markAllAsRead = async () => {
           <div className={styles.fillerContrainer}>
             <label className={styles.lbFiller}>Lọc :</label>
             <button  className={`${styles.btnFilter} ${filter === "transaction" ? styles.active : styles.btnFilter}`} 
-             onClick={()=>(fillerNotification(), handleClick("transaction"))}>Giao dịch</button>
+             onClick={()=>(handleClick("transaction"))}>Giao dịch</button>
 
             <button className={`${styles.btnFilter} ${filter === "moderation" ? styles.active : styles.btnFilter}`} 
-            onClick={()=>(fillerNotification(), handleClick("moderation"))}>Tin đăng</button>
+            onClick={()=>(handleClick("moderation"))}>Tin đăng</button>
 
             <button className={`${styles.btnFilter} ${filter === "system" ? styles.active : styles.btnFilter}`}
-             onClick={()=>(fillerNotification(), handleClick("system"))}>Hệ thống</button>
+             onClick={()=>(handleClick("system"))}>Hệ thống</button>
           </div>
           {notifications.length === 0 ? (
             <div className={styles.empty}>Không có thông báo nào</div>
@@ -266,10 +287,24 @@ const markAllAsRead = async () => {
                       <div className={styles.time}>{getRelativeTime(n.createdAt)}</div>
                     </div>
                         
-                        {n.related_id?
-                          <img src={ process.env.NEXT_PUBLIC_URL_GCS + n.related_id.images[0].url } 
-                          alt="" 
-                          className={styles.postImage}/>
+                        {n.related_id  && (n.related_id as RelatedPost).images && (n.related_id as RelatedPost).images[0] ? 
+                          <Image
+                            src={process.env.NEXT_PUBLIC_URL_GCS + (n.related_id as RelatedPost).images[0].url}
+                            alt={(n.related_id as RelatedPost).images[0].alt || ""}
+                            className={styles.postImage}
+                            width={48}
+                            height={48}
+                          />
+                          :
+                          n.related_id  && ((n.related_id as RelatedTransaction).post_id as RelatedPost).images?
+                          
+                          <Image
+                            src={process.env.NEXT_PUBLIC_URL_GCS + ((n.related_id as RelatedTransaction).post_id as RelatedPost).images[0].url}
+                            alt={((n.related_id as RelatedTransaction).post_id as RelatedPost).images[0].alt || ""}
+                            className={styles.postImage}
+                            width={48}
+                            height={48}
+                          />
                           :      
                           <div className={styles.postImage}></div>                   
                         }

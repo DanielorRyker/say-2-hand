@@ -66,6 +66,7 @@ export default function Login() {
           router.push("/");
         }
       } else {
+        localStorage.removeItem("user");
         setError("Tài khoản chưa được xác thực");
         localStorage.setItem("email", form.email);
         setTimeout(() => router.push("/auth/verification"), 2000);

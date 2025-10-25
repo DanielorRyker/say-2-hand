@@ -28,6 +28,10 @@ export class CreateNotificationDto {
 
   @IsString()
   @IsOptional()
+  related_model?: string;
+
+  @IsString()
+  @IsOptional()
   deeplink?: string;
 
   @IsOptional()
