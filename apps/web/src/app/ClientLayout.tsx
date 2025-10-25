@@ -3,6 +3,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import Header from "@/app/layouts/Header";
 import Footer from "@/app/layouts/Footer";
+import { ToastProvider } from "@/components/ui/toast/ToastContext";
 
 export default function ClientLayout({
   children,
@@ -41,10 +42,10 @@ export default function ClientLayout({
   const hideHeaderFooter = noHeaderFooterRoutes.includes(pathname);
 
   return (
-    <>
+    <ToastProvider>
       {!hideHeaderFooter && <Header />}
       <main>{children}</main>
       {!hideHeaderFooter && <Footer />}
-    </>
+    </ToastProvider>
   );
 }

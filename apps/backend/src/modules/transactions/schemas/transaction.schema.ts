@@ -32,16 +32,18 @@ export class Transaction {
   })
   payment_status: string;
 
-  @Prop({ type: String, required: true})
+  @Prop({ type: String, required: true })
   transaction_ref: string; // Mã giao dịch, ví dụ: MOMO202508120001
 
   @Prop({
     type: String,
-    enum: ['pending', 'completed', 'cancelled'],
+    enum: ['pending', 'shipping', 'completed', 'cancelled'],
     default: 'pending',
   })
   status: string;
-}
 
+  @Prop({ type: String })
+  cancel_reason?: string;
+}
 
 export const TransactionSchema = SchemaFactory.createForClass(Transaction);

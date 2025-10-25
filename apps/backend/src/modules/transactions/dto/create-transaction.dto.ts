@@ -1,4 +1,11 @@
-import { IsString, IsNotEmpty, IsMongoId, IsNumber, IsOptional, IsEnum } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsMongoId,
+  IsNumber,
+  IsOptional,
+  IsEnum,
+} from 'class-validator';
 
 export class CreateTransactionDto {
   @IsMongoId()
