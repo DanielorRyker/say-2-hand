@@ -65,8 +65,11 @@ const OrdersPage = () => {
       await axios.post(
         `http://localhost:8080/api/transactions/${orderId}/ship`
       );
-      addToast({ type: "success", message: "Đã xác nhận gửi hàng" });
-      // refresh orders in-place
+      addToast({
+        type: "success",
+        message: "Đã xác nhận gửi hàng — đơn sẽ được giao trong 5s.",
+      });
+      // Backend sẽ tự hoàn tất sau 5s; chỉ refresh để hiển thị 'shipping' ngay
       fetchOrders(activeTab === "all" ? undefined : activeTab);
     } catch (error: any) {
       addToast({
@@ -75,6 +78,8 @@ const OrdersPage = () => {
       });
     }
   };
+
+  // no client-side auto-complete timers; backend schedules completion
 
   // Xử lý huỷ đơn
   const handleCancelOrder = async (orderId: string) => {

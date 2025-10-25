@@ -59,7 +59,22 @@ const AdminOrderDetailPage = () => {
       await axios.post(
         `http://localhost:8080/api/transactions/${orderId}/ship`
       );
-      addToast({ type: "success", message: "Đã xác nhận gửi hàng" });
+      addToast({
+        type: "success",
+        message:
+          "Đã xác nhận gửi hàng — backend sẽ tự hoàn tất trong vài giây.",
+      });
+
+      // Immediately update UI to shipping and refresh detail
+      setOrder((prev) =>
+        prev
+          ? ({
+              ...prev,
+              status: "shipping",
+              updatedAt: new Date(),
+            } as unknown as Transaction)
+          : prev
+      );
       fetchOrderDetail();
     } catch (error: any) {
       addToast({
@@ -79,6 +94,7 @@ const AdminOrderDetailPage = () => {
         `http://localhost:8080/api/transactions/${orderId}/cancel`,
         { cancelReason }
       );
+      // backend handles any scheduled auto-complete; no client timers to clear
       addToast({ type: "success", message: "Đã huỷ đơn và hoàn tiền" });
       fetchOrderDetail();
     } catch (error: any) {
@@ -136,6 +152,8 @@ const AdminOrderDetailPage = () => {
     };
     return badges[status] || badges.pending;
   };
+
+  // NOTE: backend now handles auto-complete after shipping; client-side simulation removed.
 
   const getPaymentStatusBadge = (status: string) => {
     const badges: Record<
@@ -507,6 +525,7 @@ const AdminOrderDetailPage = () => {
                 <Icon icon="mdi:truck-delivery" width={20} height={20} />
                 Xác nhận gửi hàng
               </button>
+              {/* client-side simulation removed: backend schedules auto-complete */}
               <button className={styles.btnCancel} onClick={handleCancelOrder}>
                 <Icon icon="mdi:close-circle" width={20} height={20} />
                 Huỷ đơn hàng

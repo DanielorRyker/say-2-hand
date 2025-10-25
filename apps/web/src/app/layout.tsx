@@ -17,6 +17,8 @@ export default function RootLayout({
   return (
     <html lang="en" className="mdl-js">
       <body suppressHydrationWarning={true}>
+        {/* Server-rendered placeholder for client-only toast portal */}
+        <div id="__toast_root" />
         <AntdRegistry>
           <ClientLayout>{children}</ClientLayout>
         </AntdRegistry>

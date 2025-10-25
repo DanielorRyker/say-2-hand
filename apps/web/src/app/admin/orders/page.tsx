@@ -31,6 +31,8 @@ const AdminOrdersPage = () => {
 
   const { addToast } = useToast();
 
+  // Backend will schedule auto-complete; no client-side timers needed
+
   const fetchOrders = useCallback(
     async (status?: string) => {
       if (!user) return;
@@ -65,8 +67,12 @@ const AdminOrdersPage = () => {
       await axios.post(
         `http://localhost:8080/api/transactions/${orderId}/ship`
       );
-      addToast({ type: "success", message: "Đã xác nhận gửi hàng" });
-      // refresh orders in-place
+      addToast({
+        type: "success",
+        message: "Đã xác nhận gửi hàng — đơn sẽ được giao trong 5s.",
+      });
+
+      // refresh orders immediately to show 'shipping' while backend completes
       fetchOrders(activeTab === "all" ? undefined : activeTab);
     } catch (error: any) {
       addToast({
@@ -88,6 +94,7 @@ const AdminOrdersPage = () => {
           cancelReason,
         }
       );
+      // backend will clear scheduled job if any; frontend has no timers
       addToast({ type: "success", message: "Đã huỷ đơn và hoàn tiền" });
       fetchOrders(activeTab === "all" ? undefined : activeTab);
     } catch (error: any) {

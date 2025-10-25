@@ -19,6 +19,9 @@ export class TransactionsService {
     private postModel: Model<PostDocument>,
   ) {}
 
+  // In-memory timers for scheduled auto-complete after ship
+  private autoCompleteTimers: Map<string, NodeJS.Timeout> = new Map();
+
   async create(createTransactionDto: CreateTransactionDto) {
     try {
       const newTransaction = new this.transactionModel({
@@ -181,6 +184,13 @@ export class TransactionsService {
       );
     }
 
+    // Clear any scheduled auto-complete timer for this order
+    if (this.autoCompleteTimers.has(id)) {
+      const t = this.autoCompleteTimers.get(id);
+      if (t) clearTimeout(t);
+      this.autoCompleteTimers.delete(id);
+    }
+
     // Cập nhật trạng thái transaction
     transaction.status = 'cancelled';
     transaction.payment_status = 'refunded';
@@ -217,8 +227,38 @@ export class TransactionsService {
     transaction.status = 'shipping';
     await transaction.save();
 
+    // Schedule auto-complete after 5 seconds (server-side)
+    try {
+      // Clear any existing timer
+      if (this.autoCompleteTimers.has(id)) {
+        const existing = this.autoCompleteTimers.get(id);
+        if (existing) clearTimeout(existing);
+        this.autoCompleteTimers.delete(id);
+      }
+
+      const timer = setTimeout(async () => {
+        try {
+          const fresh = await this.transactionModel.findById(id);
+          if (!fresh) return;
+          // only complete if still in shipping state
+          if (fresh.status === 'shipping') {
+            await this.completeOrder(id);
+          }
+        } catch (err) {
+          console.error('Auto-complete error for transaction', id, err);
+        } finally {
+          this.autoCompleteTimers.delete(id);
+        }
+      }, 5000);
+
+      this.autoCompleteTimers.set(id, timer);
+    } catch (err) {
+      console.error('Failed to schedule auto-complete for', id, err);
+    }
+
     return {
-      message: 'Order marked as shipped successfully',
+      message:
+        'Order marked as shipped successfully; auto-complete scheduled in 5s',
       data: transaction,
     };
   }
@@ -239,6 +279,13 @@ export class TransactionsService {
 
     transaction.status = 'completed';
     await transaction.save();
+
+    // Clear any scheduled auto-complete timer (if present)
+    if (this.autoCompleteTimers.has(id)) {
+      const t = this.autoCompleteTimers.get(id);
+      if (t) clearTimeout(t);
+      this.autoCompleteTimers.delete(id);
+    }
 
     // Cập nhật trạng thái post thành completed
     await this.postModel.findByIdAndUpdate(transaction.post_id, {

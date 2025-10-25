@@ -59,7 +59,11 @@ const OrderDetailPage = () => {
       await axios.post(
         `http://localhost:8080/api/transactions/${orderId}/ship`
       );
-      addToast({ type: "success", message: "Đã xác nhận gửi hàng" });
+      addToast({
+        type: "success",
+        message: "Đã xác nhận gửi hàng — hệ thống sẽ tự hoàn tất trong 5s.",
+      });
+      // refresh detail so UI shows 'shipping' while backend completes
       fetchOrderDetail();
     } catch (error: any) {
       addToast({

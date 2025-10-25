@@ -1,5 +1,12 @@
 "use client";
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+} from "react";
+import { createPortal } from "react-dom";
 import styles from "./toast.module.scss";
 
 type Toast = {
@@ -23,6 +30,11 @@ export const useToast = () => {
 
 export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const removeToast = useCallback((id: string) => {
     setToasts((t) => t.filter((x) => x.id !== id));
@@ -40,26 +52,38 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
     [removeToast]
   );
 
+  const toastContent = (
+    <div className={styles.container} aria-live="polite">
+      {toasts.map((t) => (
+        <div
+          key={t.id}
+          className={`${styles.toast} ${styles[t.type || "info"]}`}
+        >
+          <div className={styles.message}>{t.message}</div>
+          <button
+            className={styles.close}
+            onClick={() => removeToast(t.id)}
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <ToastContext.Provider value={{ addToast }}>
       {children}
-      <div className={styles.container} aria-live="polite">
-        {toasts.map((t) => (
-          <div
-            key={t.id}
-            className={`${styles.toast} ${styles[t.type || "info"]}`}
-          >
-            <div className={styles.message}>{t.message}</div>
-            <button
-              className={styles.close}
-              onClick={() => removeToast(t.id)}
-              aria-label="Close"
-            >
-              ×
-            </button>
-          </div>
-        ))}
-      </div>
+      {/* Render portal into server-rendered placeholder to avoid hydration mismatch */}
+      {mounted && typeof document !== "undefined"
+        ? (() => {
+            const root = document.getElementById("__toast_root");
+            if (root) return createPortal(toastContent, root);
+            // Fallback: render inline if no root exists
+            return toastContent;
+          })()
+        : null}
     </ToastContext.Provider>
   );
 };

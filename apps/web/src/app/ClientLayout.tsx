@@ -29,7 +29,13 @@ export default function ClientLayout({
   }, [pathname]);
 
   if (!mounted) {
-    return <main>{children}</main>;
+    // Even when not mounted we must provide the ToastProvider so client
+    // components that call useToast during hydration don't throw.
+    return (
+      <ToastProvider>
+        <main>{children}</main>
+      </ToastProvider>
+    );
   }
 
   const noHeaderFooterRoutes = [
