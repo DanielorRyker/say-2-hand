@@ -65,35 +65,6 @@
     }
 }
 
-/* Scope controls (Admin) */
-.scopeControls {
-    display: flex;
-    align-items: center;
-    gap: vars.$spacing-md;
-    margin-bottom: vars.$spacing-md;
-}
-
-.scopeLabel {
-    font-weight: vars.$font-weight-bold;
-    color: colors.$solid-text-primary;
-}
-
-.scopeBtn {
-    padding: vars.$spacing-xs vars.$spacing-md;
-    border-radius: vars.$radius-lg;
-    border: none;
-    background: transparent;
-    color: colors.$solid-text-secondary;
-    cursor: pointer;
-
-    &:hover { background: colors.$bg-section; }
-}
-
-.scopeBtnActive {
-    background: colors.$secondary-main;
-    color: colors.$solid-text-white;
-}
-
 .tab {
     flex: 1;
     min-width: 140px;

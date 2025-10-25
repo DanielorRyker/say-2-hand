@@ -236,19 +236,21 @@ export class TransactionsService {
         this.autoCompleteTimers.delete(id);
       }
 
-      const timer = setTimeout(async () => {
-        try {
-          const fresh = await this.transactionModel.findById(id);
-          if (!fresh) return;
-          // only complete if still in shipping state
-          if (fresh.status === 'shipping') {
-            await this.completeOrder(id);
+      const timer = setTimeout(() => {
+        void (async () => {
+          try {
+            const fresh = await this.transactionModel.findById(id);
+            if (!fresh) return;
+            // only complete if still in shipping state
+            if (fresh.status === 'shipping') {
+              await this.completeOrder(id);
+            }
+          } catch (err) {
+            console.error('Auto-complete error for transaction', id, err);
+          } finally {
+            this.autoCompleteTimers.delete(id);
           }
-        } catch (err) {
-          console.error('Auto-complete error for transaction', id, err);
-        } finally {
-          this.autoCompleteTimers.delete(id);
-        }
+        })();
       }, 5000);
 
       this.autoCompleteTimers.set(id, timer);
