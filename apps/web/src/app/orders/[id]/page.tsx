@@ -57,9 +57,9 @@ const OrderDetailPage = () => {
   // Xử lý gửi hàng
   const handleShipOrder = async () => {
     try {
-      // await axios.post(
-      //   `http://localhost:8080/api/transactions/${orderId}/ship`
-      // );
+      await axios.post(
+        `http://localhost:8080/api/transactions/${orderId}/ship`
+      );
       addToast({
         type: "success",
         message: "Đã xác nhận gửi hàng — hệ thống sẽ tự hoàn tất trong 5s.",
@@ -87,10 +87,10 @@ const OrderDetailPage = () => {
 
   try {
     await axios.post("http://localhost:8080/api/notifications", {      
-      receiver_id: order.post_id.author_id, 
+      receiver_id: order.buyer_id._id, 
       sender_id: user._id,
       title: "Đơn hàng của bạn đang được vận chuyển",
-      body: `Đơn hàng "${order.post_id.title}" sắp đến, vui lòng chuẩn bị nhận hàng.`,
+      body: `Đơn hàng ${order.post_id.title} sắp đến, vui lòng chuẩn bị nhận hàng.`,
       type: "transaction",
       related_id: order._id,
       related_model: "Transaction",
@@ -114,10 +114,10 @@ const OrderDetailPage = () => {
       }
       try {
          await axios.post("http://localhost:8080/api/notifications", {      
-          receiver_id: order.post_id.author_id,
+          receiver_id: order.buyer_id._id, 
           sender_id: user._id,
           title: "Đơn hàng đã hoàn tất",
-          body: `Đơn hàng "${order.post_id.title}" đã được giao`,
+          body: `Đơn hàng ${order.post_id.title} đã được giao`,
           type: "transaction",
           related_id: order._id,
           related_model:"Transaction",

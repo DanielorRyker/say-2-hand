@@ -34,7 +34,7 @@ export interface Transaction {
         avatar?: string;
       };
   buyer_id:
-    | string
+    
     | {
         _id: string;
         full_name: string;

@@ -62,15 +62,15 @@ const OrdersPage = () => {
   // Xử lý gửi hàng
   const handleShipOrder = async (order: Transaction) => {
     try {
-      // await axios.post(
-      //   `http://localhost:8080/api/transactions/${order._id}/ship`
-      // );
+      await axios.post(
+        `http://localhost:8080/api/transactions/${order._id}/ship`
+      );
       addToast({
         type: "success",
         message: "Đã xác nhận gửi hàng — đơn sẽ được giao trong 5s.",
       });
 
-      // console.log('oder:',order)
+      console.log('oder:',order)
       await handleSendNotificationShip(order);
       await new Promise(resolve => setTimeout(resolve, 5000));
       await handlerSendNotificationComplete(order);
@@ -94,10 +94,10 @@ const OrdersPage = () => {
 
   try {
     await axios.post("http://localhost:8080/api/notifications", {      
-      receiver_id: order.post_id.author_id, 
+      receiver_id: order.buyer_id._id, 
       sender_id: user._id,
       title: "Đơn hàng của bạn đang được vận chuyển",
-      body: `Đơn hàng "${order.post_id.title}" sắp đến, vui lòng chuẩn bị nhận hàng.`,
+      body: `Đơn hàng ${order.post_id.title} sắp đến, vui lòng chuẩn bị nhận hàng.`,
       type: "transaction",
       related_id: order._id,
       related_model: "Transaction",
@@ -121,10 +121,10 @@ const OrdersPage = () => {
       }
       try {
          await axios.post("http://localhost:8080/api/notifications", {      
-          receiver_id: order.post_id.author_id,
+          receiver_id: order.buyer_id._id, 
           sender_id: user._id,
           title: "Đơn hàng đã hoàn tất",
-          body: `Đơn hàng "${order.post_id.title}" đã được giao`,
+          body: `Đơn hàng ${order.post_id.title} đã được giao`,
           type: "transaction",
           related_id: order._id,
           related_model:"Transaction",

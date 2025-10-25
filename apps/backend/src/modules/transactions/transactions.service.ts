@@ -96,7 +96,8 @@ export class TransactionsService {
       .find(query)
       .populate({
         path: 'post_id',
-        select: 'title images price transaction_type status',
+        select:
+          'title description images price transaction_type condition location status author_id',
       })
       .populate({
         path: 'buyer_id',
