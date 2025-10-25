@@ -246,6 +246,12 @@ const Header = () => {
     localStorage.setItem("sortBy", sortBy);
     router.push(`/${sortBy}`);
   };
+
+  //Mở trang quản lý đơn hàng (đã bán)
+  const handleOrders = () => {
+    router.push("/orders");
+  };
+
   //Mở trang tin nhắn
   const handleMessage = () => {
     if (!conversationsData || conversationsData.length === 0) {
@@ -283,15 +289,34 @@ const Header = () => {
             id="basic-nav-dropdown"
           >
             <NavDropdown.Item href="#action/1">
+              <Icon icon="mdi:view-dashboard" width={20} height={20} />
               <h5>Danh mục</h5>
             </NavDropdown.Item>
             <NavDropdown.Divider />
-            <NavDropdown.Item href="#action/1">Xe cộ</NavDropdown.Item>
-            <NavDropdown.Item href="#action/2">Đồ điện tử</NavDropdown.Item>
-            <NavDropdown.Item href="#action/3">Thú cưng</NavDropdown.Item>
-            <NavDropdown.Item href="#action/3">Mẹ và bé</NavDropdown.Item>
-            <NavDropdown.Item href="#action/3">Đồ gia dụng</NavDropdown.Item>
-            <NavDropdown.Item href="#action/3">Sách </NavDropdown.Item>
+            <NavDropdown.Item href="#action/1">
+              <Icon icon="mdi:car" width={20} height={20} />
+              Xe cộ
+            </NavDropdown.Item>
+            <NavDropdown.Item href="#action/2">
+              <Icon icon="mdi:laptop" width={20} height={20} />
+              Đồ điện tử
+            </NavDropdown.Item>
+            <NavDropdown.Item href="#action/3">
+              <Icon icon="mdi:dog" width={20} height={20} />
+              Thú cưng
+            </NavDropdown.Item>
+            <NavDropdown.Item href="#action/3">
+              <Icon icon="mdi:baby-carriage" width={20} height={20} />
+              Mẹ và bé
+            </NavDropdown.Item>
+            <NavDropdown.Item href="#action/3">
+              <Icon icon="mdi:home" width={20} height={20} />
+              Đồ gia dụng
+            </NavDropdown.Item>
+            <NavDropdown.Item href="#action/3">
+              <Icon icon="mdi:book-open-page-variant" width={20} height={20} />
+              Sách
+            </NavDropdown.Item>
           </NavDropdown>
           <button
             onClick={() => router.push("/home")}
@@ -457,8 +482,7 @@ const Header = () => {
             )}
           </button>
 
-         
-            <NotificationPopup/>
+          <NotificationPopup />
           {user ? (
             <>
               <button
@@ -506,10 +530,12 @@ const Header = () => {
             {!user && (
               <>
                 <NavDropdown.Item onClick={handleLogout}>
+                  <Icon icon="mdi:login" width={20} height={20} />
                   Đăng nhập
                 </NavDropdown.Item>
                 <NavDropdown.Divider />
                 <NavDropdown.Item onClick={handleRegister}>
+                  <Icon icon="mdi:account-plus" width={20} height={20} />
                   Đăng ký
                 </NavDropdown.Item>
               </>
@@ -519,14 +545,22 @@ const Header = () => {
             {user && user.role === "user" && (
               <>
                 <NavDropdown.Item onClick={handleProfile}>
+                  <Icon icon="mdi:account-cog" width={20} height={20} />
                   Cài đặt tài khoản
                 </NavDropdown.Item>
                 <NavDropdown.Divider />
                 <NavDropdown.Item onClick={handleMyPost}>
+                  <Icon icon="mdi:post" width={20} height={20} />
                   Bài đăng của tôi
                 </NavDropdown.Item>
                 <NavDropdown.Divider />
+                <NavDropdown.Item onClick={handleOrders}>
+                  <Icon icon="mdi:shopping" width={20} height={20} />
+                  Quản lý đơn hàng
+                </NavDropdown.Item>
+                <NavDropdown.Divider />
                 <NavDropdown.Item onClick={handleLogout}>
+                  <Icon icon="mdi:logout" width={20} height={20} />
                   Đăng xuất
                 </NavDropdown.Item>
               </>
@@ -534,24 +568,34 @@ const Header = () => {
             {user && user.role === "admin" && (
               <>
                 <NavDropdown.Item onClick={handleProfile}>
+                  <Icon icon="mdi:account-cog" width={20} height={20} />
                   Cài đặt tài khoản
                 </NavDropdown.Item>
                 <NavDropdown.Divider />
                 <NavDropdown.Item onClick={() => router.push("/admin/users")}>
+                  <Icon icon="mdi:account-group" width={20} height={20} />
                   Quản lý tài khoản
                 </NavDropdown.Item>
                 <NavDropdown.Divider />
                 <NavDropdown.Item onClick={() => router.push("/admin/posts")}>
+                  <Icon icon="mdi:post-outline" width={20} height={20} />
                   Quản lý bài đăng
                 </NavDropdown.Item>
                 <NavDropdown.Divider />
                 <NavDropdown.Item
                   onClick={() => router.push("/admin/categories")}
                 >
+                  <Icon icon="mdi:shape" width={20} height={20} />
                   Quản lý danh mục
                 </NavDropdown.Item>
                 <NavDropdown.Divider />
+                <NavDropdown.Item onClick={() => router.push("/admin/orders")}>
+                  <Icon icon="mdi:shopping" width={20} height={20} />
+                  Quản lý đơn hàng
+                </NavDropdown.Item>
+                <NavDropdown.Divider />
                 <NavDropdown.Item onClick={handleLogout}>
+                  <Icon icon="mdi:logout" width={20} height={20} />
                   Đăng xuất
                 </NavDropdown.Item>
               </>

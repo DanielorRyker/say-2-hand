@@ -1,10 +1,10 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
-import React, { useState, useCallback, useEffect, useRef } from "react";
+import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
+import axios from "axios";
 import Link from "next/link";
 import styles from "../payment.module.scss";
 import { Icon } from "@iconify/react";
-import axios from "axios";
 // import axios from "axios"; // TODO: Sẽ dùng khi backend có endpoint /api/payments
 
 interface PaymentMethod {
@@ -124,6 +124,18 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
 }, [openQR]);
 
 
+  // Address states
+  const [useSavedAddress, setUseSavedAddress] = useState(true);
+  const [selectedAddressIndex, setSelectedAddressIndex] = useState<
+    number | null
+  >(0);
+  const [customAddress, setCustomAddress] = useState("");
+  const [saveCustomAddress, setSaveCustomAddress] = useState(false);
+
+  // QR payment flow
+  const [qrLoading, setQrLoading] = useState(false);
+  const [qrModalOpen, setQrModalOpen] = useState(false);
+  const [qrData, setQrData] = useState<any>(null);
 
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat("vi-VN", {
@@ -145,6 +157,12 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
       author_id: postData.author_id || { full_name: "Người bán" },
     };
   }, [postData]);
+
+  // Extract user's saved addresses from currentUser
+  const savedAddresses = useMemo(() => {
+    if (!currentUser) return [];
+    return currentUser.addresses || [];
+  }, [currentUser]);
 
   const handlePayment = useCallback(async () => {
     if (!normalizedPost) return;
@@ -261,6 +279,74 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
       setProcessing(false);
     }
   }, [selectedMethod, agreeTerms, normalizedPost]);
+
+  // Save custom address into user's addresses via backend PATCH
+  const patchSaveAddress = async (addressToSave: {
+    label?: string;
+    address: string;
+    is_default?: boolean;
+  }) => {
+    try {
+      const token = localStorage.getItem("access_token");
+      if (!token) throw new Error("Chưa đăng nhập");
+      // Build payload with _id and addresses
+      const user = localStorage.getItem("user");
+      const parsed = user ? JSON.parse(user) : null;
+      if (!parsed || !parsed._id) throw new Error("User không hợp lệ");
+      const updatedAddresses = [...(parsed.addresses || [])];
+      if (addressToSave.is_default) {
+        updatedAddresses.forEach((a: any) => (a.is_default = false));
+      }
+      updatedAddresses.push(addressToSave);
+      const payload = { _id: parsed._id, addresses: updatedAddresses };
+      await axios.patch("http://localhost:8080/api/users/", payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      // Refresh localStorage user from server
+      const res = await axios.get(
+        `http://localhost:8080/api/users/find/${parsed.email}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      localStorage.setItem("user", JSON.stringify(res.data));
+      // Notify same-tab listeners
+      window.dispatchEvent(new Event("user-updated"));
+      return true;
+    } catch (error) {
+      console.error("Lưu địa chỉ thất bại:", error);
+      return false;
+    }
+  };
+
+  // QR flow: simulate create QR -> loading -> failure -> show modal with retry
+  const handleCreateQr = async () => {
+    setQrLoading(true);
+    setQrData(null);
+    try {
+      // Simulate network delay
+      await new Promise((res) => setTimeout(res, 1500));
+      // Simulate QR creation (fake data)
+      const data = {
+        qrId: `QR${Date.now()}`,
+        expiresAt: Date.now() + 5 * 60 * 1000,
+        payload: `qrcode://pay/${Math.random().toString(36).slice(2)}`,
+      };
+      setQrData(data);
+      // Simulate failure after a short delay
+      await new Promise((res) => setTimeout(res, 800));
+      setQrLoading(false);
+      setQrModalOpen(true);
+    } catch {
+      setQrLoading(false);
+      setQrModalOpen(true);
+    }
+  };
+
+  const handleRetryNewQr = async () => {
+    setQrModalOpen(true);
+    await handleCreateQr();
+  };
 
   if (!postData || !normalizedPost) {
     return (
@@ -394,6 +480,146 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
           </div>
         </section>
 
+        {/* Shipping Address Selection */}
+        <section className={styles["address-section"]}>
+          <h2 className={styles["section-title"]}>
+            <Icon icon="mdi:map-marker" width={20} />
+            Địa chỉ giao hàng
+          </h2>
+
+          <div className={styles["address-options"]}>
+            {/* Saved Addresses */}
+            <div className={styles["address-option-group"]}>
+              <label className={styles["radio-label"]}>
+                <input
+                  type="radio"
+                  name="addressType"
+                  checked={useSavedAddress}
+                  onChange={() => {
+                    setUseSavedAddress(true);
+                    if (savedAddresses.length > 0) setSelectedAddressIndex(0);
+                  }}
+                  className={styles["radio-input"]}
+                />
+                <span className={styles["radio-text"]}>
+                  <Icon icon="mdi:bookmark-check" width={18} />
+                  Sử dụng địa chỉ đã lưu
+                </span>
+              </label>
+
+              {useSavedAddress && (
+                <div className={styles["address-cards"]}>
+                  {savedAddresses.length === 0 ? (
+                    <div className={styles["empty-state"]}>
+                      <Icon
+                        icon="mdi:map-marker-off"
+                        width={40}
+                        color="#9ca3af"
+                      />
+                      <p>Chưa có địa chỉ nào được lưu</p>
+                      <button
+                        className={styles["add-address-hint"]}
+                        onClick={() => setUseSavedAddress(false)}
+                      >
+                        Thêm địa chỉ mới
+                      </button>
+                    </div>
+                  ) : (
+                    savedAddresses.map((addr: any, idx: number) => (
+                      <label
+                        key={idx}
+                        className={`${styles["address-card"]} ${selectedAddressIndex === idx ? styles["selected"] : ""}`}
+                        onClick={() => setSelectedAddressIndex(idx)}
+                      >
+                        <input
+                          type="radio"
+                          name="savedAddress"
+                          checked={selectedAddressIndex === idx}
+                          onChange={() => setSelectedAddressIndex(idx)}
+                          className={styles["hidden-radio"]}
+                        />
+                        <div className={styles["address-card-content"]}>
+                          <div className={styles["address-header"]}>
+                            <span className={styles["address-label"]}>
+                              {addr.label || "Địa chỉ"}
+                            </span>
+                            {addr.is_default && (
+                              <span className={styles["default-badge"]}>
+                                <Icon icon="mdi:star" width={12} />
+                                Mặc định
+                              </span>
+                            )}
+                          </div>
+                          <p className={styles["address-detail"]}>
+                            {addr.address}
+                          </p>
+                        </div>
+                        {selectedAddressIndex === idx && (
+                          <div className={styles["check-icon"]}>
+                            <Icon
+                              icon="mdi:check-circle"
+                              width={24}
+                              color="#10b981"
+                            />
+                          </div>
+                        )}
+                      </label>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* New Address */}
+            <div className={styles["address-option-group"]}>
+              <label className={styles["radio-label"]}>
+                <input
+                  type="radio"
+                  name="addressType"
+                  checked={!useSavedAddress}
+                  onChange={() => setUseSavedAddress(false)}
+                  className={styles["radio-input"]}
+                />
+                <span className={styles["radio-text"]}>
+                  <Icon icon="mdi:plus-circle" width={18} />
+                  Nhập địa chỉ mới
+                </span>
+              </label>
+
+              {!useSavedAddress && (
+                <div className={styles["new-address-form"]}>
+                  <div className={styles["form-group"]}>
+                    <label className={styles["form-label"]}>
+                      <Icon icon="mdi:map-marker" width={16} />
+                      Địa chỉ chi tiết
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Số nhà, Tên đường, Phường/Xã, Quận/Huyện, Tỉnh/TP"
+                      value={customAddress}
+                      onChange={(e) => setCustomAddress(e.target.value)}
+                      className={styles["address-input"]}
+                    />
+                  </div>
+
+                  <label className={styles["checkbox-save"]}>
+                    <input
+                      type="checkbox"
+                      checked={saveCustomAddress}
+                      onChange={(e) => setSaveCustomAddress(e.target.checked)}
+                      className={styles["checkbox-input"]}
+                    />
+                    <span className={styles["checkbox-text"]}>
+                      <Icon icon="mdi:content-save" width={16} />
+                      Lưu địa chỉ này vào danh sách của tôi
+                    </span>
+                  </label>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+
         {/* Payment Summary */}
         <section className={styles["payment-summary-section"]}>
           <h2 className={styles["section-title"]}>
@@ -447,37 +673,157 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
 
         {/* Payment Button */}
         <div className={styles["payment-actions"]}>
-          <button
-            className={`${styles["payment-btn"]} ${
-              !selectedMethod || !agreeTerms || processing
-                ? styles["disabled"]
-                : ""
-            }`}
-            onClick={(e) => {
-              createRipple(e);
-              handleQR();
-              setOpenQR(true);
-              
-              // handlePayment();
-            }}
-            disabled={!selectedMethod || !agreeTerms || processing}
-          >
-            {processing ? (
-              <>
-                <Icon
-                  icon="mdi:loading"
-                  width={24}
-                  className={styles["spin"]}
-                />
-                Đang xử lý...
-              </>
-            ) : (
-              <>
-                <Icon icon="mdi:lock" width={20} />
-                Thanh toán {formatCurrency(totalAmount)}
-              </>
-            )}
-          </button>
+          {/* If payment method is QR-based, offer Create QR flow */}
+          {selectedMethod === "momo" || selectedMethod === "zalopay" ? (
+            <>
+              <button
+                className={`${styles["payment-btn"]} ${qrLoading ? styles["disabled"] : ""}`}
+                onClick={async (e) => {
+                  createRipple(e);
+                  // If user entered custom address and wants to save it, save before creating QR
+                  if (!useSavedAddress && customAddress && saveCustomAddress) {
+                    const ok = await patchSaveAddress({
+                      address: customAddress,
+                      label: "",
+                      is_default: false,
+                    });
+                    if (!ok) alert("Không thể lưu địa chỉ. Vui lòng thử lại.");
+                  }
+                  // await handleCreateQr();
+                  handleQR();
+                  setQrModalOpen(true)
+                }}
+                disabled={qrLoading || processing}
+              >
+                {qrLoading ? (
+                  <>
+                    <Icon
+                      icon="mdi:loading"
+                      width={24}
+                      className={styles["spin"]}
+                    />
+                    Tạo QR...
+                  </>
+                ) : (
+                  <>
+                    <Icon icon="mdi:qrcode-scan" width={20} />
+                    Tạo QR & Thanh toán {formatCurrency(totalAmount)}
+                  </>
+                )}
+              </button>
+
+              {/* QR failure modal */}
+              {/* {qrModalOpen && (
+                <div
+                  className={styles["qr-modal-overlay"]}
+                  onClick={() => setQrModalOpen(true)}
+                >
+                  <div
+                    className={styles["qr-modal"]}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className={styles["qr-modal-header"]}>
+                      <div className={styles["qr-error-icon"]}>
+                        <Icon
+                          icon="mdi:close-circle"
+                          width={64}
+                          color="#ef4444"
+                        />
+                      </div>
+                      <h3 className={styles["qr-modal-title"]}>
+                        Thanh toán thất bại
+                      </h3>
+                      <p className={styles["qr-modal-desc"]}>
+                        Không thể hoàn tất thanh toán bằng mã QR. Vui lòng thử
+                        lại hoặc chọn phương thức thanh toán khác.
+                      </p>
+                    </div>
+
+                    {qrData && (
+                      <div className={styles["qr-info"]}>
+                        <div className={styles["qr-info-row"]}>
+                          <span className={styles["qr-info-label"]}>
+                            Mã giao dịch:
+                          </span>
+                          <span className={styles["qr-info-value"]}>
+                            {qrData.qrId}
+                          </span>
+                        </div>
+                        <div className={styles["qr-info-row"]}>
+                          <span className={styles["qr-info-label"]}>
+                            Trạng thái:
+                          </span>
+                          <span
+                            className={`${styles["qr-info-value"]} ${styles["failed"]}`}
+                          >
+                            <Icon icon="mdi:alert-circle" width={16} />
+                            Thất bại
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className={styles["qr-modal-actions"]}>
+                      <button
+                        className={styles["qr-btn-secondary"]}
+                        onClick={() => setQrModalOpen(false)}
+                      >
+                        <Icon icon="mdi:close" width={20} />
+                        Đóng
+                      </button>
+                      <button
+                        className={styles["qr-btn-primary"]}
+                        onClick={handleRetryNewQr}
+                      >
+                        <Icon icon="mdi:refresh" width={20} />
+                        Tạo QR mới
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )} */}
+            </>
+          ) : (
+            <button
+              className={`${styles["payment-btn"]} ${
+                !selectedMethod || !agreeTerms || processing
+                  ? styles["disabled"]
+                  : ""
+              }`}
+              onClick={async (e) => {
+                createRipple(e);
+                // Save custom address if requested
+                if (!useSavedAddress && customAddress && saveCustomAddress) {
+                  const ok = await patchSaveAddress({
+                    address: customAddress,
+                    label: "",
+                    is_default: false,
+                  });
+                  if (!ok) alert("Không thể lưu địa chỉ. Vui lòng thử lại.");
+                }
+                handleQR();
+                setQrModalOpen(true)
+                // handlePayment();
+              }}
+              disabled={!selectedMethod || !agreeTerms || processing}
+            >
+              {processing ? (
+                <>
+                  <Icon
+                    icon="mdi:loading"
+                    width={24}
+                    className={styles["spin"]}
+                  />
+                  Đang xử lý...
+                </>
+              ) : (
+                <>
+                  <Icon icon="mdi:lock" width={20} />
+                  Thanh toán {formatCurrency(totalAmount)}
+                </>
+              )}
+            </button>
+          )}
         </div>
 
         {/* Security Notice */}
@@ -493,7 +839,7 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
        
     </div>
 
-{openQR && (
+{qrModalOpen && (
   <div
     className={styles["overlay"] }
     

@@ -1,0 +1,591 @@
+@use '../../../styles/abstracts/variables.scss'as vars;
+@use '../../../styles/abstracts/colors.scss'as colors;
+
+/* ==========================================
+   SAY2HAND - ORDER DETAIL PAGE STYLES
+   Chi tiết đơn hàng với timeline và thông tin đầy đủ
+   ========================================== */
+
+.orderDetailPage {
+    min-height: 100vh;
+    background: colors.$bg-main;
+    padding: vars.$spacing-2xl 0;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 vars.$spacing-lg;
+}
+
+/* Header */
+.header {
+    display: flex;
+    align-items: center;
+    gap: vars.$spacing-lg;
+    margin-bottom: vars.$spacing-2xl;
+
+    @include vars.respond-below('md') {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+.backButton {
+    display: flex;
+    align-items: center;
+    gap: vars.$spacing-sm;
+    padding: vars.$spacing-md vars.$spacing-lg;
+    background: colors.$solid-bg-white;
+    border: none;
+    border-radius: vars.$radius-lg;
+    font-size: vars.$font-size-base;
+    font-weight: vars.$font-weight-semibold;
+    color: colors.$solid-text-primary;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+    &:hover {
+        transform: translateX(-4px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+}
+
+.title {
+    font-size: vars.$font-size-3xl;
+    font-weight: vars.$font-weight-bold;
+    background: colors.$secondary-main;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+}
+
+/* Status Card */
+.statusCard {
+    background: colors.$solid-bg-white;
+    border-radius: vars.$radius-2xl;
+    padding: vars.$spacing-2xl;
+    margin-bottom: vars.$spacing-2xl;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.statusHeader {
+    display: flex;
+    align-items: center;
+    gap: vars.$spacing-lg;
+    margin-bottom: vars.$spacing-2xl;
+    padding-bottom: vars.$spacing-xl;
+    border-bottom: 2px solid colors.$bg-section;
+
+    svg {
+        color: #3b82f6;
+    }
+
+    h2 {
+        font-size: vars.$font-size-2xl;
+        font-weight: vars.$font-weight-bold;
+        color: colors.$solid-text-primary;
+        margin: 0 0 vars.$spacing-xs 0;
+    }
+
+    span {
+        padding: vars.$spacing-xs vars.$spacing-lg;
+        border-radius: vars.$radius-full;
+        font-size: vars.$font-size-base;
+        font-weight: vars.$font-weight-semibold;
+    }
+}
+
+/* Timeline */
+.statusTimeline {
+    display: flex;
+    flex-direction: column;
+    gap: vars.$spacing-xl;
+    position: relative;
+    padding-left: vars.$spacing-2xl;
+
+    &::before {
+        content: '';
+        position: absolute;
+        left: 11px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: colors.$bg-section;
+    }
+}
+
+.timelineItem {
+    display: flex;
+    gap: vars.$spacing-lg;
+    position: relative;
+    opacity: 0.5;
+    transition: opacity 0.3s ease;
+
+    &.active {
+        opacity: 1;
+
+        .timelineIcon {
+            background: colors.$secondary-main;
+            border-color: #2de099;
+
+            svg {
+                color: white;
+            }
+        }
+    }
+}
+
+.timelineIcon {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: colors.$bg-section;
+    border: 3px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+    transition: all 0.3s ease;
+
+    svg {
+        color: #9ca3af;
+    }
+}
+
+.timelineContent {
+    flex: 1;
+    padding-top: vars.$spacing-xs;
+
+    h4 {
+        font-size: vars.$font-size-lg;
+        font-weight: vars.$font-weight-semibold;
+        color: colors.$solid-text-primary;
+        margin: 0 0 vars.$spacing-xs 0;
+    }
+
+    p {
+        font-size: vars.$font-size-sm;
+        color: colors.$solid-text-secondary;
+        margin: 0;
+    }
+}
+
+.cancelReason {
+    margin-top: vars.$spacing-sm !important;
+    padding: vars.$spacing-sm vars.$spacing-md;
+    background: colors.$status-error-light;
+    border-radius: vars.$radius-md;
+    color: colors.$status-error !important;
+    font-weight: vars.$font-weight-medium !important;
+}
+
+/* Main Content */
+.mainContent {
+    display: flex;
+    flex-direction: column;
+    gap: vars.$spacing-2xl;
+    margin-bottom: vars.$spacing-2xl;
+}
+
+.section {
+    background: colors.$solid-bg-white;
+    border-radius: vars.$radius-2xl;
+    padding: vars.$spacing-2xl;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.sectionTitle {
+    display: flex;
+    align-items: center;
+    gap: vars.$spacing-md;
+    font-size: vars.$font-size-xl;
+    font-weight: vars.$font-weight-bold;
+    color: colors.$solid-text-primary;
+    margin: 0 0 vars.$spacing-xl 0;
+    padding-bottom: vars.$spacing-md;
+    border-bottom: 2px solid colors.$bg-section;
+
+    svg {
+        color: #3b82f6;
+    }
+}
+
+/* Product Card */
+.productCard {
+    display: flex;
+    gap: vars.$spacing-2xl;
+
+    @include vars.respond-below('md') {
+        flex-direction: column;
+    }
+}
+
+.productGallery {
+    flex-shrink: 0;
+}
+
+.mainImage {
+    width: 300px;
+    height: 300px;
+    object-fit: cover;
+    border-radius: vars.$radius-xl;
+    border: 3px solid colors.$bg-section;
+    margin-bottom: vars.$spacing-md;
+
+    @include vars.respond-below('md') {
+        width: 100%;
+        height: auto;
+    }
+}
+
+.thumbnails {
+    display: flex;
+    gap: vars.$spacing-sm;
+    flex-wrap: wrap;
+}
+
+.thumbnail {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: vars.$radius-md;
+    border: 2px solid colors.$bg-section;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+        border-color: #3b82f6;
+        transform: scale(1.05);
+    }
+}
+
+.productInfo {
+    flex: 1;
+}
+
+.productTitle {
+    font-size: vars.$font-size-2xl;
+    font-weight: vars.$font-weight-bold;
+    color: colors.$solid-text-primary;
+    margin: 0 0 vars.$spacing-md 0;
+    line-height: 1.4;
+}
+
+.productDescription {
+    font-size: vars.$font-size-base;
+    color: colors.$solid-text-secondary;
+    line-height: 1.6;
+    margin: 0 0 vars.$spacing-lg 0;
+}
+
+.productMeta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: vars.$spacing-md;
+    margin-bottom: vars.$spacing-lg;
+}
+
+.metaItem {
+    display: flex;
+    align-items: center;
+    gap: vars.$spacing-xs;
+    padding: vars.$spacing-sm vars.$spacing-md;
+    background: colors.$bg-section;
+    border-radius: vars.$radius-md;
+    font-size: vars.$font-size-sm;
+    color: colors.$solid-text-secondary;
+
+    svg {
+        color: #3b82f6;
+    }
+}
+
+.productPrice {
+    font-size: vars.$font-size-3xl;
+    font-weight: vars.$font-weight-bold;
+    background: colors.$secondary-main;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Info Card */
+.infoCard {
+    display: flex;
+    flex-direction: column;
+    gap: vars.$spacing-lg;
+}
+
+.infoRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: vars.$spacing-md 0;
+    border-bottom: 1px solid colors.$bg-section;
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    @include vars.respond-below('md') {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: vars.$spacing-xs;
+    }
+}
+
+.infoLabel {
+    font-size: vars.$font-size-base;
+    font-weight: vars.$font-weight-semibold;
+    color: colors.$solid-text-secondary;
+}
+
+.infoValue {
+    font-size: vars.$font-size-base;
+    font-weight: vars.$font-weight-medium;
+    color: colors.$solid-text-primary;
+}
+
+.infoValueHighlight {
+    font-size: vars.$font-size-xl;
+    font-weight: vars.$font-weight-bold;
+    background: colors.$secondary-main;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Status Badges in info */
+.infoRow {
+
+    .badgePending,
+    .badgeShipping,
+    .badgeCompleted,
+    .badgeCancelled,
+    .paymentPending,
+    .paymentPaid,
+    .paymentFailed,
+    .paymentRefunded {
+        display: flex;
+        align-items: center;
+        gap: vars.$spacing-xs;
+        padding: vars.$spacing-xs vars.$spacing-md;
+        border-radius: vars.$radius-full;
+        font-size: vars.$font-size-sm;
+        font-weight: vars.$font-weight-semibold;
+    }
+}
+
+/* Status Badges */
+.badgePending {
+    background: colors.$status-warning-light;
+    color: colors.$status-warning;
+}
+
+.badgeShipping {
+    background: colors.$status-info-light;
+    color: colors.$status-info;
+}
+
+.badgeCompleted {
+    background: colors.$status-success-light;
+    color: colors.$status-success;
+}
+
+.badgeCancelled {
+    background: colors.$status-error-light;
+    color: colors.$status-error;
+}
+
+/* Payment Status Badges */
+.paymentPending {
+    background: linear-gradient(90deg, #FEF3C7 0%, #FDE68A 100%);
+    color: #92400E;
+}
+
+.paymentPaid {
+    background: linear-gradient(90deg, #D1FAE5 0%, #A7F3D0 100%);
+    color: #065F46;
+}
+
+.paymentFailed {
+    background: linear-gradient(90deg, #FEE2E2 0%, #FECACA 100%);
+    color: #991B1B;
+}
+
+.paymentRefunded {
+    background: linear-gradient(90deg, #E0E7FF 0%, #C7D2FE 100%);
+    color: #3730A3;
+}
+
+/* People Section */
+.peopleSection {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: vars.$spacing-2xl;
+
+    @include vars.respond-below('lg') {
+        grid-template-columns: 1fr;
+    }
+}
+
+.personCard {
+    display: flex;
+    gap: vars.$spacing-lg;
+    align-items: center;
+}
+
+.avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid colors.$bg-section;
+}
+
+.personInfo {
+    flex: 1;
+}
+
+.personName {
+    font-size: vars.$font-size-xl;
+    font-weight: vars.$font-weight-bold;
+    color: colors.$solid-text-primary;
+    margin: 0 0 vars.$spacing-sm 0;
+}
+
+.personContact {
+    display: flex;
+    align-items: center;
+    gap: vars.$spacing-xs;
+    font-size: vars.$font-size-base;
+    color: colors.$solid-text-secondary;
+    margin: vars.$spacing-xs 0;
+
+    svg {
+        color: #3b82f6;
+    }
+}
+
+/* Actions Card */
+.actionsCard {
+    background: colors.$solid-bg-white;
+    border-radius: vars.$radius-2xl;
+    padding: vars.$spacing-2xl;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    display: flex;
+    gap: vars.$spacing-lg;
+    justify-content: center;
+    align-items: center;
+
+    @include vars.respond-below('md') {
+        flex-direction: column;
+    }
+
+    button {
+        padding: vars.$spacing-lg vars.$spacing-2xl;
+        border: none;
+        border-radius: vars.$radius-lg;
+        font-size: vars.$font-size-lg;
+        font-weight: vars.$font-weight-semibold;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: vars.$spacing-sm;
+        min-width: 200px;
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        @include vars.respond-below('md') {
+            width: 100%;
+        }
+    }
+}
+
+.btnShip {
+    background: colors.$status-info;
+    color: colors.$solid-text-white;
+}
+
+.btnCancel {
+    background: colors.$status-error;
+    color: colors.$solid-text-white;
+}
+
+.btnComplete {
+    background: colors.$secondary-main;
+    color: colors.$solid-text-white;
+}
+
+.completedMessage,
+.cancelledMessage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: vars.$spacing-md;
+    padding: vars.$spacing-xl;
+
+    svg {
+        color: colors.$status-success;
+    }
+
+    p {
+        font-size: vars.$font-size-xl;
+        font-weight: vars.$font-weight-semibold;
+        color: colors.$solid-text-primary;
+        margin: 0;
+    }
+
+    .reason {
+        font-size: vars.$font-size-base;
+        color: colors.$solid-text-secondary;
+        font-weight: vars.$font-weight-normal;
+    }
+}
+
+.cancelledMessage {
+    svg {
+        color: colors.$status-error;
+    }
+}
+
+/* Loading */
+.loadingContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    gap: vars.$spacing-lg;
+
+    p {
+        font-size: vars.$font-size-lg;
+        color: colors.$solid-text-secondary;
+        font-weight: vars.$font-weight-medium;
+    }
+}
+
+.spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid colors.$bg-section;
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
