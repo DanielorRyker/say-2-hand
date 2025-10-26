@@ -696,12 +696,7 @@ export const DetailPost: React.FC = () => {
         return type;
     }
   };
-  //Xác nhận Post đã thanh lý
-  const handleCompletedPost = async (postId: string) => {
-    await axios.patch(`http://localhost:8080/api/posts/${postId}`, {
-      status: "completed",
-    });
-  };
+
   //tách chuỗi
   const extractStringAfterLastComma = (fullString: string): string => {
     if (!fullString || typeof fullString !== "string") {

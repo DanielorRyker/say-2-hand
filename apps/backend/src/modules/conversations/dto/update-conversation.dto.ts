@@ -19,4 +19,8 @@ export class UpdateConversationDto {
   @ValidateNested()
   @Type(() => LastMessageDto)
   last_message?: LastMessageDto;
+
+  @IsOptional()
+  @IsMongoId()
+  post_id: string;
 }

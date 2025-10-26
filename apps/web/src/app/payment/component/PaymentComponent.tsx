@@ -244,7 +244,12 @@ useEffect(() => {
       // Simulate payment processing (2s delay)
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    
+      //Cập nhật lại trạng thái shiping cho post
+
+      await axios.patch(
+      `http://localhost:8080/api/posts/${normalizedPost._id}`,
+        {status: 'shipping'}
+    );
       
       
       //Tạo Transaction và Thông báo cho người bán

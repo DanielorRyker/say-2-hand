@@ -13,7 +13,7 @@ type TabType = "all" | "pending" | "shipping" | "completed";
 
 const MyOrdersPage = () => {
   const router = useRouter();
-  const [user, setUser] = useState<{ _id: string; full_name: string } | null>(
+  const [user, setUser] = useState<{ _id: string; full_name: string ;avatar:string} | null>(
     null
   );
   const [activeTab, setActiveTab] = useState<TabType>("all");
@@ -82,10 +82,51 @@ const MyOrdersPage = () => {
   };
 
   // Liên hệ người bán
-  const handleContactSeller = (order: Transaction) => {
-    if (typeof order.seller_id === "object" && order.seller_id._id) {
-      // Redirect to conversation with seller
-      router.push(`/conversation?sellerId=${order.seller_id._id}`);
+  const handleContactSeller = async (order: Transaction) => {
+    try {
+       const payload = {
+        post_id: order.post_id._id,
+        participants: [user?._id, order.seller_id._id],
+      };
+      const res = await axios.post(
+        "http://localhost:8080/api/conversations",
+        payload
+      );
+
+      const conversationToSave = {
+        ...res.data,
+        post_id: {
+          _id: order.post_id._id,
+          title: order.post_id.title,
+          images: order.post_id.images,
+          author_id: order.post_id.author_id, 
+          category_id: order.post_id.category_id?.name , 
+          price: order.post_id.price,
+          description: order.post_id.description || "",
+          condition: order.post_id.condition, 
+          transaction_type: order.post_id.transaction_type,
+          status: order.post_id.status,
+          createdAt: order.post_id.createdAt, 
+          updatedAt: order.post_id.updatedAt, 
+        },
+        participants: [
+          {
+            _id: user?._id,
+            full_name: user?.full_name,
+            avatar: user?.avatar || "",
+          },
+          {
+            _id: order.seller_id._id,
+            full_name:  order.seller_id.full_name,
+            avatar:  order.seller_id.avatar || "",
+          },
+        ],
+      };
+       console.log("Created conversation:", conversationToSave);
+      localStorage.setItem("conversation", JSON.stringify(conversationToSave));
+       router.push(`/conversation/${res.data._id}`);
+    } catch (error) {
+      alert( "Error creating conversation:"+ error)
     }
   };
 

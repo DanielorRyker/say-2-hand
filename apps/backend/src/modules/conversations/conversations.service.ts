@@ -32,7 +32,7 @@ export class ConversationsService {
 
   // Sắp xếp userId theo alphabet/hex string để đảm bảo thứ tự cố định
   const sortedParticipants = [...participants].sort();
-  const conversationKey = `post:${post_id}|users:${sortedParticipants.join('-')}`;
+  const conversationKey = `users:${sortedParticipants.join('-')}`;
 
   // Kiểm tra nếu đã tồn tại
   let conversation = await this.conversationModel.findOne({
@@ -80,18 +80,6 @@ export class ConversationsService {
 
     return updated;
   }
-
-  // async findConversationsByUserId(userId: string) {
-  //   return this.conversationModel
-  //     .find({
-  //       participants: { $in: [new Types.ObjectId(userId)] },
-  //     })
-  //     .populate('participants', 'full_name avatar')
-  //     .populate('post_id') // lấy thêm thông tin post
-  //     .populate('last_message.sender_id', 'full_name avatar') // chỉ lấy 1 số field user
-  //     .sort({ updatedAt: -1 })
-  //     .exec();
-  // }
 
   async findConversationsByUserId(userId: string) {
   const userObjectId = new Types.ObjectId(userId);
@@ -142,9 +130,14 @@ export class ConversationsService {
     return `This action returns a #${id} conversation`;
   }
 
-  update(id: number, updateConversationDto: UpdateConversationDto) {
-    return `This action updates a #${id} conversation`;
+  update(id: string, updateConversationDto: UpdateConversationDto) {
+    return this.conversationModel.findByIdAndUpdate(
+      id,
+      { $set: updateConversationDto },
+      { new: true } // trả về document mới
+    );
   }
+
 
   remove(id: number) {
     return `This action removes a #${id} conversation`;

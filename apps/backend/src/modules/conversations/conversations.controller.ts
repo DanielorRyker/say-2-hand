@@ -35,7 +35,7 @@ export class ConversationsController {
     @Param('id') id: string,
     @Body() updateConversationDto: UpdateConversationDto,
   ) {
-    return this.conversationsService.update(+id, updateConversationDto);
+    return this.conversationsService.update(id, updateConversationDto);
   }
 
   @Delete(':id')

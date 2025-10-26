@@ -125,7 +125,10 @@ export class TransactionsService {
       .find(query)
       .populate({
         path: 'post_id',
-        select: 'title images price transaction_type status',
+        // select: 'title images price transaction_type status',
+        populate: {
+          path: 'category_id',
+        },
       })
       .populate({
         path: 'seller_id',

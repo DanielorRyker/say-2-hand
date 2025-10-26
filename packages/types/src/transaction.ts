@@ -23,9 +23,15 @@ export interface Transaction {
         };
         status: string;
         author_id?: string;
+        createdAt?: string,
+        updatedAt?: string,
+        category_id?:{
+          _id:string,
+          name:string
+        }
       };
   seller_id:
-    | string
+    
     | {
         _id: string;
         full_name: string;

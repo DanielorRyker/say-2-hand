@@ -275,6 +275,33 @@ export default function ChatPage() {
     if (!conversation?._id || !currentUser?._id) return;
 
     try {
+            //Kiểm tra postId
+            try {
+              const foundConversation = conversationsData.find(
+                (c) => c._id === conversation?._id
+              );
+
+              if (
+                foundConversation &&
+                foundConversation.post_id?._id !== conversation?.post_id?._id
+              ) {
+                console.log("🔄 Updating conversation:", {
+                  id: foundConversation._id,
+                  post_id: String(conversation.post_id._id),
+                });
+
+                await axios.patch(
+                  `http://localhost:8080/api/conversations/${foundConversation._id}`,
+                  {
+                    post_id: String(conversation.post_id._id),
+                  }
+                );
+              }
+            } catch (err: any) {
+              console.error("❌ Update conversation failed:", err.response?.data || err);
+            }
+
+
       let finalText = text;
       let type: "text" | "image" = "text";
 

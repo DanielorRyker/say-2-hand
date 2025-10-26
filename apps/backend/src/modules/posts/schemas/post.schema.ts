@@ -88,7 +88,7 @@ export class Post {
 
   @Prop({
     required: true,
-    enum: ['pending_approval', 'active', 'completed', 'rejected', 'deleted'],
+    enum: ['pending_approval', 'active', 'completed', 'rejected', 'deleted','shipping'],
     default: 'pending_approval',
   })
   status: string;

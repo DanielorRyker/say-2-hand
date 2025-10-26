@@ -116,6 +116,6 @@ export class UpdatePostDto {
   tags?: string[];
 
   @IsOptional()
-  @IsEnum(['pending_approval', 'active', 'rejected', 'deleted', 'completed'])
-  status?: 'pending_approval' | 'active' | 'rejected' | 'deleted' | 'completed';
+  @IsEnum(['pending_approval', 'active', 'rejected', 'deleted', 'completed', 'shipping'])
+  status?: 'pending_approval' | 'active' | 'rejected' | 'deleted' | 'completed' | 'shipping';
 }
