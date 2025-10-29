@@ -6,7 +6,6 @@ import Link from "next/link";
 import styles from "../payment.module.scss";
 import { Icon } from "@iconify/react";
 import { io, Socket } from "socket.io-client";
-import QRCode from "react-qr-code";
 // import axios from "axios"; // TODO: Sẽ dùng khi backend có endpoint /api/payments
 
 interface PaymentMethod {
@@ -102,8 +101,8 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
   const [selectedMethod, setSelectedMethod] = useState<string>("");
   const [processing, setProcessing] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
-    //QR
-  // const [openQR, setOpenQR] = useState(false);
+  //QR
+  const [openQR, setOpenQR] = useState(false);
   const [qrURL, setQrURL] = useState<string | undefined>(undefined);
   const popupRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -113,27 +112,27 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
   const [qrModalOpen, setQrModalOpen] = useState(false);
   const [qrData, setQrData] = useState<any>(null);
 
-    //  Ẩn popup khi click ra ngoài
-    useEffect(() => {
-      const handleClickOutside = (e: MouseEvent) => {
-        const target = e.target as Node;
-       if (popupRef.current && popupRef.current.contains(target)) return;
-       if (overlayRef.current && overlayRef.current.contains(target)) return;
-        setQrModalOpen(false);
-      };
-      document.addEventListener("click", handleClickOutside);
-      return () => document.removeEventListener("click", handleClickOutside);
-    }, []);
+  //  Ẩn popup khi click ra ngoài
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (popupRef.current && popupRef.current.contains(target)) return;
+      if (overlayRef.current && overlayRef.current.contains(target)) return;
+      setQrModalOpen(false);
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
 
-   useEffect(() => {
-  if (qrModalOpen) document.body.style.overflow = "hidden";
-  else document.body.style.overflow = "auto";
-}, [qrModalOpen]);
+  useEffect(() => {
+    if (qrModalOpen) document.body.style.overflow = "hidden";
+    else document.body.style.overflow = "auto";
+  }, [qrModalOpen]);
 
-//countdown
-const [countdown, setCountdown] = useState(60);
+  //countdown
+  const [countdown, setCountdown] = useState(60);
 
-useEffect(() => {
+  useEffect(() => {
     if (!qrModalOpen) return; // chỉ chạy khi popup mở
 
     // reset lại khi popup mở
@@ -143,7 +142,7 @@ useEffect(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-           setQrModalOpen(false);
+          setQrModalOpen(false);
           return 0;
         }
         return prev - 1;
@@ -166,37 +165,35 @@ useEffect(() => {
   const [customAddress, setCustomAddress] = useState("");
   const [saveCustomAddress, setSaveCustomAddress] = useState(false);
 
- 
-
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat("vi-VN", {
       style: "currency",
       currency: "VND",
     }).format(amount);
 
-     //Socket
-        const [socket, setSocket] = useState<Socket | null>(null);
-        useEffect(() => {
-          // Kết nối socket.io tới BE (NestJS WebSocketGateway)
-          const newSocket = io("http://localhost:8080", {
-            transports: ["websocket"], 
-          });
-      
-          setSocket(newSocket);
-      
-          newSocket.on("connect", () => {
-            console.log("Connected to socket:", newSocket.id);
-          });
-      
-          newSocket.on("disconnect", () => {
-            console.log("Disconnected from socket");
-          });
-      
-          // cleanup khi unmount
-          return () => {
-            newSocket.disconnect();
-          };
-        }, []);
+  //Socket
+  const [socket, setSocket] = useState<Socket | null>(null);
+  useEffect(() => {
+    // Kết nối socket.io tới BE (NestJS WebSocketGateway)
+    const newSocket = io("http://localhost:8080", {
+      transports: ["websocket"],
+    });
+
+    setSocket(newSocket);
+
+    newSocket.on("connect", () => {
+      console.log("Connected to socket:", newSocket.id);
+    });
+
+    newSocket.on("disconnect", () => {
+      console.log("Disconnected from socket");
+    });
+
+    // cleanup khi unmount
+    return () => {
+      newSocket.disconnect();
+    };
+  }, []);
 
   // Normalize data structure (handle both API and cache formats)
   const normalizedPost = React.useMemo(() => {
@@ -244,9 +241,13 @@ useEffect(() => {
       // Simulate payment processing (2s delay)
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    
-      
-      
+      //Cập nhật lại trạng thái shiping cho post
+
+      await axios.patch(
+        `http://localhost:8080/api/posts/${normalizedPost._id}`,
+        { status: "shipping" }
+      );
+
       //Tạo Transaction và Thông báo cho người bán
         const res =await axios.post("http://localhost:8080/api/transactions", {      
         post_id:  normalizedPost._id,
@@ -309,9 +310,9 @@ useEffect(() => {
         is_read: false
       });
 
-       socket?.emit("send_message", {
-          receiverId:normalizedPost.author_id?._id || normalizedPost.author_id,
-          message:'Notification'
+      socket?.emit("send_message", {
+        receiverId: normalizedPost.author_id?._id || normalizedPost.author_id,
+        message: "Notification",
       });
 
       // Redirect đến success page

@@ -1392,7 +1392,9 @@ export const DetailPost: React.FC = () => {
               <Icon icon="lucide:chevron-left" width={24} height={24} />
             </button>
             <img
-              src={base + postData.post.image_urls[currentImageIndex].url}
+              src={formatImageUrl(
+                postData.post.image_urls[currentImageIndex].url
+              )}
               alt="lightbox"
               onClick={(e) => e.stopPropagation()}
             />
