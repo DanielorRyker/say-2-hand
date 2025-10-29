@@ -167,8 +167,41 @@ const OrderDetailPage = () => {
       }
     }
 
+     const handleSendNotificationCancel = async (order: Transaction, cancelReason: string) => {
+        if (!order || !order.post_id || !user?._id) {
+          console.warn("Thiếu dữ liệu khi gửi thông báo huỷ đơn", order);
+          return;
+        }
+        try {
+          await axios.post("http://localhost:8080/api/notifications", {      
+            receiver_id: order.buyer_id._id, 
+            sender_id: user._id,
+            title: "Đơn hàng của đã bị từ chối",
+            body: `Bạn được hoàn lại ${formatPrice(order.amount)} vào tài khoản.\nLý do: ${cancelReason}`,
+            type: "transaction",
+            related_id: order._id,
+            related_model: "Transaction",
+            deeplink: `/transactions/${order._id}`, 
+            channel: "in_app",
+            is_read: false,
+          });
+
+            // socket?.emit("join_user",  order.buyer_id._id, );
+              socket?.emit("send_message", {
+                  receiverId: order.buyer_id._id, 
+                  message:'Notification'
+              });
+
+          console.log("✅ Gửi thông báo thành công cho người bán");
+        } catch (error) {
+          console.error("❌ Gửi thông báo cho người bán thất bại:", error);
+          alert("Gửi thông báo cho người bán thất bại");
+        }
+      };
+
+
   // Xử lý huỷ đơn
-  const handleCancelOrder = async () => {
+  const handleCancelOrder = async (order : Transaction) => {
     const cancelReason = prompt("Nhập lý do huỷ đơn:");
     if (!cancelReason) return;
 
@@ -176,6 +209,14 @@ const OrderDetailPage = () => {
       await axios.post(
         `http://localhost:8080/api/transactions/${orderId}/cancel`,
         { cancelReason }
+      );
+
+      //Gửi thông báo
+      handleSendNotificationCancel(order,cancelReason);
+
+      await axios.patch(
+        `http://localhost:8080/api/posts/${order.post_id._id}`,
+        { status: "active" }
       );
       addToast({ type: "success", message: "Đã huỷ đơn và hoàn tiền" });
       fetchOrderDetail();
@@ -605,7 +646,7 @@ const OrderDetailPage = () => {
                 <Icon icon="mdi:truck-delivery" width={20} height={20} />
                 Xác nhận gửi hàng
               </button>
-              <button className={styles.btnCancel} onClick={handleCancelOrder}>
+              <button className={styles.btnCancel} onClick={() => handleCancelOrder(order)}>
                 <Icon icon="mdi:close-circle" width={20} height={20} />
                 Huỷ đơn hàng
               </button>

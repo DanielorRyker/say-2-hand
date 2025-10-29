@@ -315,7 +315,7 @@ useEffect(() => {
                           <div></div>
                         )}
                       </div>
-                      <div className={styles.body}>{n.body}</div>
+                      <div className={styles.body}><p className={styles.white_space}>{n.body}</p></div>
                       <div className={styles.time}>
                         {getRelativeTime(n.createdAt)}
                       </div>
@@ -360,7 +360,7 @@ useEffect(() => {
                         height={48}
                       />
                     ) : (
-                      <div className={styles.postImage}></div>
+                      <div ></div>
                     )}
                   </div>
                 </div>

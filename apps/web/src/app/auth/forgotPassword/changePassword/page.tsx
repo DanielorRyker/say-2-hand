@@ -28,7 +28,7 @@ const ChangePasswordPage = () => {
     if (email) {
       setForm((prev) => ({ ...prev, email }));
       // Auto send OTP on page load
-      sendOTP(email);
+      // sendOTP(email);
     }
   }, []);
 
