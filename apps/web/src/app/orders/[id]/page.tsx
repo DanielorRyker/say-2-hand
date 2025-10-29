@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import axios from "axios";
 import Image from "next/image";
+import { formatImageUrl } from "@/lib/constants";
 import { Icon } from "@iconify/react";
 import type { Transaction } from "@repo/types";
 import styles from "./orderDetail.module.scss";
@@ -64,7 +65,7 @@ const OrderDetailPage = () => {
       const response = await axios.get(
         `http://localhost:8080/api/transactions/${orderId}/detail`
       );
-      
+
       setOrder(response.data.data);
     } catch (error) {
       console.error("Error fetching order detail:", error);
@@ -89,9 +90,9 @@ const OrderDetailPage = () => {
         type: "success",
         message: "Đã xác nhận gửi hàng",
       });
-       console.log('oder:',order)
+      console.log("oder:", order);
       await handleSendNotificationShip();
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      await new Promise((resolve) => setTimeout(resolve, 5000));
       await handlerSendNotificationComplete();
       // refresh detail so UI shows 'shipping' while backend completes
       fetchOrderDetail();
@@ -103,6 +104,7 @@ const OrderDetailPage = () => {
     }
   };
 
+<<<<<<< HEAD
  //Gửi thông báo
  const handleSendNotificationShip = async () => {
   if (!order || !order.post_id || !user?._id) {
@@ -165,7 +167,58 @@ const OrderDetailPage = () => {
       } catch (error) {
         alert('Gửi thông báo cho người mua thất bại')
       }
+=======
+  //Gửi thông báo
+  const handleSendNotificationShip = async () => {
+    if (!order || !order.post_id || !user?._id) {
+      console.warn("Thiếu dữ liệu khi gửi thông báo vận chuyển", order);
+      return;
+>>>>>>> 33d6aaf (Lưu tất cả thay đổi trong workspace)
     }
+
+    try {
+      await axios.post("http://localhost:8080/api/notifications", {
+        receiver_id: order.buyer_id._id,
+        sender_id: user._id,
+        title: "Đơn hàng của bạn đang được vận chuyển",
+        body: `Đơn hàng ${order.post_id.title} sắp đến, vui lòng chuẩn bị nhận hàng.`,
+        type: "transaction",
+        related_id: order._id,
+        related_model: "Transaction",
+        deeplink: `/transactions/${order._id}`,
+        channel: "in_app",
+        is_read: false,
+      });
+
+      console.log("✅ Gửi thông báo thành công cho người bán");
+    } catch (error) {
+      console.error("❌ Gửi thông báo cho người bán thất bại:", error);
+      alert("Gửi thông báo cho người bán thất bại");
+    }
+  };
+
+  const handlerSendNotificationComplete = async () => {
+    if (!order || !order.post_id || !user?._id) {
+      console.warn("Thiếu dữ liệu khi gửi thông báo vận chuyển", order);
+      return;
+    }
+    try {
+      await axios.post("http://localhost:8080/api/notifications", {
+        receiver_id: order.buyer_id._id,
+        sender_id: user._id,
+        title: "Đơn hàng đã hoàn tất",
+        body: `Đơn hàng ${order.post_id.title} đã được giao`,
+        type: "transaction",
+        related_id: order._id,
+        related_model: "Transaction",
+        deeplink: "",
+        channel: "in_app",
+        is_read: false,
+      });
+    } catch (error) {
+      alert("Gửi thông báo cho người mua thất bại");
+    }
+  };
 
   // Xử lý huỷ đơn
   const handleCancelOrder = async () => {
@@ -418,7 +471,8 @@ const OrderDetailPage = () => {
                   <Image
                     src={
                       post.images?.[0]?.url
-                        ? process.env.NEXT_PUBLIC_URL_GCS + post.images[0].url
+                        ? formatImageUrl(post.images[0].url) ||
+                          "/image/placeholder.png"
                         : "/image/placeholder.png"
                     }
                     alt={post.title}
@@ -431,7 +485,9 @@ const OrderDetailPage = () => {
                       {post.images.slice(0, 4).map((img, idx) => (
                         <Image
                           key={idx}
-                          src={process.env.NEXT_PUBLIC_URL_GCS + img.url}
+                          src={
+                            formatImageUrl(img.url) || "/image/placeholder.png"
+                          }
                           alt={img.alt || post.title}
                           width={80}
                           height={80}
@@ -535,7 +591,8 @@ const OrderDetailPage = () => {
                   <Image
                     src={
                       seller.avatar
-                        ? process.env.NEXT_PUBLIC_URL_GCS + seller.avatar
+                        ? formatImageUrl(seller.avatar) ||
+                          "/image/header/carbon_user-avatar-filled-alt.svg"
                         : "/image/header/carbon_user-avatar-filled-alt.svg"
                     }
                     alt={seller.full_name}
@@ -570,7 +627,8 @@ const OrderDetailPage = () => {
                   <Image
                     src={
                       buyer.avatar
-                        ? process.env.NEXT_PUBLIC_URL_GCS + buyer.avatar
+                        ? formatImageUrl(buyer.avatar) ||
+                          "/image/header/carbon_user-avatar-filled-alt.svg"
                         : "/image/header/carbon_user-avatar-filled-alt.svg"
                     }
                     alt={buyer.full_name}

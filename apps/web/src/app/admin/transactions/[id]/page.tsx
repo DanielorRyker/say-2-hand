@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import axios from "axios";
 import Image from "next/image";
+import { formatImageUrl } from "@/lib/constants";
 import { Icon } from "@iconify/react";
 import type { Transaction } from "@repo/types";
 import styles from "./transaction-detail.module.scss";
@@ -198,7 +199,10 @@ const AdminTransactionDetailPage = () => {
                 <div className={styles.productImages}>
                   {post.images && post.images.length > 0 && (
                     <Image
-                      src={process.env.NEXT_PUBLIC_URL_GCS + post.images[0].url}
+                      src={
+                        formatImageUrl(post.images[0].url) ||
+                        "/image/placeholder.png"
+                      }
                       alt={post.title}
                       width={300}
                       height={300}
@@ -264,7 +268,8 @@ const AdminTransactionDetailPage = () => {
                     <Image
                       src={
                         buyer.avatar
-                          ? process.env.NEXT_PUBLIC_URL_GCS + buyer.avatar
+                          ? formatImageUrl(buyer.avatar) ||
+                            "/image/header/carbon_user-avatar-filled-alt.svg"
                           : "/image/header/carbon_user-avatar-filled-alt.svg"
                       }
                       alt={buyer.full_name}
@@ -301,7 +306,8 @@ const AdminTransactionDetailPage = () => {
                     <Image
                       src={
                         seller.avatar
-                          ? process.env.NEXT_PUBLIC_URL_GCS + seller.avatar
+                          ? formatImageUrl(seller.avatar) ||
+                            "/image/header/carbon_user-avatar-filled-alt.svg"
                           : "/image/header/carbon_user-avatar-filled-alt.svg"
                       }
                       alt={seller.full_name}

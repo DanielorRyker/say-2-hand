@@ -130,18 +130,18 @@ export default function MapPicker({
         }
 
         const variants = generateVariants(q);
-        for (const v of variants) {
+        for (const variant of variants) {
           // thử tìm kiếm dạng văn bản tự do cho biến thể
-          const res = await fetchNominatim(v);
+          const res = await fetchNominatim(variant);
           if (res && res.length) {
             cache.set(cacheKey, res);
             setSuggestions(res);
             return;
           }
           // nếu biến thể chứa các phần cách nhau bởi dấu phẩy, thử tìm kiếm có cấu trúc
-          const parts = v
+          const parts = variant
             .split(",")
-            .map((s) => s.trim())
+            .map((partStr) => partStr.trim())
             .filter(Boolean);
           if (parts.length >= 2) {
             // giả sử phần đầu là street + số nhà, phần cuối là thành phố
@@ -174,32 +174,32 @@ export default function MapPicker({
       const qtrim = q.trim();
       function stripLeadingQuery(name: string, qstr: string) {
         if (!qstr) return name;
-        const n = name.trim();
-        const low = n.toLowerCase();
-        const qlow = qstr.toLowerCase();
+        const nameTrimmed = name.trim();
+        const loweredName = nameTrimmed.toLowerCase();
+        const loweredQuery = qstr.toLowerCase();
         // nếu display name bắt đầu bằng query chính xác theo sau bởi dấu phẩy hoặc dấu gạch chéo hoặc khoảng trắng,
         // bỏ đoạn dẫn đầu đó để đề xuất không chỉ lặp lại chuỗi đã gõ.
         const patterns = [
-          qlow + ", ",
-          qlow + ",",
-          qlow + " / ",
-          qlow + " /",
-          qlow + " ",
+          loweredQuery + ", ",
+          loweredQuery + ",",
+          loweredQuery + " / ",
+          loweredQuery + " /",
+          loweredQuery + " ",
         ];
-        for (const p of patterns) {
-          if (low.startsWith(p)) {
-            return n.slice(p.length).trim();
+        for (const pattern of patterns) {
+          if (loweredName.startsWith(pattern)) {
+            return nameTrimmed.slice(pattern.length).trim();
           }
         }
         // cũng thử bỏ khi query trùng với token đầu tiên (ví dụ '195') trước dấu phẩy
-        const firstToken = low.split(/[ ,\/]+/)[0];
-        if (firstToken === qlow) {
+        const firstToken = loweredName.split(/[ ,\/]+/)[0];
+        if (firstToken === loweredQuery) {
           // remove that token from the original-cased name
-          return n
+          return nameTrimmed
             .replace(new RegExp("^" + firstToken + "[ ,\\/\\s]*", "iu"), "")
             .trim();
         }
-        return n;
+        return nameTrimmed;
       }
 
       if (data && data.length) {
@@ -237,10 +237,10 @@ export default function MapPicker({
     try {
       // Cố gắng trích xuất số nhà và tên đường từ query
       // Ví dụ: "195 Duong so 3, Phuong ..." hoặc "195 Đường số 3"
-      const m = q.match(/^\s*(\d+)\s+(.+)$/u);
-      if (!m) return null;
-      const housenumber = m[1];
-      const rest = m[2];
+      const match = q.match(/^\s*(\d+)\s+(.+)$/u);
+      if (!match) return null;
+      const housenumber = match[1];
+      const rest = match[2];
       // Thử tách tên đường và thành phố bằng dấu phẩy nếu có
       const parts = rest.split(",").map((s) => s.trim());
       const street = parts[0] || "";
@@ -384,8 +384,8 @@ export default function MapPicker({
     if (!trimmed) return [];
     out.add(trimmed);
 
-    const noDiac = removeDiacritics(trimmed);
-    if (noDiac !== trimmed) out.add(noDiac);
+    const noDiacritics = removeDiacritics(trimmed);
+    if (noDiacritics !== trimmed) out.add(noDiacritics);
 
     // các thay thế token thông dụng cho địa chỉ tiếng Việt
     const tokenReplacements: Array<[RegExp, string[]]> = [
@@ -407,10 +407,10 @@ export default function MapPicker({
     ];
 
     // Nếu query bắt đầu bằng số nhà, sinh các biến thể số/đường
-    const m = trimmed.match(/^\s*(\d+[A-Za-z0-9\/-]*)\s+(.+)$/u);
-    if (m) {
-      const num = m[1];
-      const rest = m[2];
+    const match = trimmed.match(/^\s*(\d+[A-Za-z0-9\/ -]*)\s+(.+)$/u);
+    if (match) {
+      const num = match[1];
+      const rest = match[2];
       out.add(`${num} ${rest}`);
       out.add(`${rest} ${num}`); // swapped order
 
@@ -421,8 +421,8 @@ export default function MapPicker({
       // sinh các biến thể bằng cách áp dụng các thay thế token lên phần còn lại
       for (const [re, reps] of tokenReplacements) {
         if (re.test(rest)) {
-          for (const r of reps) {
-            const replaced = rest.replace(re, r);
+          for (const rep of reps) {
+            const replaced = rest.replace(re, rep);
             out.add(`${num} ${replaced}`);
             out.add(removeDiacritics(`${num} ${replaced}`));
             out.add(`${replaced} ${num}`);
@@ -438,9 +438,9 @@ export default function MapPicker({
     // Thêm các thay thế token chung trên toàn chuỗi
     for (const [re, reps] of tokenReplacements) {
       if (re.test(trimmed)) {
-        for (const r of reps) {
-          out.add(trimmed.replace(re, r));
-          out.add(removeDiacritics(trimmed.replace(re, r)));
+        for (const rep of reps) {
+          out.add(trimmed.replace(re, rep));
+          out.add(removeDiacritics(trimmed.replace(re, rep)));
         }
       }
     }
@@ -454,9 +454,9 @@ export default function MapPicker({
     ];
     for (const [re, reps] of extraPatterns) {
       if (re.test(trimmed)) {
-        for (const r of reps) {
-          out.add(trimmed.replace(re, r));
-          out.add(removeDiacritics(trimmed.replace(re, r)));
+        for (const rep of reps) {
+          out.add(trimmed.replace(re, rep));
+          out.add(removeDiacritics(trimmed.replace(re, rep)));
         }
       }
     }
@@ -464,7 +464,7 @@ export default function MapPicker({
     // một vài chuẩn hoá dấu câu cơ bản
     out.add(trimmed.replace(/\s+/g, " "));
     out.add(trimmed.replace(/[,\.]+/g, ",").replace(/\s+,/g, ","));
-    out.add(noDiac.replace(/\s+/g, " "));
+    out.add(noDiacritics.replace(/\s+/g, " "));
 
     // Thêm các biến thể loại bỏ dấu như 'Đường' -> 'Duong'
     const res = Array.from(out);
@@ -626,8 +626,10 @@ export default function MapPicker({
 
     // Normalize common variants for major cities (e.g., HCM) to include 'Thành phố'
     try {
-      const low = province.toLowerCase();
-      if (/(hồ chí minh|ho chi minh|\bhcm\b|tp\.?\s*hcm)/i.test(low)) {
+      const lowercaseProvince = province.toLowerCase();
+      if (
+        /(hồ chí minh|ho chi minh|\bhcm\b|tp\.?\s*hcm)/i.test(lowercaseProvince)
+      ) {
         province = "Thành phố Hồ Chí Minh";
       }
       // other normalization rules can be added here if needed
@@ -662,18 +664,17 @@ export default function MapPicker({
       .map((p) => p.trim())
       .filter(Boolean);
 
-    // canonicalize parts: any non-first part mentioning 'Thủ Đức' (or 'Thành phố Thủ Đức')
-    // becomes 'Thành phố Hồ Chí Minh'. Also canonicalize HCM variants.
+    // canonicalize parts: map certain locality tokens to canonical forms
     const normalizedParts = parts.map((p, idx) => {
-      const low = p.toLowerCase();
+      const lowercasePart = p.toLowerCase();
       // if it's not the street-first part and mentions Thủ Đức -> map to HCM
       if (idx > 0 && /(^|\s|,|\b)(thành\s*phố\s*)?thủ\s*đức(\b|$)/i.test(p)) {
         return "Thành phố Hồ Chí Minh";
       }
       // normalize common HCM variants
       if (
-        low.includes("hồ chí minh") ||
-        low.includes("ho chi minh") ||
+        lowercasePart.includes("hồ chí minh") ||
+        lowercasePart.includes("ho chi minh") ||
         /\b(hcm|tp\.?\s*hcm)\b/i.test(p)
       ) {
         return "Thành phố Hồ Chí Minh";
@@ -684,11 +685,11 @@ export default function MapPicker({
     // remove duplicate consecutive parts (case-insensitive), preserving order
     const deduped: string[] = [];
     const seen = new Set<string>();
-    for (const p of normalizedParts) {
-      const key = p.trim().toLowerCase();
+    for (const part of normalizedParts) {
+      const key = part.trim().toLowerCase();
       if (seen.has(key)) continue;
       seen.add(key);
-      deduped.push(p.trim());
+      deduped.push(part.trim());
     }
 
     // If HCM is present, drop other city-locality tokens that conflict (e.g., 'Thuận An')
@@ -714,23 +715,23 @@ export default function MapPicker({
     return raw.trim();
   }
 
-  function handleSelect(s: Suggestion) {
-    setSelected(s);
+  function handleSelect(suggestion: Suggestion) {
+    setSelected(suggestion);
     setSuggestions([]);
     setActiveIndex(-1);
-    setQuery(s.display_name);
-    onChangeAddress(s.display_name);
-    const lat = Number(s.lat);
-    const lon = Number(s.lon);
+    setQuery(suggestion.display_name);
+    onChangeAddress(suggestion.display_name);
+    const lat = Number(suggestion.lat);
+    const lon = Number(suggestion.lon);
     onSelectCoords(lat, lon);
     setCenter([lat, lon]);
     // Prefer structured address from Nominatim if available
     try {
       let details = null as any;
-      if ((s as any).addressObj) {
-        details = mapNominatimAddressToDetails((s as any).addressObj);
+      if ((suggestion as any).addressObj) {
+        details = mapNominatimAddressToDetails((suggestion as any).addressObj);
       } else {
-        details = parseAddress(s.display_name || "");
+        details = parseAddress(suggestion.display_name || "");
       }
       if (onSelectAddressDetails) {
         onSelectAddressDetails({
@@ -772,14 +773,14 @@ export default function MapPicker({
       click: async (e) => {
         const { lat, lng } = e.latlng;
         // set a temporary selected marker
-        const s: Suggestion = {
+        const tempSuggestion: Suggestion = {
           display_name: `${lat.toFixed(6)}, ${lng.toFixed(6)}`,
           lat: String(lat),
           lon: String(lng),
         };
-        setSelected(s);
+        setSelected(tempSuggestion);
         setSuggestions([]);
-        setQuery(s.display_name);
+        setQuery(tempSuggestion.display_name);
         onSelectCoords(lat, lng);
         // try reverse geocode to get a better display_name/address
         try {
@@ -883,7 +884,7 @@ export default function MapPicker({
       }
     } catch {}
     async function onRequestReverse(e: Event) {
-      const d = (e as CustomEvent).detail as {
+      const evtDetail = (e as CustomEvent).detail as {
         lat: number;
         lon: number;
         fromGps?: boolean;
@@ -891,7 +892,7 @@ export default function MapPicker({
       // bắt đầu locate
       setGeoError(null);
       try {
-        const rev = await reverseGeocode(d.lat, d.lon);
+        const rev = await reverseGeocode(evtDetail.lat, evtDetail.lon);
         if (rev && rev.display_name) {
           const display = formatAddress(rev.display_name as string);
           // Luôn cập nhật chuỗi địa chỉ hiển thị trong input
@@ -899,14 +900,14 @@ export default function MapPicker({
           onChangeAddress(display);
           // Nếu yêu cầu reverse này bắt nguồn từ click thủ công trên map hoặc lựa chọn rõ ràng
           // (không phải từ GPS watch realtime), cập nhật marker selected và center.
-          if (!d.fromGps) {
-            onSelectCoords(d.lat, d.lon);
+          if (!evtDetail.fromGps) {
+            onSelectCoords(evtDetail.lat, evtDetail.lon);
             setSelected({
               display_name: display,
-              lat: String(d.lat),
-              lon: String(d.lon),
+              lat: String(evtDetail.lat),
+              lon: String(evtDetail.lon),
             });
-            setCenter([d.lat, d.lon]);
+            setCenter([evtDetail.lat, evtDetail.lon]);
           }
         }
       } catch (error) {
@@ -918,8 +919,8 @@ export default function MapPicker({
     }
 
     function onLocateError(e: Event) {
-      const d = (e as CustomEvent).detail as { message?: string };
-      setGeoError(d.message || "Không thể lấy vị trí");
+      const evtDetail = (e as CustomEvent).detail as { message?: string };
+      setGeoError(evtDetail.message || "Không thể lấy vị trí");
       // locate kết thúc/dọn dẹp
     }
 
@@ -933,15 +934,23 @@ export default function MapPicker({
     );
     // sự kiện dạng plugin: GPS located/disabled (từ LocateControl)
     function onGpsLocated(e: Event) {
-      const d = (e as CustomEvent).detail as {
+      const evtDetail = (e as CustomEvent).detail as {
         marker?: any;
         latlng: { lat: number; lng: number };
         accuracy?: number;
       };
-      setGpsPos({ lat: d.latlng.lat, lon: d.latlng.lng, accuracy: d.accuracy });
+      setGpsPos({
+        lat: evtDetail.latlng.lat,
+        lon: evtDetail.latlng.lng,
+        accuracy: evtDetail.accuracy,
+      });
       // kích hoạt reverse geocode qua event ứng dụng để cập nhật địa chỉ
       const req = new CustomEvent("map:requestReverse", {
-        detail: { lat: d.latlng.lat, lon: d.latlng.lng, fromGps: true },
+        detail: {
+          lat: evtDetail.latlng.lat,
+          lon: evtDetail.latlng.lng,
+          fromGps: true,
+        },
       });
       window.dispatchEvent(req);
     }
@@ -1025,32 +1034,32 @@ export default function MapPicker({
           role="listbox"
           aria-label="Đề xuất địa chỉ"
         >
-          {suggestions.map((s, idx) =>
+          {suggestions.map((suggestion, idx) =>
             activeIndex === idx ? (
               <div
                 id={`suggestion-${idx}`}
-                key={`${s.lat}-${s.lon}`}
+                key={`${suggestion.lat}-${suggestion.lon}`}
                 role="option"
                 aria-selected="true"
                 className={styles.activeSuggestion}
                 onMouseEnter={() => setActiveIndex(idx)}
                 onMouseLeave={() => setActiveIndex(-1)}
-                onClick={() => handleSelect(s)}
+                onClick={() => handleSelect(suggestion)}
               >
-                {s.display_name}
+                {suggestion.display_name}
               </div>
             ) : (
               <div
                 id={`suggestion-${idx}`}
-                key={`${s.lat}-${s.lon}`}
+                key={`${suggestion.lat}-${suggestion.lon}`}
                 role="option"
                 aria-selected="false"
                 className={""}
                 onMouseEnter={() => setActiveIndex(idx)}
                 onMouseLeave={() => setActiveIndex(-1)}
-                onClick={() => handleSelect(s)}
+                onClick={() => handleSelect(suggestion)}
               >
-                {s.display_name}
+                {suggestion.display_name}
               </div>
             )
           )}
@@ -1240,11 +1249,15 @@ function LocateControl() {
       let transformed = e.latlng;
       try {
         // đọc transform từ tuỳ chọn control nếu có
-        const copts = (ctrl as any).options || {};
-        if (typeof copts.transform === "function") {
-          const t = copts.transform(e.latlng);
-          if (t && typeof t.lat === "number" && typeof t.lng === "number")
-            transformed = L.latLng(t.lat, t.lng);
+        const controlOptions = (ctrl as any).options || {};
+        if (typeof controlOptions.transform === "function") {
+          const candidate = controlOptions.transform(e.latlng);
+          if (
+            candidate &&
+            typeof candidate.lat === "number" &&
+            typeof candidate.lng === "number"
+          )
+            transformed = L.latLng(candidate.lat, candidate.lng);
         }
       } catch {
         // ignore transform errors
@@ -1252,10 +1265,13 @@ function LocateControl() {
 
       // xử lý marker: dùng marker tuỳ chọn nếu cung cấp hoặc circle marker mặc định
       try {
-        const copts = (ctrl as any).options || {};
-        if (copts.marker && copts.marker instanceof L.Marker) {
+        const controlOptions = (ctrl as any).options || {};
+        if (
+          controlOptions.marker &&
+          controlOptions.marker instanceof L.Marker
+        ) {
           if (!currentMarker) {
-            currentMarker = copts.marker;
+            currentMarker = controlOptions.marker;
             (currentMarker as any).setLatLng(transformed).addTo(map);
           } else {
             (currentMarker as any).setLatLng(transformed);
@@ -1265,7 +1281,11 @@ function LocateControl() {
           if (!currentMarker) {
             currentMarker = L.circleMarker(
               transformed,
-              copts.style || { radius: 6, color: "#c20", fillColor: "#f23" }
+              controlOptions.style || {
+                radius: 6,
+                color: "#c20",
+                fillColor: "#f23",
+              }
             ).addTo(map);
           } else {
             (currentMarker as any).setLatLng(transformed);
@@ -1277,8 +1297,8 @@ function LocateControl() {
 
       // vòng chính xác (accuracy circle)
       try {
-        const copts = (ctrl as any).options || {};
-        if (copts.accuracy && accuracy && accuracy > 0) {
+        const controlOptions = (ctrl as any).options || {};
+        if (controlOptions.accuracy && accuracy && accuracy > 0) {
           if (!accuracyCircle) {
             accuracyCircle = L.circle([transformed.lat, transformed.lng], {
               radius: accuracy,
@@ -1300,9 +1320,9 @@ function LocateControl() {
 
       // hành vi autoCenter/setView
       try {
-        const copts = (ctrl as any).options || {};
-        if (copts.autoCenter || copts.setView) {
-          const mz = copts.maxZoom || map.getZoom();
+        const controlOptions = (ctrl as any).options || {};
+        if (controlOptions.autoCenter || controlOptions.setView) {
+          const mz = controlOptions.maxZoom || map.getZoom();
           map.setView([transformed.lat, transformed.lng], mz);
         }
       } catch {
@@ -1385,10 +1405,13 @@ function LocateControl() {
   // keep app-level reverse geocode handler as before
   useEffect(() => {
     async function onFound(e: Event) {
-      const d = (e as CustomEvent).detail as { lat: number; lon: number };
+      const evtDetail = (e as CustomEvent).detail as {
+        lat: number;
+        lon: number;
+      };
       try {
         const req = new CustomEvent("map:requestReverse", {
-          detail: { lat: d.lat, lon: d.lon },
+          detail: { lat: evtDetail.lat, lon: evtDetail.lon },
         });
         window.dispatchEvent(req);
       } catch {
@@ -1396,9 +1419,9 @@ function LocateControl() {
       }
     }
     function onError(e: Event) {
-      const d = (e as CustomEvent).detail as { message?: string };
+      const evtDetail = (e as CustomEvent).detail as { message?: string };
       const ev = new CustomEvent("map:locateErrorUser", {
-        detail: { message: d.message || "Không thể lấy vị trí" },
+        detail: { message: evtDetail.message || "Không thể lấy vị trí" },
       });
       window.dispatchEvent(ev);
     }

@@ -1,0 +1,265 @@
+.adminLayout {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f5f7fa;
+}
+
+// Sidebar
+.sidebar {
+    width: 280px;
+    background: linear-gradient(180deg, #1a1d29 0%, #2a2d3a 100%);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100vh;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+
+    &.collapsed {
+        width: 80px;
+
+        .sidebarHeader span,
+        .nav span,
+        .logoutBtn span {
+            display: none;
+        }
+
+        .logo {
+            justify-content: center;
+        }
+
+        .navItem {
+            justify-content: center;
+            padding: 0.75rem;
+        }
+    }
+}
+
+.sidebarHeader {
+    padding: 1.5rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+
+    svg {
+        font-size: 2rem;
+        color: #4ade80;
+    }
+}
+
+.toggleBtn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    margin-right: 0.35rem;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    svg {
+        font-size: 1.25rem;
+    }
+}
+
+.nav {
+    flex: 1;
+    padding: 1rem 0;
+    overflow-y: auto;
+
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 3px;
+    }
+}
+
+.navItem {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1.5rem;
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    transition: all 0.2s;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border-left: 3px solid transparent;
+
+    svg {
+        font-size: 1.5rem;
+        min-width: 24px;
+    }
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.05);
+        color: white;
+    }
+
+    &.active {
+        background: rgba(74, 222, 128, 0.1);
+        color: #4ade80;
+        border-left-color: #4ade80;
+    }
+}
+
+.sidebarFooter {
+    padding: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logoutBtn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.95rem;
+    font-weight: 500;
+
+    svg {
+        font-size: 1.25rem;
+    }
+
+    &:hover {
+        background: rgba(239, 68, 68, 0.2);
+        border-color: #ef4444;
+    }
+}
+
+// Main Content
+.mainContent {
+    flex: 1;
+    margin-left: 280px;
+    transition: margin-left 0.3s ease;
+    display: flex;
+    flex-direction: column;
+
+    .sidebar.collapsed+& {
+        margin-left: 80px;
+    }
+}
+
+.header {
+    background: white;
+    padding: 1.5rem 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.headerLeft {
+    h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+    }
+}
+
+.pageContent {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+}
+
+// Loading
+.loadingContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: #f5f7fa;
+    gap: 1rem;
+
+    p {
+        color: #64748b;
+        font-size: 1.1rem;
+    }
+}
+
+.spinner {
+    font-size: 3rem;
+    color: #4ade80;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+// Responsive
+@media (max-width: 1024px) {
+    .sidebar {
+        transform: translateX(-100%);
+
+        &.collapsed {
+            transform: translateX(0);
+        }
+    }
+
+    .mainContent {
+        margin-left: 0;
+    }
+
+    .header {
+        padding: 1rem 1.5rem;
+    }
+
+    .pageContent {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .headerLeft h1 {
+        font-size: 1.25rem;
+    }
+
+    .userDetails {
+        display: none;
+    }
+
+    .pageContent {
+        padding: 1rem;
+    }
+}

@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import Image from "next/image";
+import { formatImageUrl } from "@/lib/constants";
 import { Icon } from "@iconify/react";
 import type { Transaction } from "@repo/types";
 import styles from "./orders.module.scss";
@@ -95,13 +96,12 @@ const OrdersPage = () => {
         message: "Đã xác nhận gửi hàng",
       });
 
-      console.log('oder:',order)
+      console.log("oder:", order);
       await handleSendNotificationShip(order);
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      await new Promise((resolve) => setTimeout(resolve, 5000));
       await handlerSendNotificationComplete(order);
       // Backend sẽ tự hoàn tất sau 5s; chỉ refresh để hiển thị 'shipping' ngay
       fetchOrders(activeTab === "all" ? undefined : activeTab);
-
     } catch (error: any) {
       addToast({
         type: "error",
@@ -109,8 +109,9 @@ const OrdersPage = () => {
       });
     }
   };
-  
+
   //Gửi thông báo
+<<<<<<< HEAD
  const handleSendNotificationShip = async (order: Transaction) => {
   if (!order || !order.post_id || !user?._id) {
     console.warn("Thiếu dữ liệu khi gửi thông báo vận chuyển", order);
@@ -172,7 +173,57 @@ const OrdersPage = () => {
       } catch (error) {
         alert('Gửi thông báo cho người mua thất bại')
       }
+=======
+  const handleSendNotificationShip = async (order: Transaction) => {
+    if (!order || !order.post_id || !user?._id) {
+      console.warn("Thiếu dữ liệu khi gửi thông báo vận chuyển", order);
+      return;
+>>>>>>> 33d6aaf (Lưu tất cả thay đổi trong workspace)
     }
+
+    try {
+      await axios.post("http://localhost:8080/api/notifications", {
+        receiver_id: order.buyer_id._id,
+        sender_id: user._id,
+        title: "Đơn hàng của bạn đang được vận chuyển",
+        body: `Đơn hàng ${order.post_id.title} sắp đến, vui lòng chuẩn bị nhận hàng.`,
+        type: "transaction",
+        related_id: order._id,
+        related_model: "Transaction",
+        deeplink: `/transactions/${order._id}`,
+        channel: "in_app",
+        is_read: false,
+      });
+
+      console.log("✅ Gửi thông báo thành công cho người bán");
+    } catch (error) {
+      console.error("❌ Gửi thông báo cho người bán thất bại:", error);
+      alert("Gửi thông báo cho người bán thất bại");
+    }
+  };
+
+  const handlerSendNotificationComplete = async (order: Transaction) => {
+    if (!order || !order.post_id || !user?._id) {
+      console.warn("Thiếu dữ liệu khi gửi thông báo vận chuyển", order);
+      return;
+    }
+    try {
+      await axios.post("http://localhost:8080/api/notifications", {
+        receiver_id: order.buyer_id._id,
+        sender_id: user._id,
+        title: "Đơn hàng đã hoàn tất",
+        body: `Đơn hàng ${order.post_id.title} đã được giao`,
+        type: "transaction",
+        related_id: order._id,
+        related_model: "Transaction",
+        deeplink: "",
+        channel: "in_app",
+        is_read: false,
+      });
+    } catch (error) {
+      alert("Gửi thông báo cho người mua thất bại");
+    }
+  };
 
   // no client-side auto-complete timers; backend schedules completion
 
@@ -353,8 +404,8 @@ const OrdersPage = () => {
                           <Image
                             src={
                               post.images?.[0]?.url
-                                ? process.env.NEXT_PUBLIC_URL_GCS +
-                                  post.images[0].url
+                                ? formatImageUrl(post.images[0].url) ||
+                                  "/image/placeholder.png"
                                 : "/image/placeholder.png"
                             }
                             alt={post.title}
@@ -401,8 +452,8 @@ const OrdersPage = () => {
                             <Image
                               src={
                                 buyer.avatar
-                                  ? process.env.NEXT_PUBLIC_URL_GCS +
-                                    buyer.avatar
+                                  ? formatImageUrl(buyer.avatar) ||
+                                    "/image/header/carbon_user-avatar-filled-alt.svg"
                                   : "/image/header/carbon_user-avatar-filled-alt.svg"
                               }
                               alt={buyer.full_name}

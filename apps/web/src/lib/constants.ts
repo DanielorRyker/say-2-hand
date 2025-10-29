@@ -18,14 +18,18 @@ export const formatImageUrl = (
     return url;
   }
 
-  // If we have a GCS URL configured, prepend it to the path
+  // Local public files (starting with /)
+  if (url.startsWith("/")) {
+    return url;
+  }
+
+  // Relative GCS paths - prepend with GCS URL
   if (URL_GCS) {
-    // Normalize the path by removing any leading slashes so concatenation is safe
     const cleanPath = url.replace(/^\/+/, "");
     const base = URL_GCS.replace(/\/+$/, "");
     return `${base}/${cleanPath}`;
   }
 
-  // Fallback: ensure path has leading slash
-  return url.startsWith("/") ? url : `/${url}`;
+  // Fallback: add leading slash for local files
+  return `/${url}`;
 };

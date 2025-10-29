@@ -1,0 +1,330 @@
+.dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    gap: 1rem;
+
+    p {
+        color: #64748b;
+        font-size: 1.1rem;
+    }
+}
+
+.spinner {
+    font-size: 3rem;
+    color: #4ade80;
+    animation: spin 1s linear infinite;
+}
+
+// Stats Grid
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.statCard {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    }
+}
+
+.cardIcon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    svg {
+        font-size: 2rem;
+        color: white;
+    }
+}
+
+.cardContent {
+    flex: 1;
+
+    h3 {
+        font-size: 0.875rem;
+        color: #64748b;
+        margin: 0 0 0.5rem 0;
+        font-weight: 500;
+    }
+
+    .value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #1e293b;
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+
+    .trend {
+        font-size: 0.8rem;
+        color: #10b981;
+        font-weight: 500;
+    }
+}
+
+// Charts
+.chartsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+}
+
+.chartCard {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.cardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+
+    h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    svg {
+        font-size: 1.5rem;
+        color: #94a3b8;
+    }
+}
+
+.chartContent {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.chartItem {
+    display: grid;
+    grid-template-columns: 120px 1fr 60px;
+    align-items: center;
+    gap: 1rem;
+
+    .label {
+        font-size: 0.9rem;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    .bar {
+        height: 24px;
+        background: #f1f5f9;
+        border-radius: 12px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .barFill {
+        height: 100%;
+        border-radius: 12px;
+        transition: width 0.6s ease;
+    }
+
+    .value {
+        text-align: right;
+        font-weight: 600;
+        color: #1e293b;
+    }
+}
+
+// Activity
+.activityList {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-height: 300px;
+    overflow-y: auto;
+
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
+    }
+}
+
+.activityItem {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+    background: #f8fafc;
+    transition: background 0.2s;
+
+    &:hover {
+        background: #f1f5f9;
+    }
+}
+
+.activityIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #e0f2fe;
+    flex-shrink: 0;
+
+    svg {
+        font-size: 1.5rem;
+        color: #0284c7;
+    }
+}
+
+.activityContent {
+    flex: 1;
+
+    p {
+        margin: 0 0 0.25rem 0;
+        font-size: 0.9rem;
+        color: #1e293b;
+        font-weight: 500;
+    }
+
+    span {
+        font-size: 0.8rem;
+        color: #94a3b8;
+    }
+}
+
+.emptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    gap: 0.5rem;
+
+    svg {
+        font-size: 2.5rem;
+        color: #cbd5e1;
+    }
+
+    p {
+        color: #94a3b8;
+        font-size: 0.9rem;
+    }
+}
+
+// Quick Actions
+.quickActions {
+    h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin: 0 0 1rem 0;
+    }
+}
+
+.actionsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.actionCard {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    color: #1e293b;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s;
+    position: relative;
+
+    svg {
+        font-size: 2rem;
+        color: #4ade80;
+    }
+
+    span {
+        font-weight: 500;
+        font-size: 0.95rem;
+    }
+
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    }
+}
+
+.badge {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: #ef4444;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    min-width: 24px;
+    text-align: center;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+// Responsive
+@media (max-width: 768px) {
+
+    .statsGrid,
+    .chartsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .actionsGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .chartItem {
+        grid-template-columns: 100px 1fr 50px;
+        gap: 0.5rem;
+    }
+}

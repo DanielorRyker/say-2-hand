@@ -1,419 +1,603 @@
-"use client";
-import styleAdmin from "@/styles/pages/admin/admin.module.scss";
+﻿"use client";
+import { useState, useEffect } from "react";
 import axios from "axios";
-import { useEffect, useState } from "react";
 import Image from "next/image";
-import { URL_GCS } from "@/lib/constants";
+import { Icon } from "@iconify/react";
+import { Table } from "@/components/admin/Table";
+import { formatImageUrl, URL_GCS } from "@/lib/constants";
+import styles from "./categories.module.scss";
 
-const Home = () => {
-  const bucket = "categories";
+interface Category {
+  _id: string;
+  name: string;
+  slug: string;
+  image?: string;
+  posts_count?: number;
+  created_at?: string;
+}
 
-  //lấy dữ liệu
-  interface Category {
-    _id: string;
-    name?: string;
-    slug?: string;
-    image?: string;
-  }
+interface CategoryForm {
+  name: string;
+  slug?: string;
+  image?: string;
+}
 
-  const [categoriesData, setCategoriesData] = useState<Category[]>([]);
+export default function CategoriesManagement() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
+    null
+  );
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [categoryForm, setCategoryForm] = useState<CategoryForm>({
+    name: "",
+    slug: "",
+  });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    async function fetchCategories() {
-      const res = await axios.get("http://localhost:8080/api/categories/");
-      setCategoriesData(res.data); // res.data là danh sách categories
-    }
     fetchCategories();
   }, []);
 
-  // Phân trang
-  const pageSize = 10;
-  const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = Math.ceil(categoriesData.length / pageSize);
-  const paginatedCategories = categoriesData.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
-
-  //chỉnh sửa category
-  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(
-    null
-  );
-  const [editForm, setEditForm] = useState<Partial<Category>>({});
-
-  const handleEdit = (category: Category) => {
-    setEditingCategoryId(category._id);
-    setEditForm(category);
-  };
-
-  const handleFieldChange = (field: keyof Category, value: string) => {
-    setEditForm((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  }; //xóa category
-  const handleDeleteCategory = async (categoryId: string) => {
-    const ok = window.confirm("Bạn có chắc chắn muốn xóa category này không?");
-    if (!ok) return;
-
+  const fetchCategories = async () => {
     try {
-      await axios.delete(`http://localhost:8080/api/categories/${categoryId}`);
-      setCategoriesData(
-        categoriesData.filter((category) => category._id !== categoryId)
-      );
-      alert("Xóa thành công");
-    } catch (error) {
-      console.error("Error deleting category:", error);
-      alert("Có lỗi xảy ra khi xóa category");
-    }
-  };
-
-  const handleSave = async () => {
-    if (!editingCategoryId) return;
-    try {
-      let imageUrl = editForm.image;
-      if (file) {
-        // Nếu có file mới, upload và lấy tên file
-        const uploaded = await uploadImage(file);
-        imageUrl = uploaded === null ? undefined : uploaded;
-      }
-      await axios.patch("http://localhost:8080/api/categories", {
-        _id: editingCategoryId,
-        ...editForm,
-        image: imageUrl,
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const response = await axios.get("http://localhost:8080/api/categories", {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      setCategoriesData(
-        categoriesData.map((c) =>
-          c._id === editingCategoryId
-            ? { ...c, ...editForm, image: imageUrl }
-            : c
-        )
-      );
-      setEditingCategoryId(null);
-      setFile(null);
-      setPreview(null);
-      alert("Cập nhật thành công");
+      setCategories(response.data);
     } catch (error) {
-      console.error("Error updating category:", error);
-      alert("Có lỗi khi cập nhật category");
+      console.error("Error fetching categories:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const categoryFields: (keyof Category)[] = ["name", "slug"];
-
-  // State cho input thêm danh mục mới
-  const [newCategoryName, setNewCategoryName] = useState("");
-
-  //Thêm ảnh
-  const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = e.target.files?.[0] || null;
-    setFile(selected);
-    if (selected) {
-      setPreview(URL.createObjectURL(selected));
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
     }
   };
 
-  // Hàm upload ảnh, trả về tên file ảnh
   const uploadImage = async (file: File): Promise<string | null> => {
-    if (!file) {
-      alert("Vui lòng chọn ảnh!");
-      return null;
-    }
     try {
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("bucket", bucket);
-      const res = await axios.post(
+      formData.append("bucket", "categories");
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
         "http://localhost:8080/api/upload/img",
         formData,
         {
-          withCredentials: true,
           headers: {
+            Authorization: `Bearer ${token}`,
             "Content-Type": "multipart/form-data",
           },
         }
       );
-      return res.data.filename;
+      return response.data.filename;
     } catch (error) {
       console.error("Error uploading image:", error);
-      alert("Có lỗi khi tải ảnh lên");
       return null;
     }
   };
 
-  // Hàm thêm danh mục mới
+  const generateSlug = (name: string): string => {
+    return name
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d")
+      .replace(/[^a-z0-9\s-]/g, "")
+      .trim()
+      .replace(/\s+/g, "-");
+  };
+
   const handleAddCategory = async () => {
-    if (!newCategoryName.trim()) {
+    if (!categoryForm.name.trim()) {
       alert("Vui lòng nhập tên danh mục!");
       return;
-    } else if (!file) return alert("Vui lòng chọn ảnh!");
-
-    const ok = window.confirm(
-      `Bạn có chắc chắn muốn thêm danh mục: ${newCategoryName}?`
-    );
-    if (!ok) return;
+    }
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const img = await uploadImage(file);
-
-      await axios.post("http://localhost:8080/api/categories", {
-        name: newCategoryName,
-        image: img,
-      });
-      // Sau khi thêm, gọi lại API để lấy danh sách mới nhất
-      const res = await axios.get("http://localhost:8080/api/categories/");
-      setCategoriesData(res.data);
-      setNewCategoryName("");
+      setUploading(true);
+      let imageUrl = "";
+      if (imageFile) {
+        const uploadedImage = await uploadImage(imageFile);
+        if (uploadedImage) imageUrl = uploadedImage;
+      }
+      const slug = categoryForm.slug || generateSlug(categoryForm.name);
+      const token = localStorage.getItem("token");
+      await axios.post(
+        "http://localhost:8080/api/categories",
+        { name: categoryForm.name, slug, image: imageUrl },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      await fetchCategories();
+      setShowAddModal(false);
+      setCategoryForm({ name: "", slug: "" });
+      setImageFile(null);
+      setImagePreview("");
       alert("Thêm danh mục thành công!");
     } catch (error) {
       console.error("Error adding category:", error);
       alert("Có lỗi khi thêm danh mục!");
+    } finally {
+      setUploading(false);
     }
   };
 
-  const imageLoader = ({ src }: { src: string }) => {
-    if (!src) return "/image/category/default.svg";
-    if (src.startsWith("http") || src.startsWith("/")) return src;
-    if (URL_GCS) return URL_GCS + src;
-    return src;
+  const handleEditCategory = async () => {
+    if (!selectedCategory || !categoryForm.name.trim()) return;
+    try {
+      setUploading(true);
+      let imageUrl = selectedCategory.image;
+      if (imageFile) {
+        const uploadedImage = await uploadImage(imageFile);
+        if (uploadedImage) imageUrl = uploadedImage;
+      }
+      const slug = categoryForm.slug || generateSlug(categoryForm.name);
+      const token = localStorage.getItem("token");
+      await axios.patch(
+        "http://localhost:8080/api/categories",
+        {
+          _id: selectedCategory._id,
+          name: categoryForm.name,
+          slug,
+          image: imageUrl,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      await fetchCategories();
+      setShowEditModal(false);
+      setSelectedCategory(null);
+      setCategoryForm({ name: "", slug: "" });
+      setImageFile(null);
+      setImagePreview("");
+      alert("Cập nhật danh mục thành công!");
+    } catch (error) {
+      console.error("Error updating category:", error);
+      alert("Có lỗi khi cập nhật danh mục!");
+    } finally {
+      setUploading(false);
+    }
   };
 
+  const handleDeleteCategory = async (categoryId: string) => {
+    const confirmed = window.confirm("Bạn có chắc chắn muốn xóa danh mục này?");
+    if (!confirmed) return;
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`http://localhost:8080/api/categories/${categoryId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      await fetchCategories();
+      alert("Xóa danh mục thành công!");
+    } catch (error) {
+      console.error("Error deleting category:", error);
+      alert("Có lỗi khi xóa danh mục!");
+    }
+  };
+
+  const openAddModal = () => {
+    setCategoryForm({ name: "", slug: "" });
+    setImageFile(null);
+    setImagePreview("");
+    setShowAddModal(true);
+  };
+
+  const openEditModal = (category: Category) => {
+    setSelectedCategory(category);
+    setCategoryForm({
+      name: category.name,
+      slug: category.slug,
+      image: category.image,
+    });
+    setImagePreview(formatImageUrl(category.image) || "");
+    setShowEditModal(true);
+  };
+
+  const openDetailModal = (category: Category) => {
+    setSelectedCategory(category);
+    setShowDetailModal(true);
+  };
+
+  const imageLoader = ({ src }: { src: string }): string => {
+    if (!src) return "/image/category/default.svg";
+    if (src.startsWith("http") || src.startsWith("/")) return src;
+    return formatImageUrl(src) || "/image/category/default.svg";
+  };
+
+  const filteredCategories = categories.filter((category) =>
+    category.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const columns = [
+    {
+      key: "image" as keyof Category,
+      title: "Ảnh",
+      render: (image: string | undefined, category: Category) => (
+        <div className={styles.imageCell}>
+          <Image
+            loader={imageLoader}
+            src={
+              formatImageUrl(image) ||
+              formatImageUrl(category.image) ||
+              "/image/category/default.svg"
+            }
+            alt={category?.name || ""}
+            width={60}
+            height={60}
+            className={styles.categoryImage}
+            unoptimized
+          />
+        </div>
+      ),
+    },
+    {
+      key: "name" as keyof Category,
+      title: "Tên danh mục",
+      render: (_value: string, category: Category) => (
+        <div className={styles.nameCell}>
+          <span className={styles.categoryName}>{category.name}</span>
+          <span className={styles.categorySlug}>{category.slug}</span>
+        </div>
+      ),
+    },
+    {
+      key: "posts_count" as keyof Category,
+      title: "Số bài đăng",
+      render: (count: number) => (
+        <div className={styles.statsCell}>
+          <Icon icon="mdi:post-outline" />
+          <span>{count || 0}</span>
+        </div>
+      ),
+    },
+    {
+      key: "_id" as keyof Category,
+      title: "Thao tác",
+      render: (_: any, category: Category) => (
+        <div className={styles.actionButtons}>
+          <button
+            className={styles.btnEdit}
+            onClick={(e) => {
+              e.stopPropagation();
+              openEditModal(category);
+            }}
+            title="Chỉnh sửa"
+          >
+            <Icon icon="mdi:pencil" />
+          </button>
+          <button
+            className={styles.btnDelete}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDeleteCategory(category._id);
+            }}
+            title="Xóa"
+          >
+            <Icon icon="mdi:delete" />
+          </button>
+        </div>
+      ),
+    },
+  ];
+
   return (
-    <div className={styleAdmin.container}>
-      <h2>Danh sách các danh mục</h2>
-      <div className={styleAdmin.cardAddCategory}>
-        <label htmlFor="">Thêm danh mục :</label>
-        <input
-          className={styleAdmin.inputAdd}
-          type="text"
-          placeholder="Nhập tên danh mục"
-          value={newCategoryName}
-          onChange={(e) => setNewCategoryName(e.target.value)}
-        />
-        {/* Chọn ảnh */}
-        {preview ? (
-          <div className={styleAdmin.imgCategory}>
-            <input
-              type="file"
-              accept="image/*"
-              id="upload-avatar"
-              onChange={handleFileChange}
-              hidden
-              title="Upload category image"
-              aria-label="Upload category image"
-            />
-            <label htmlFor="upload-avatar">
-              <Image
-                loader={imageLoader}
-                src={preview ?? "/image/category/default.svg"}
-                alt="preview"
-                width={80}
-                height={80}
-                className={styleAdmin.imgCategory}
-                unoptimized
-              />
-            </label>
-          </div>
-        ) : (
-          <div className={styleAdmin.imgCategory}>
-            <input
-              type="file"
-              accept="image/*"
-              id="upload-avatar"
-              onChange={handleFileChange}
-              hidden
-              title="Upload category image"
-              aria-label="Upload category image"
-            />
-            <label htmlFor="upload-avatar">
-              <Image
-                loader={imageLoader}
-                src="/image/profile/camera.svg"
-                alt="Upload avatar"
-                width={80}
-                height={80}
-                className={styleAdmin.imgCategory}
-                unoptimized
-              />
-            </label>
-          </div>
-        )}
-        <button className={styleAdmin.btnAdd} onClick={handleAddCategory}>
-          Thêm
+    <div className={styles.categoriesPage}>
+      <div className={styles.header}>
+        <div>
+          <h1>Quản lý danh mục</h1>
+          <p>Quản lý các danh mục sản phẩm trên hệ thống</p>
+        </div>
+        <button className={styles.btnAdd} onClick={openAddModal}>
+          <Icon icon="mdi:plus" />
+          Thêm danh mục
         </button>
       </div>
-      <table className={styleAdmin.table}>
-        <thead>
-          <tr>
-            <th className={styleAdmin.tbheader}>#</th>
-            <th className={styleAdmin.tbheader}>Name</th>
-            <th className={styleAdmin.tbheader}>Slug</th>
-            <th className={styleAdmin.tbheader}>Image</th>
-            <th className={styleAdmin.tbheader}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {paginatedCategories.map((category, idx) => (
-            <tr key={category._id}>
-              <td className={styleAdmin.tbrow}>
-                {(currentPage - 1) * pageSize + idx + 1}
-              </td>
 
-              {categoryFields.map((field) => (
-                <td key={field} className={styleAdmin.tbrow}>
-                  {editingCategoryId === category._id ? (
-                    <input
-                      className={styleAdmin.tableInput}
-                      value={editForm[field] || ""}
-                      onChange={(e) => handleFieldChange(field, e.target.value)}
-                      title={`Edit ${field}`}
-                      placeholder={`Enter ${field}`}
-                      aria-label={`Edit ${field}`}
-                    />
-                  ) : (
-                    category[field] || ""
-                  )}
-                </td>
-              ))}
-              <td className={styleAdmin.tbrow}>
-                {editingCategoryId === category._id ? (
-                  <>
-                    <label
-                      htmlFor={`edit-upload-${category._id}`}
-                      className={styleAdmin.editFileLabel}
-                    >
-                      Choose image
-                    </label>
-                    <input
-                      id={`edit-upload-${category._id}`}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      className={styleAdmin.tableInput}
-                      title="Upload category image"
-                      aria-label="Upload category image"
-                    />
-                    {preview && (
+      <div className={styles.searchBar}>
+        <Icon icon="mdi:magnify" />
+        <input
+          type="text"
+          placeholder="Tìm kiếm danh mục..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
+
+      <Table
+        data={filteredCategories}
+        columns={columns}
+        loading={loading}
+        onRowClick={openDetailModal}
+      />
+
+      {/* Add Category Modal */}
+      {showAddModal && (
+        <div className={styles.modal} onClick={() => setShowAddModal(false)}>
+          <div
+            className={styles.modalContent}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={styles.modalHeader}>
+              <h2>Thêm danh mục mới</h2>
+              <button
+                className={styles.btnClose}
+                onClick={() => setShowAddModal(false)}
+              >
+                <Icon icon="mdi:close" />
+              </button>
+            </div>
+
+            <div className={styles.modalBody}>
+              <div className={styles.formGroup}>
+                <label>Tên danh mục *</label>
+                <input
+                  type="text"
+                  placeholder="Nhập tên danh mục"
+                  value={categoryForm.name}
+                  onChange={(e) => {
+                    const name = e.target.value;
+                    setCategoryForm({
+                      ...categoryForm,
+                      name,
+                      slug: generateSlug(name),
+                    });
+                  }}
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label>Slug</label>
+                <input
+                  disabled
+                  type="text"
+                  placeholder="Slug tự động tạo"
+                  value={categoryForm.slug}
+                  onChange={(e) =>
+                    setCategoryForm({ ...categoryForm, slug: e.target.value })
+                  }
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label>Ảnh danh mục</label>
+                <div className={styles.imageUpload}>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    id="add-image"
+                    style={{ display: "none" }}
+                  />
+                  <label htmlFor="add-image" className={styles.uploadLabel}>
+                    {imagePreview ? (
                       <Image
-                        loader={imageLoader}
-                        src={preview}
-                        alt="preview"
-                        width={80}
-                        height={80}
-                        className={styleAdmin.imgCategory}
+                        src={imagePreview}
+                        alt="Preview"
+                        width={120}
+                        height={120}
+                        className={styles.previewImage}
                         unoptimized
                       />
+                    ) : (
+                      <div className={styles.uploadPlaceholder}>
+                        <Icon icon="mdi:camera-plus" />
+                        <span>Chọn ảnh</span>
+                      </div>
                     )}
-                  </>
-                ) : category.image ? (
-                  // Ensure correct image URL
-                  <Image
-                    loader={imageLoader}
-                    src={
-                      category.image
-                        ? URL_GCS + category.image
-                        : "/image/category/default.svg"
-                    }
-                    alt="category"
-                    width={80}
-                    height={80}
-                    className={styleAdmin.imgCategory}
-                    style={{ objectFit: "cover" }}
-                    onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).src =
-                        "/image/profile/camera.svg";
-                    }}
-                    unoptimized
-                  />
-                ) : (
-                  <Image
-                    loader={imageLoader}
-                    src="/image/category/default.svg"
-                    alt="No image"
-                    width={80}
-                    height={80}
-                    className={styleAdmin.imgCategory}
-                    style={{ objectFit: "cover" }}
-                    unoptimized
-                  />
-                )}
-              </td>
+                  </label>
+                </div>
+              </div>
+            </div>
 
-              <td className={styleAdmin.tbrow}>
-                {editingCategoryId === category._id ? (
-                  <>
-                    <button className={styleAdmin.btnEdit} onClick={handleSave}>
-                      Save
-                    </button>
-                    <button
-                      className={styleAdmin.btnEdit}
-                      onClick={() => {
-                        setEditingCategoryId(null);
-                        setEditForm({});
-                      }}
-                    >
-                      Cancel
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      className={styleAdmin.btnEdit}
-                      onClick={() => handleEdit(category)}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className={styleAdmin.btnRemove}
-                      onClick={() => handleDeleteCategory(category._id)}
-                    >
-                      Remove
-                    </button>
-                  </>
+            <div className={styles.modalFooter}>
+              <button
+                className={styles.btnCancel}
+                onClick={() => setShowAddModal(false)}
+              >
+                Hủy
+              </button>
+              <button
+                className={styles.btnSubmit}
+                onClick={handleAddCategory}
+                disabled={uploading}
+              >
+                {uploading ? "Đang xử lý..." : "Thêm danh mục"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Category Modal */}
+      {showEditModal && selectedCategory && (
+        <div className={styles.modal} onClick={() => setShowEditModal(false)}>
+          <div
+            className={styles.modalContent}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={styles.modalHeader}>
+              <h2>Chỉnh sửa danh mục</h2>
+              <button
+                className={styles.btnClose}
+                onClick={() => setShowEditModal(false)}
+              >
+                <Icon icon="mdi:close" />
+              </button>
+            </div>
+
+            <div className={styles.modalBody}>
+              <div className={styles.formGroup}>
+                <label>Tên danh mục *</label>
+                <input
+                  type="text"
+                  placeholder="Nhập tên danh mục"
+                  value={categoryForm.name}
+                  onChange={(e) => {
+                    const name = e.target.value;
+                    setCategoryForm({
+                      ...categoryForm,
+                      name,
+                      slug: generateSlug(name),
+                    });
+                  }}
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label>Slug</label>
+                <input
+                  type="text"
+                  placeholder="Slug tự động tạo"
+                  value={categoryForm.slug}
+                  onChange={(e) =>
+                    setCategoryForm({ ...categoryForm, slug: e.target.value })
+                  }
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label>Ảnh danh mục</label>
+                <div className={styles.imageUpload}>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    id="edit-image"
+                    style={{ display: "none" }}
+                  />
+                  <label htmlFor="edit-image" className={styles.uploadLabel}>
+                    {imagePreview ? (
+                      <Image
+                        src={imagePreview}
+                        alt="Preview"
+                        width={120}
+                        height={120}
+                        className={styles.previewImage}
+                        unoptimized
+                      />
+                    ) : (
+                      <div className={styles.uploadPlaceholder}>
+                        <Icon icon="mdi:camera-plus" />
+                        <span>Chọn ảnh mới</span>
+                      </div>
+                    )}
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.modalFooter}>
+              <button
+                className={styles.btnCancel}
+                onClick={() => setShowEditModal(false)}
+              >
+                Hủy
+              </button>
+              <button
+                className={styles.btnSubmit}
+                onClick={handleEditCategory}
+                disabled={uploading}
+              >
+                {uploading ? "Đang xử lý..." : "Cập nhật"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Detail Modal */}
+      {showDetailModal && selectedCategory && (
+        <div className={styles.modal} onClick={() => setShowDetailModal(false)}>
+          <div
+            className={styles.modalContent}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={styles.modalHeader}>
+              <h2>Chi tiết danh mục</h2>
+              <button
+                className={styles.btnClose}
+                onClick={() => setShowDetailModal(false)}
+              >
+                <Icon icon="mdi:close" />
+              </button>
+            </div>
+
+            <div className={styles.modalBody}>
+              <div className={styles.detailImage}>
+                <Image
+                  loader={imageLoader}
+                  src={
+                    formatImageUrl(selectedCategory.image) ||
+                    "/image/category/default.svg"
+                  }
+                  alt={selectedCategory.name}
+                  width={200}
+                  height={200}
+                  className={styles.categoryImageLarge}
+                  unoptimized
+                />
+              </div>
+
+              <div className={styles.detailInfo}>
+                <div className={styles.infoRow}>
+                  <span className={styles.label}>Tên danh mục:</span>
+                  <span className={styles.value}>{selectedCategory.name}</span>
+                </div>
+                <div className={styles.infoRow}>
+                  <span className={styles.label}>Slug:</span>
+                  <span className={styles.value}>{selectedCategory.slug}</span>
+                </div>
+                <div className={styles.infoRow}>
+                  <span className={styles.label}>Số bài đăng:</span>
+                  <span className={styles.value}>
+                    {selectedCategory.posts_count || 0}
+                  </span>
+                </div>
+                {selectedCategory.created_at && (
+                  <div className={styles.infoRow}>
+                    <span className={styles.label}>Ngày tạo:</span>
+                    <span className={styles.value}>
+                      {new Date(selectedCategory.created_at).toLocaleDateString(
+                        "vi-VN"
+                      )}
+                    </span>
+                  </div>
                 )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {/* Phân trang */}
-      {totalPages > 1 && (
-        <div style={{ marginTop: "8px", display: "flex", gap: "4px" }}>
-          <button
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-            style={{ fontSize: "12px", padding: "2px 8px" }}
-          >
-            Trang trước
-          </button>
-          {Array.from({ length: totalPages }, (_, i) => (
-            <button
-              key={i}
-              onClick={() => setCurrentPage(i + 1)}
-              style={{
-                fontWeight: currentPage === i + 1 ? "bold" : "normal",
-                fontSize: "12px",
-                padding: "2px 8px",
-              }}
-            >
-              {i + 1}
-            </button>
-          ))}
-          <button
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            disabled={currentPage === totalPages}
-            style={{ fontSize: "12px", padding: "2px 8px" }}
-          >
-            Trang sau
-          </button>
+              </div>
+            </div>
+
+            <div className={styles.modalFooter}>
+              <button
+                className={styles.btnCancel}
+                onClick={() => setShowDetailModal(false)}
+              >
+                Đóng
+              </button>
+              <button
+                className={styles.btnEdit}
+                onClick={() => {
+                  setShowDetailModal(false);
+                  openEditModal(selectedCategory);
+                }}
+              >
+                <Icon icon="mdi:pencil" />
+                Chỉnh sửa
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
   );
-};
-export default Home;
+}

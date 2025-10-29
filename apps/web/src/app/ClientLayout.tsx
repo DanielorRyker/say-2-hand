@@ -47,11 +47,13 @@ export default function ClientLayout({
   ];
   const hideHeaderFooter = noHeaderFooterRoutes.includes(pathname);
 
+  const noFooterRoutes = ["/admin"];
+  const hideFooter = noFooterRoutes.some((route) => pathname.startsWith(route));
   return (
     <ToastProvider>
       {!hideHeaderFooter && <Header />}
       <main>{children}</main>
-      {!hideHeaderFooter && <Footer />}
+      {!hideHeaderFooter && !hideFooter && <Footer />}
     </ToastProvider>
   );
 }

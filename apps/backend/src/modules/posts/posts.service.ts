@@ -10,8 +10,7 @@ import { Model, Types } from 'mongoose';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { ConversationsService } from '../conversations/conversations.service';
 import { MessagesService } from '../messages/messages.service';
-import {NotificationsService} from '../notifications/notifications.service';
-
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class PostsService {
@@ -20,8 +19,7 @@ export class PostsService {
     private postModel: Model<PostDocument>,
     private conversationService: ConversationsService,
     private messageService: MessagesService,
-    private notificationsService:NotificationsService,
-
+    private notificationsService: NotificationsService,
   ) {}
 
   async create(createPostDto: CreatePostDto) {
@@ -84,49 +82,55 @@ export class PostsService {
     return newPost.save();
   }
 
-
   findAll() {
-    return this.postModel.find()
-    .populate('author_id', 'full_name avatar') 
-    .populate('category_id', 'name')
-    .exec();
+    return this.postModel
+      .find()
+      .populate('author_id', 'full_name avatar')
+      .populate('category_id', 'name')
+      .exec();
   }
 
   findAllSortOldest() {
-    return this.postModel.find().sort({ createdAt: -1 })
-    .populate('author_id', 'full_name avatar') 
-    .populate('category_id', 'name')
-    .exec();
+    return this.postModel
+      .find()
+      .sort({ createdAt: -1 })
+      .populate('author_id', 'full_name avatar')
+      .populate('category_id', 'name')
+      .exec();
   }
 
   findAllPending() {
-    return this.postModel.find({ status: 'pending_approval' })
-    .populate('author_id', 'full_name avatar') 
-    .populate('category_id', 'name')
-    .exec();
+    return this.postModel
+      .find({ status: 'pending_approval' })
+      .populate('author_id', 'full_name avatar')
+      .populate('category_id', 'name')
+      .exec();
   }
 
   findAllActive() {
-    return this.postModel.find({ status: 'active' })
-    .populate('author_id', 'full_name avatar') 
-    .populate('category_id', 'name')
-     .sort({ updatedAt: -1 })
-    .exec();
+    return this.postModel
+      .find({ status: 'active' })
+      .populate('author_id', 'full_name avatar')
+      .populate('category_id', 'name')
+      .sort({ updatedAt: -1 })
+      .exec();
   }
 
   findAllRejected() {
-    return this.postModel.find({ status: 'rejected' })
-    .populate('author_id', 'full_name avatar') 
-    .populate('category_id', 'name')
-    .exec();
+    return this.postModel
+      .find({ status: 'rejected' })
+      .populate('author_id', 'full_name avatar')
+      .populate('category_id', 'name')
+      .exec();
   }
 
   findOne(id: string) {
-    return this.postModel.findById(id)
-    .populate('author_id', 'full_name avatar') 
-    .populate('category_id', 'name') 
-    .exec();
-}
+    return this.postModel
+      .findById(id)
+      .populate('author_id', 'full_name avatar')
+      .populate('category_id', 'name')
+      .exec();
+  }
 
   update(id: string, updatePostDto: UpdatePostDto) {
     return this.postModel
@@ -176,8 +180,6 @@ export class PostsService {
 
       //  Xóa luôn các conversation
       await this.conversationService.removeByIds(conversationIds);
-
-      
     }
     // Xóa thông báo liên quan
     // await this.notificationsService.remove(post.author_id.toString(), postId)
@@ -201,5 +203,23 @@ export class PostsService {
       .populate('category_id', 'name') // lấy tên category
       .sort({ updatedAt: -1 })
       .exec();
+  }
+
+  /**
+   * Return counts of posts grouped by location.province.
+   * Result: [{ province: string | null, count: number }, ...]
+   */
+  async countsByProvince(): Promise<
+    Array<{ province: string | null; count: number }>
+  > {
+    const pipeline = [
+      // optionally filter by status if only active posts are wanted
+      { $match: { status: { $in: ['active', 'completed'] } } },
+      { $group: { _id: '$location.province', count: { $sum: 1 } } },
+      { $project: { _id: 0, province: '$_id', count: 1 } },
+    ];
+
+    const result = await this.postModel.aggregate(pipeline as any);
+    return result as Array<{ province: string | null; count: number }>;
   }
 }

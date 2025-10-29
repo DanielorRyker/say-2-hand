@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import styleProfile from "@/styles/pages/profile/profile-v2.module.scss";
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { formatImageUrl } from "@/lib/constants";
 
 const ProfilePage = () => {
   const router = useRouter();
@@ -102,7 +103,10 @@ const ProfilePage = () => {
             <div className={styleProfile["avatarWrapper"]}>
               {user?.avatar ? (
                 <Image
-                  src={process.env.NEXT_PUBLIC_URL_GCS + user.avatar}
+                  src={
+                    formatImageUrl(user.avatar) ||
+                    "/image/profile/avatar-default.png"
+                  }
                   alt="Avatar"
                   className={styleProfile["avatar"]}
                   width={132}

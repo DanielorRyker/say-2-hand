@@ -33,13 +33,13 @@ if (fs.existsSync(backendEnvExample) && !fs.existsSync(backendEnv)) {
   console.log("✅ Backend .env created");
 }
 
-// Frontend .env.local
+// Frontend .env (use .env as the canonical env file)
 const frontendEnvExample = path.join("apps", "web", ".env.example");
-const frontendEnv = path.join("apps", "web", ".env.local");
+const frontendEnv = path.join("apps", "web", ".env");
 
 if (fs.existsSync(frontendEnvExample) && !fs.existsSync(frontendEnv)) {
   fs.copyFileSync(frontendEnvExample, frontendEnv);
-  console.log("✅ Frontend .env.local created");
+  console.log("✅ Frontend .env created");
 }
 
 // Start databases with Docker if available

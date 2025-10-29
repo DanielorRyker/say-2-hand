@@ -46,6 +46,8 @@ $category-vehicles: linear-gradient(90deg, #64748b 0%, #475569 100%);
 // UI ELEMENT COLORS - Màu Giao Diện
 // ==========================================
 $ui-header: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+$ui-header-transparent-03: linear-gradient(90deg, rgba(59, 131, 246, 0.3) 0%, rgba(139, 92, 246, 0.3) 100%);
+$ui-header-transparent-015: linear-gradient(90deg, rgba(59, 131, 246, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
 $ui-card: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
 $ui-button-primary: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
 $ui-button-secondary: linear-gradient(90deg, #a7f3d0 0%, #bfdbfe 100%);

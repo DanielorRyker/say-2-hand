@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, Suspense } from "react";
+import React, { useEffect, useState, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import styles from "./search.module.scss";
 import { parseAddress } from "@/lib/address";
@@ -116,6 +116,8 @@ function SearchPageContent() {
   const [selectedLocation, setSelectedLocation] = useState<string>("");
   const [distance, setDistance] = useState<number>(50);
   const [sortBy, setSortBy] = useState<string>("newest");
+  const [showListView, setShowListView] = useState(false);
+  const listRef = useRef<HTMLDivElement | null>(null);
 
   // Modal states
   const [showMainFilterModal, setShowMainFilterModal] = useState(false);
@@ -128,7 +130,28 @@ function SearchPageContent() {
   useEffect(() => {
     const query = searchParams.get("q") || "";
     setSearchQuery(query);
-    setFilterProvinceParam(searchParams.get("province"));
+    const prov = searchParams.get("province");
+    setFilterProvinceParam(prov);
+    // if province param present, reflect it in selectedLocation so UI shows active location chip
+    if (prov) {
+      // clean common prefixes like "tỉnh", "thành phố", "tp" so it matches parsed addresses
+      const cleaned = prov
+        .replace(/t[h|h\u00E0]nh\s*ph[o|ố]\s*/i, "")
+        .replace(/tinh\s*/i, "")
+        .replace(/\btp\.?\s*/i, "")
+        .trim();
+      setSelectedLocation(cleaned || prov);
+      // ensure list view is visible and scroll to it
+      setShowListView(true);
+      // scroll after a tick so DOM exists
+      setTimeout(() => {
+        if (listRef.current)
+          listRef.current.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+      }, 120);
+    }
   }, [searchParams]);
 
   // Fetch categories
@@ -183,6 +206,12 @@ function SearchPageContent() {
 
     // If province query param present, filter posts by parsed province token
     const provinceParam = (filterProvinceParam || "").trim();
+    // remove common prefixes so 'Thành phố Hà Nội' matches 'Hà Nội'
+    const provinceParamClean = provinceParam
+      .replace(/t[h|h\u00E0]nh\s*ph[o|ố]\s*/i, "")
+      .replace(/tinh\s*/i, "")
+      .replace(/\btp\.?\s*/i, "")
+      .trim();
     const normalizeForCompare = (s: string) =>
       s
         ? s
@@ -192,7 +221,9 @@ function SearchPageContent() {
             .replace(/[^a-z0-9 ]/g, "")
             .trim()
         : "";
-    const provinceParamNorm = normalizeForCompare(provinceParam);
+    const provinceParamNorm = normalizeForCompare(
+      provinceParamClean || provinceParam
+    );
     if (provinceParamNorm) {
       filtered = filtered.filter((post) => {
         const parsed = parseAddress(post.location?.address || "");
@@ -612,7 +643,9 @@ function SearchPageContent() {
           <p>Thử điều chỉnh bộ lọc hoặc từ khóa tìm kiếm</p>
         </div>
       ) : (
-        <ListPost posts={filteredPosts} isLoading={isLoading} />
+        <div ref={listRef}>
+          <ListPost posts={filteredPosts} isLoading={isLoading} />
+        </div>
       )}
 
       {/* Modals */}

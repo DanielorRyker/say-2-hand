@@ -6,6 +6,7 @@ import axios from "axios";
 import styles from "./notification.module.scss";
 import headerStyles from "@/app/layouts/header.module.scss";
 import Image from "next/image";
+import { formatImageUrl } from "@/lib/constants";
 import { io, Socket } from "socket.io-client";
 
 type RelatedPost = {
@@ -50,7 +51,7 @@ type Notification = {
     avatar: string;
   };
   related_model?: string;
-  related_id?: RelatedPost | RelatedTransaction ;
+  related_id?: RelatedPost | RelatedTransaction;
 };
 
 export default function NotificationPopup() {
@@ -180,7 +181,6 @@ useEffect(() => {
     };
   }, [socket, currentUser?._id]);
 
-  
   //Filler
   const [filter, setFilter] = useState<string | null>(null);
 
@@ -197,14 +197,12 @@ useEffect(() => {
       } catch (error) {
         console.error("Lỗi khi tải thông báo:", error);
       }
-     
-    };
-  }
+    }
+  };
 
-    useEffect(() => {
+  useEffect(() => {
     fillerNotification(); // tự động lọc lại mỗi khi filter thay đổi
   }, [filter]);
-
 
   const handleClick = (type: string) => {
     if (filter === type) {
@@ -232,7 +230,6 @@ useEffect(() => {
       console.error("Lỗi khi đánh dấu đã đọc:", error);
     }
   };
-  
 
   return (
     <div className={styles.container} ref={popupRef}>
@@ -268,21 +265,21 @@ useEffect(() => {
             <label className={styles.lbFiller}>Lọc :</label>
             <button
               className={`${styles.btnFilter} ${filter === "transaction" ? styles.active : styles.btnFilter}`}
-              onClick={() => ( handleClick("transaction"))}
+              onClick={() => handleClick("transaction")}
             >
               Giao dịch
             </button>
 
             <button
               className={`${styles.btnFilter} ${filter === "moderation" ? styles.active : styles.btnFilter}`}
-              onClick={() => ( handleClick("moderation"))}
+              onClick={() => handleClick("moderation")}
             >
               Tin đăng
             </button>
 
             <button
               className={`${styles.btnFilter} ${filter === "system" ? styles.active : styles.btnFilter}`}
-              onClick={() => (handleClick("system"))}
+              onClick={() => handleClick("system")}
             >
               Hệ thống
             </button>
@@ -301,7 +298,8 @@ useEffect(() => {
                     <img
                       src={
                         n.sender_id.avatar
-                          ? process.env.NEXT_PUBLIC_URL_GCS + n.sender_id.avatar
+                          ? formatImageUrl(n.sender_id.avatar) ||
+                            "/image/header/carbon_user-avatar-filled-alt.svg"
                           : "/image/header/carbon_user-avatar-filled-alt.svg"
                       }
                       alt=""
@@ -322,30 +320,48 @@ useEffect(() => {
                         {getRelativeTime(n.createdAt)}
                       </div>
                     </div>
-                        
-                        {n.related_id  && (n.related_id as RelatedPost).images && (n.related_id as RelatedPost).images[0] ? 
-                          <Image
-                            src={process.env.NEXT_PUBLIC_URL_GCS + (n.related_id as RelatedPost).images[0].url}
-                            alt={(n.related_id as RelatedPost).images[0].alt || ""}
-                            className={styles.postImage}
-                            width={48}
-                            height={48}
-                          />
-                          :
-                          n.related_id  && ((n.related_id as RelatedTransaction).post_id as RelatedPost).images?
-                          
-                          <Image
-                            src={process.env.NEXT_PUBLIC_URL_GCS + ((n.related_id as RelatedTransaction).post_id as RelatedPost).images[0].url}
-                            alt={((n.related_id as RelatedTransaction).post_id as RelatedPost).images[0].alt || ""}
-                            className={styles.postImage}
-                            width={48}
-                            height={48}
-                          />
-                          :      
-                          <div className={styles.postImage}></div>                   
+
+                    {n.related_id &&
+                    (n.related_id as RelatedPost).images &&
+                    (n.related_id as RelatedPost).images[0] ? (
+                      <Image
+                        src={
+                          formatImageUrl(
+                            (n.related_id as RelatedPost).images[0].url
+                          ) || "/image/post/placeholder.png"
                         }
-                        
-              
+                        alt={(n.related_id as RelatedPost).images[0].alt || ""}
+                        className={styles.postImage}
+                        width={48}
+                        height={48}
+                      />
+                    ) : n.related_id &&
+                      (
+                        (n.related_id as RelatedTransaction)
+                          .post_id as RelatedPost
+                      ).images ? (
+                      <Image
+                        src={
+                          formatImageUrl(
+                            (
+                              (n.related_id as RelatedTransaction)
+                                .post_id as RelatedPost
+                            ).images[0].url
+                          ) || "/image/post/placeholder.png"
+                        }
+                        alt={
+                          (
+                            (n.related_id as RelatedTransaction)
+                              .post_id as RelatedPost
+                          ).images[0].alt || ""
+                        }
+                        className={styles.postImage}
+                        width={48}
+                        height={48}
+                      />
+                    ) : (
+                      <div className={styles.postImage}></div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -356,4 +372,3 @@ useEffect(() => {
     </div>
   );
 }
-

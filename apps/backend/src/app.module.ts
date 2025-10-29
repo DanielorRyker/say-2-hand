@@ -19,6 +19,7 @@ import { FavoritesModule } from './modules/favorites/favorites.module';
 import { TransactionsModule } from './modules/transactions/transactions.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { QrModule } from './modules/qr/qr.module';
+import { ReportsModule } from './modules/reports/reports.module';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { QrModule } from './modules/qr/qr.module';
     TransactionsModule,
     NotificationsModule,
     QrModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [AppService, ChatGateway],

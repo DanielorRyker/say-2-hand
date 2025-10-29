@@ -71,7 +71,11 @@ export class PostsController {
 
   @Post('by-ids')
   findByIds(@Body('ids') ids: string[]) {
-  return this.postsService.findByIds(ids);
-}
+    return this.postsService.findByIds(ids);
+  }
 
+  @Get('counts/province')
+  countsByProvince() {
+    return this.postsService.countsByProvince();
+  }
 }

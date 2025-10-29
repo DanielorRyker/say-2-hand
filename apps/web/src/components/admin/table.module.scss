@@ -1,0 +1,94 @@
+@use "../../styles/abstracts/colors.scss"as colors;
+
+.tableWrapper {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+
+    thead {
+        background: colors.$ui-header;
+        color: white;
+
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+    }
+
+    tbody {
+        tr {
+            border-bottom: 1px solid #e2e8f0;
+            transition: background 0.2s;
+
+            &:hover {
+                background: colors.$ui-header-transparent-015;
+            }
+
+            &.clickable {
+                cursor: pointer;
+
+                &:hover {
+                    background: colors.$ui-header-transparent-015;
+                }
+            }
+
+            &:last-child {
+                border-bottom: none;
+            }
+        }
+
+        td {
+            padding: 1rem;
+            color: #475569;
+            font-size: 0.9rem;
+        }
+    }
+}
+
+.loading,
+.empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    gap: 1rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+    svg {
+        font-size: 3rem;
+        color: #cbd5e1;
+    }
+
+    p {
+        color: #64748b;
+        font-size: 1.1rem;
+    }
+}
+
+.spinner {
+    color: #4ade80 !important;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}

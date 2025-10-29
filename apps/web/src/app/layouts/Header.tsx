@@ -9,7 +9,7 @@ import NotificationPopup from "@/app/notification/NotificationPopup";
 import { io, Socket } from "socket.io-client";
 import axios from "axios";
 import { Icon } from "@iconify/react";
-import { API_BASE } from "@/lib/constants";
+import { API_BASE, formatImageUrl } from "@/lib/constants";
 
 const Header = () => {
   const router = useRouter();
@@ -81,8 +81,33 @@ const Header = () => {
   const [provinces, setProvinces] = useState<{ code: number; name: string }[]>(
     []
   );
+  const [provinceCounts, setProvinceCounts] = useState<Record<string, number>>(
+    {}
+  );
   const [provincesLoading, setProvincesLoading] = useState(false);
   const [provincesError, setProvincesError] = useState<string | null>(null);
+  // local filter for province search inside dropdown
+  const [provinceQuery, setProvinceQuery] = useState("");
+
+  // helper to select a province and immediately open search results for it
+  const handleSelectProvince = (p: { code: number; name: string }) => {
+    setSelectedItem(p.name);
+    setSelectedProvince({ code: p.code, name: p.name });
+    try {
+      localStorage.setItem(
+        "selectedProvince",
+        JSON.stringify({ code: p.code, name: p.name })
+      );
+    } catch {
+      // ignore
+    }
+
+    // navigate to search results filtered by province
+    const params = new URLSearchParams();
+    params.set("province", p.name);
+    params.set("provinceCode", String(p.code));
+    router.push(`/search?${params.toString()}`);
+  };
 
   // Load persisted selected province from localStorage (store as JSON {code,name})
   useEffect(() => {
@@ -115,6 +140,25 @@ const Header = () => {
           name: p.name,
         }));
         setProvinces(mapped);
+        // try to fetch post counts per province from backend
+        try {
+          const countsRes = await axios.get(
+            `${API_BASE}/api/posts/counts/province`
+          );
+          const countsArr: { province: string | null; count: number }[] =
+            countsRes.data || [];
+          const map: Record<string, number> = {};
+          countsArr.forEach((c) => {
+            if (c.province) map[c.province] = c.count;
+          });
+          setProvinceCounts(map);
+        } catch (err) {
+          // ignore if backend endpoint not available
+          console.debug(
+            "Failed to fetch province counts",
+            (err as any)?.message || err
+          );
+        }
       } catch (err: any) {
         console.error("Failed to fetch provinces", err);
         if (mounted) setProvincesError(String(err?.message || err));
@@ -124,6 +168,44 @@ const Header = () => {
     };
 
     fetchProvinces();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // Categories for header dropdown
+  interface Category {
+    _id: string;
+    name?: string;
+    slug?: string;
+    image?: string;
+    parent_id?: string | null;
+  }
+
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
+  const [categoriesError, setCategoriesError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchCategories = async () => {
+      setCategoriesLoading(true);
+      setCategoriesError(null);
+      try {
+        const res = await axios.get(`${API_BASE}/api/categories/`);
+        if (!mounted) return;
+        setCategories(res.data || []);
+      } catch (err: any) {
+        console.error("Failed to fetch categories", err?.message || err);
+        if (mounted) setCategoriesError(String(err?.message || err));
+        if (mounted) setCategories([]);
+      } finally {
+        if (mounted) setCategoriesLoading(false);
+      }
+    };
+
+    fetchCategories();
 
     return () => {
       mounted = false;
@@ -323,30 +405,35 @@ const Header = () => {
               <h5>Danh mục</h5>
             </NavDropdown.Header>
             <NavDropdown.Divider />
-            <NavDropdown.Item href="#action/1">
-              <Icon icon="mdi:car" width={20} height={20} />
-              Xe cộ
-            </NavDropdown.Item>
-            <NavDropdown.Item href="#action/2">
-              <Icon icon="mdi:laptop" width={20} height={20} />
-              Đồ điện tử
-            </NavDropdown.Item>
-            <NavDropdown.Item href="#action/3">
-              <Icon icon="mdi:dog" width={20} height={20} />
-              Thú cưng
-            </NavDropdown.Item>
-            <NavDropdown.Item href="#action/3">
-              <Icon icon="mdi:baby-carriage" width={20} height={20} />
-              Mẹ và bé
-            </NavDropdown.Item>
-            <NavDropdown.Item href="#action/3">
-              <Icon icon="mdi:home" width={20} height={20} />
-              Đồ gia dụng
-            </NavDropdown.Item>
-            <NavDropdown.Item href="#action/3">
-              <Icon icon="mdi:book-open-page-variant" width={20} height={20} />
-              Sách
-            </NavDropdown.Item>
+            {/* Categories loaded from backend; show first 11 */}
+            {/** Categories state and loader are added near other hooks above (see useEffect added) */}
+            {/** Render loading / empty / first 11 categories */}
+            {categoriesLoading && (
+              <NavDropdown.Item disabled>Đang tải...</NavDropdown.Item>
+            )}
+            {!categoriesLoading && categoriesError && (
+              <NavDropdown.Item disabled>Lỗi tải danh mục</NavDropdown.Item>
+            )}
+            {!categoriesLoading &&
+              !categoriesError &&
+              categories.length === 0 && (
+                <NavDropdown.Item disabled>Không có dữ liệu</NavDropdown.Item>
+              )}
+            {categories.slice(0, 11).map((cate) => (
+              <NavDropdown.Item
+                key={cate._id}
+                onClick={() => {
+                  const params = new URLSearchParams();
+                  // navigate to search page filtered by category id
+                  params.set("category", cate._id);
+                  if (cate.name) params.set("categoryName", cate.name);
+                  router.push(`/search?${params.toString()}`);
+                }}
+              >
+                <Icon icon="mdi:tag" width={20} height={20} />
+                {cate.name}
+              </NavDropdown.Item>
+            ))}
           </NavDropdown>
           <button
             onClick={() => router.push("/home")}
@@ -535,7 +622,8 @@ const Header = () => {
                 <Image
                   src={
                     user?.avatar
-                      ? process.env.NEXT_PUBLIC_URL_GCS + user.avatar
+                      ? formatImageUrl(user.avatar) ||
+                        "/image/header/carbon_user-avatar-filled-alt.svg"
                       : "/image/header/carbon_user-avatar-filled-alt.svg"
                   }
                   alt=""

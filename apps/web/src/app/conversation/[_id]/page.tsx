@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import cvstStyles from "@/styles/pages/conversation/conversation.module.scss";
 import Image from "next/image";
 import axios from "axios";
+import { formatImageUrl } from "@/lib/constants";
 import { io, Socket } from "socket.io-client";
 import { useRouter } from "next/navigation";
 
@@ -423,8 +424,8 @@ export default function ChatPage() {
                   <Image
                     src={
                       i.post_id?.images?.[0]?.url
-                        ? process.env.NEXT_PUBLIC_URL_GCS +
-                          i.post_id.images[0].url
+                        ? formatImageUrl(i.post_id.images[0].url) ||
+                          "/image/header/carbon_user-avatar-filled-alt.svg"
                         : "/image/header/carbon_user-avatar-filled-alt.svg"
                     }
                     alt="Post"
@@ -441,8 +442,8 @@ export default function ChatPage() {
                         <Image
                           src={
                             otherUser.avatar
-                              ? process.env.NEXT_PUBLIC_URL_GCS +
-                                otherUser.avatar
+                              ? formatImageUrl(otherUser.avatar) ||
+                                "/image/header/carbon_user-avatar-filled-alt.svg"
                               : "/image/header/carbon_user-avatar-filled-alt.svg"
                           }
                           alt="Avatar"
@@ -484,8 +485,8 @@ export default function ChatPage() {
             <Image
               src={
                 conversation?.post_id?.images?.[0]?.url
-                  ? process.env.NEXT_PUBLIC_URL_GCS +
-                    conversation.post_id.images[0].url
+                  ? formatImageUrl(conversation.post_id.images[0].url) ||
+                    "/image/header/carbon_user-avatar-filled-alt.svg"
                   : "/image/header/carbon_user-avatar-filled-alt.svg"
               }
               alt="Post"
@@ -513,7 +514,8 @@ export default function ChatPage() {
               <Image
                 src={
                   otherUser.avatar
-                    ? process.env.NEXT_PUBLIC_URL_GCS + otherUser.avatar
+                    ? formatImageUrl(otherUser.avatar) ||
+                      "/image/header/carbon_user-avatar-filled-alt.svg"
                     : "/image/header/carbon_user-avatar-filled-alt.svg"
                 }
                 alt="Avatar"
@@ -558,9 +560,7 @@ export default function ChatPage() {
                   <Image
                     width={200}
                     height={200}
-                    src={
-                      msg.text ? process.env.NEXT_PUBLIC_URL_GCS + msg.text : ""
-                    }
+                    src={msg.text ? formatImageUrl(msg.text) || "" : ""}
                     alt="message"
                     className={cvstStyles.messageImage}
                   />

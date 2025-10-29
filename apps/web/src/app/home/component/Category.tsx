@@ -1,7 +1,7 @@
 "use client";
 import styles from "./category.module.scss";
 import axios from "axios";
-import { API_BASE, URL_GCS } from "@/lib/constants";
+import { API_BASE, formatImageUrl, URL_GCS } from "@/lib/constants";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
@@ -27,14 +27,13 @@ export default function Category() {
   return (
     <div className={styles.container}>
       <div className={styles.categoryList}>
-        {categoriesData.slice(0, 14).map((category, index) => (
+        {categoriesData.slice(0, 12).map((category, index) => (
           <button key={index} type="button" className={styles.categoryItem}>
             <div className={styles.image}>
               <Image
                 src={
-                  URL_GCS && category.image
-                    ? URL_GCS + category.image
-                    : "/image/category/default.svg"
+                  formatImageUrl(category.image) ||
+                  "/image/category/default.svg"
                 }
                 alt={category.name ?? "Danh mục"}
                 width={110}

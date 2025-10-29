@@ -14,15 +14,15 @@ export function normalizeProvinceToken(s: string) {
 }
 
 // Normalize province names to canonical forms (keep 'Thành phố' prefix for major cities)
-export function normalizeProvinceName(s?: string | null) {
-  if (!s) return "";
-  const t = String(s).trim();
-  const low = t.toLowerCase();
+export function normalizeProvinceName(input?: string | null) {
+  if (!input) return "";
+  const trimmedInput = String(input).trim();
+  const lowercaseInput = trimmedInput.toLowerCase();
   // Build a canonical map for cities/provinces including common variants
   // We'll support both accented and diacritic-stripped keys so nominatim or user input
   // without accents will still map correctly.
-  function stripDiacritics(u: string) {
-    return u
+  function stripDiacritics(value: string) {
+    return value
       .normalize("NFD")
       .replace(/\p{Diacritic}/gu, "")
       .replace(/[^\S\r\n]+/g, " ")
@@ -114,39 +114,39 @@ export function normalizeProvinceName(s?: string | null) {
     "thành phố thủ đức": "Thành phố Hồ Chí Minh",
   } as Record<string, string>;
 
-  const key = low.replace(/\s+/g, " ").trim();
-  const stripped = stripDiacritics(key);
-  if (canonicalMap[key]) return canonicalMap[key];
-  if (canonicalMap[stripped]) return canonicalMap[stripped];
+  const normalizedKey = lowercaseInput.replace(/\s+/g, " ").trim();
+  const strippedKey = stripDiacritics(normalizedKey);
+  if (canonicalMap[normalizedKey]) return canonicalMap[normalizedKey];
+  if (canonicalMap[strippedKey]) return canonicalMap[strippedKey];
 
   // fallback: prefix with 'Tỉnh' for regular provinces
-  function capitalizeWords(str: string) {
-    return str
+  function capitalizeWords(text: string) {
+    return text
       .split(/\s+/)
       .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : ""))
       .join(" ");
   }
 
-  const name = capitalizeWords(t);
-  return `Tỉnh ${name}`;
+  const capitalizedName = capitalizeWords(trimmedInput);
+  return `Tỉnh ${capitalizedName}`;
 }
 
 // Helper: normalize and strip common prefixes like 'Tỉnh', 'Thành phố', 'TP', 'Tp.'
 function stripProvincePrefix(token: string) {
   if (!token) return "";
-  let t = token;
+  let tokenText = token;
   // remove common prefixes (case-insensitive)
-  t = t.replace(/^tỉnh\s+/i, "");
-  t = t.replace(/^thành phố\s+/i, "");
-  t = t.replace(/^tp\.?\s*/i, "");
-  t = t.replace(/^tp\s*-\s*/i, "");
-  t = t.replace(/^thị xã\s+/i, "");
-  t = t.replace(/^thị trấn\s+/i, "");
-  t = t.replace(/^tt\.?\s*/i, "");
-  t = t.replace(/^huyện\s+/i, ""); // Lấy Huyện/Quận làm phần 'detail' hơn là 'province'
-  t = t.replace(/^quận\s+/i, "");
-  t = t.replace(/^phường\s+/i, "");
-  return t.trim();
+  tokenText = tokenText.replace(/^tỉnh\s+/i, "");
+  tokenText = tokenText.replace(/^thành phố\s+/i, "");
+  tokenText = tokenText.replace(/^tp\.?\s*/i, "");
+  tokenText = tokenText.replace(/^tp\s*-\s*/i, "");
+  tokenText = tokenText.replace(/^thị xã\s+/i, "");
+  tokenText = tokenText.replace(/^thị trấn\s+/i, "");
+  tokenText = tokenText.replace(/^tt\.?\s*/i, "");
+  tokenText = tokenText.replace(/^huyện\s+/i, ""); // Lấy Huyện/Quận làm phần 'detail' hơn là 'province'
+  tokenText = tokenText.replace(/^quận\s+/i, "");
+  tokenText = tokenText.replace(/^phường\s+/i, "");
+  return tokenText.trim();
 }
 
 export function parseAddress(address: string) {

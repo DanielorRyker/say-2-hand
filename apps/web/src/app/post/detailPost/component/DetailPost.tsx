@@ -4,6 +4,7 @@ import styles from "./DetailPost.module.scss";
 import { Icon } from "@iconify/react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { formatImageUrl, URL_GCS } from "@/lib/constants";
 
 // Helper to create a ripple span on a button. Call from button onClick: createRipple(e)
 export function createRipple(
@@ -285,7 +286,7 @@ export const DetailPost: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  const base = process.env.NEXT_PUBLIC_URL_GCS || "";
+  const base = formatImageUrl("") || "";
   // Attempt to hydrate post data from sessionStorage if navigated from list
   useEffect(() => {
     try {
@@ -785,9 +786,9 @@ export const DetailPost: React.FC = () => {
                   >
                     <img
                       id="main-image"
-                      src={
-                        base + postData.post.image_urls[currentImageIndex].url
-                      }
+                      src={formatImageUrl(
+                        postData.post.image_urls[currentImageIndex].url
+                      )}
                       alt="main"
                     />
                     <div
@@ -839,7 +840,10 @@ export const DetailPost: React.FC = () => {
                           }`}
                           onClick={() => handleSetImage(idx)}
                         >
-                          <img src={base + imageUrl.url} alt={`thumb-${idx}`} />
+                          <img
+                            src={formatImageUrl(imageUrl.url)}
+                            alt={`thumb-${idx}`}
+                          />
                         </div>
                       )
                     )}
@@ -955,9 +959,8 @@ export const DetailPost: React.FC = () => {
                   <div className={`${styles["comment-input-row"]}`}>
                     <img
                       src={
-                        postData.user.avatar
-                          ? base + postData.user.avatar
-                          : "/image/header/carbon_user-avatar-filled-alt.svg"
+                        formatImageUrl(postData.user.avatar) ||
+                        "/image/header/carbon_user-avatar-filled-alt.svg"
                       }
                       alt="Your Avatar"
                     />
@@ -1050,6 +1053,7 @@ export const DetailPost: React.FC = () => {
                 <div className={`${styles["desktop-sticky-sidebar"]}`}>
                   <div className={`${styles["seller-card"]}`}>
                     <div className={`${styles["seller-head"]}`}>
+<<<<<<< HEAD
                      <img
                       src={
                         postData.user.avatar
@@ -1058,6 +1062,15 @@ export const DetailPost: React.FC = () => {
                       }
                       alt="Your Avatar"
                     />
+=======
+                      <img
+                        src={
+                          formatImageUrl(postData.user.avatar) ||
+                          "/image/header/carbon_user-avatar-filled-alt.svg"
+                        }
+                        alt="seller"
+                      />
+>>>>>>> 33d6aaf (Lưu tất cả thay đổi trong workspace)
                       <div>
                         <div className={`${styles["seller-name"]}`}>
                           {postData.user.full_name}{" "}
@@ -1100,7 +1113,13 @@ export const DetailPost: React.FC = () => {
 
                   <div className={`${styles["spacer-sm"]}`} />
 
-                  <div className={postData?.post?.status === "active" ? `${styles["cta-box"]}`:  `${styles["cta-box"]} ${styles["unClick"]}`}>
+                  <div
+                    className={
+                      postData?.post?.status === "active"
+                        ? `${styles["cta-box"]}`
+                        : `${styles["cta-box"]} ${styles["unClick"]}`
+                    }
+                  >
                     {postData.post.author_id !== currentUser._id ? (
                       <>
                         <button
@@ -1180,7 +1199,6 @@ export const DetailPost: React.FC = () => {
                     ) : (
                       <div></div>
                     )}
-
                   </div>
 
                   <div className={`${styles["spacer-sm"]}`} />
@@ -1266,7 +1284,10 @@ export const DetailPost: React.FC = () => {
                       </button>
 
                       <div className={`${styles["product-aspect"]}`}>
-                        <img src={product.img} alt={product.title} />
+                        <img
+                          src={formatImageUrl(product.img)}
+                          alt={product.title}
+                        />
                       </div>
 
                       <div className={`${styles["card-body"]}`}>
@@ -1323,7 +1344,7 @@ export const DetailPost: React.FC = () => {
                           <div className={`${styles["seller-small"]}`}>
                             <div className={`${styles["seller-avatar"]}`}>
                               <img
-                                src={product.seller.avatar}
+                                src={formatImageUrl(product.seller.avatar)}
                                 alt={product.seller.name}
                               />
                             </div>

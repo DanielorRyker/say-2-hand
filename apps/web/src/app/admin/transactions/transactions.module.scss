@@ -130,7 +130,7 @@
                 }
 
                 .statValue {
-                    font-size: 1.75rem;
+                    font-size: 1.15rem;
                     font-weight: 700;
                     color: #1f2937;
                 }
@@ -236,13 +236,12 @@
             }
 
             &:hover {
-                border-color: #2de099;
-                background: linear-gradient(90deg, rgba(45, 224, 153, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
+                background: colors.$ui-header-transparent-015;
             }
 
             &.activeTab {
                 border-color: transparent;
-                background: linear-gradient(90deg, #2de099 0%, #3b82f6 100%);
+                background: colors.$ui-header;
                 color: white;
                 box-shadow: 0 4px 15px rgba(45, 224, 153, 0.3);
 

@@ -2,13 +2,13 @@
 import { useEffect, useState } from "react";
 import styles from "./post.module.scss";
 import Image from "next/image";
+import { formatImageUrl } from "@/lib/constants";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 
 const Home = () => {
-
   const router = useRouter();
-    const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -87,7 +87,7 @@ const Home = () => {
             typeof post?.author_id === "string"
               ? post.author_id
               : post?.author_id._id
-          }`,
+          }`
         );
         setUser(res.data);
         console.log("user", res.data);
@@ -108,8 +108,7 @@ const Home = () => {
     }
   }
 
-
-// --- Conversation ---
+  // --- Conversation ---
   const handleCreateConversation = async () => {
     if (!post || !currentUser || !user?._id) return;
 
@@ -143,17 +142,17 @@ const Home = () => {
           updatedAt: post.createdAt,
         },
         participants: [
-        {
-          _id: currentUser._id,
-          full_name: currentUser.full_name,
-          avatar: currentUser.avatar || "",
-        },
-        {
-          _id: user._id,
-          full_name: user.full_name,
-          avatar: user.avatar || "",
-        },
-      ],
+          {
+            _id: currentUser._id,
+            full_name: currentUser.full_name,
+            avatar: currentUser.avatar || "",
+          },
+          {
+            _id: user._id,
+            full_name: user.full_name,
+            avatar: user.avatar || "",
+          },
+        ],
       };
 
       localStorage.setItem("conversation", JSON.stringify(conversationToSave));
@@ -164,8 +163,6 @@ const Home = () => {
     }
   };
 
-
-
   return (
     <div className={styles.container}>
       <div className={styles.gradientBorder}>
@@ -174,7 +171,7 @@ const Home = () => {
             <Image
               src={
                 post?.image
-                  ? process.env.NEXT_PUBLIC_URL_GCS + post?.image
+                  ? formatImageUrl(post?.image) || "/image/profile/camera.svg"
                   : "/image/profile/camera.svg"
               }
               alt={""}
@@ -242,7 +239,7 @@ const Home = () => {
                 <p>Hiện số</p>
                 {flagPN ? <p>{user?.phone_number}</p> : <p>**********</p>}
               </button>
-              
+
               {currentUser?._id !== user?._id && (
                 <button
                   className={`${styles.btnPN} ${styles.btnMesage}`}
@@ -264,7 +261,8 @@ const Home = () => {
               <Image
                 src={
                   user?.avatar
-                    ? process.env.NEXT_PUBLIC_URL_GCS + user.avatar
+                    ? formatImageUrl(user.avatar) ||
+                      "/image/header/carbon_user-avatar-filled-alt.svg"
                     : "/image/header/carbon_user-avatar-filled-alt.svg"
                 }
                 alt=""

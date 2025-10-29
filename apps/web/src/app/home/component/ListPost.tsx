@@ -7,6 +7,7 @@ import styles from "./postList.module.scss";
 // Iconify import (replace HeartSVG with this icon)
 import { Icon } from "@iconify/react";
 import { apiClient } from "@/lib/api-client";
+import { formatImageUrl } from "@/lib/constants";
 
 // Local SVG icons (matching files in public/image/feed)
 const ICONS = {
@@ -315,7 +316,8 @@ export const ListPost: React.FC<ListPostProps> = ({ posts }) => {
                 className={styles["item-image"]}
                 src={
                   data.images && data.images.length > 0
-                    ? process.env.NEXT_PUBLIC_URL_GCS + data.images[0].url
+                    ? formatImageUrl(data.images[0].url) ||
+                      "https://placehold.co/600x450/9ca3af/ffffff?text=No+Image"
                     : "https://placehold.co/600x450/9ca3af/ffffff?text=No+Image"
                 }
                 alt={data.title}
@@ -431,7 +433,8 @@ export const ListPost: React.FC<ListPostProps> = ({ posts }) => {
                   className={styles.avatar}
                   src={
                     data.author_id?.avatar
-                      ? process.env.NEXT_PUBLIC_URL_GCS + data.author_id.avatar
+                      ? formatImageUrl(data.author_id.avatar) ||
+                        "/image/header/carbon_user-avatar-filled-alt.svg"
                       : "/image/header/carbon_user-avatar-filled-alt.svg"
                   }
                   alt="Avatar Người đăng"

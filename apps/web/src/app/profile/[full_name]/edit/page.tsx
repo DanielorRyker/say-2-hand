@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import styles from "@/styles/pages/profile/edit-v2.module.scss";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { formatImageUrl, URL_GCS } from "@/lib/constants";
 
 interface Address {
   label: string;
@@ -109,7 +110,7 @@ const EditProfilePage = () => {
       });
 
       if (parsedUser.avatar) {
-        setPreview(process.env.NEXT_PUBLIC_URL_GCS + parsedUser.avatar);
+        setPreview(formatImageUrl(parsedUser.avatar));
       }
     }
   }, []);
@@ -586,7 +587,7 @@ const EditProfilePage = () => {
           if (imageUrl) {
             // Some backends expect a relative path (stored in GCS). If the upload
             // service returns a full URL using NEXT_PUBLIC_URL_GCS, strip that prefix.
-            const gcsPrefix = process.env.NEXT_PUBLIC_URL_GCS || "";
+            const gcsPrefix = URL_GCS || "";
             const normalizedAvatar =
               gcsPrefix && imageUrl.startsWith(gcsPrefix)
                 ? imageUrl.replace(gcsPrefix, "")

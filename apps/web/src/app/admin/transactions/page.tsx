@@ -1,8 +1,9 @@
 "use client";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import Image from "next/image";
+import { formatImageUrl } from "@/lib/constants";
 import { Icon } from "@iconify/react";
 import type { Transaction } from "@repo/types";
 import styles from "./transactions.module.scss";
@@ -30,6 +31,8 @@ const AdminTransactionsPage = () => {
   const [activeTab, setActiveTab] = useState<TabType>("all");
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [statistics, setStatistics] = useState<Statistics | null>(null);
+  const [statsExpanded, setStatsExpanded] = useState(false);
+  const revenueRef = useRef<HTMLDivElement | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const { addToast } = useToast();
@@ -92,6 +95,23 @@ const AdminTransactionsPage = () => {
       fetchStatistics();
     }
   }, [user, activeTab, fetchTransactions, fetchStatistics]);
+
+  // Check if revenue value overflows its container and toggle expanded layout
+  useEffect(() => {
+    const checkOverflow = () => {
+      const el = revenueRef.current;
+      if (!el) return;
+      // if content width > container width, enable expanded layout
+      const isOverflowing = el.scrollWidth > el.clientWidth;
+      setStatsExpanded(isOverflowing);
+    };
+
+    // run after statistics is set
+    checkOverflow();
+    // re-check on window resize
+    window.addEventListener("resize", checkOverflow);
+    return () => window.removeEventListener("resize", checkOverflow);
+  }, [statistics]);
 
   // Xử lý cập nhật trạng thái
   const handleUpdateStatus = async (
@@ -237,7 +257,7 @@ const AdminTransactionsPage = () => {
 
         {/* Statistics Cards */}
         {statistics && (
-          <div className={styles.statisticsGrid}>
+    <div className={`${styles.statisticsGrid} ${statsExpanded ? styles.statisticsExpanded : ""}`}>
             <div className={styles.statCard}>
               <div className={`${styles.statIcon} ${styles.statIconPrimary}`}>
                 <Icon icon="mdi:cash-multiple" width={32} height={32} />
@@ -288,13 +308,13 @@ const AdminTransactionsPage = () => {
               </div>
             </div>
 
-            <div className={styles.statCard}>
+            <div className={`${styles.statCard} ${styles.statCardRevenue} ${statsExpanded ? styles.statCardWide : ""}`}>
               <div className={`${styles.statIcon} ${styles.statIconRevenue}`}>
                 <Icon icon="mdi:chart-line" width={32} height={32} />
               </div>
               <div className={styles.statContent}>
                 <div className={styles.statLabel}>Tổng doanh thu</div>
-                <div className={styles.statValue}>
+                <div className={styles.statValue} ref={revenueRef}>
                   {formatPrice(statistics.totalRevenue)}
                 </div>
               </div>
@@ -457,8 +477,8 @@ const AdminTransactionsPage = () => {
                               <Image
                                 src={
                                   post.images?.[0]?.url
-                                    ? process.env.NEXT_PUBLIC_URL_GCS +
-                                      post.images[0].url
+                                    ? formatImageUrl(post.images[0].url) ||
+                                      "/image/placeholder.png"
                                     : "/image/placeholder.png"
                                 }
                                 alt={post.title}
@@ -516,8 +536,8 @@ const AdminTransactionsPage = () => {
                               <Image
                                 src={
                                   buyer.avatar
-                                    ? process.env.NEXT_PUBLIC_URL_GCS +
-                                      buyer.avatar
+                                    ? formatImageUrl(buyer.avatar) ||
+                                      "/image/header/carbon_user-avatar-filled-alt.svg"
                                     : "/image/header/carbon_user-avatar-filled-alt.svg"
                                 }
                                 alt={buyer.full_name}
@@ -573,8 +593,8 @@ const AdminTransactionsPage = () => {
                               <Image
                                 src={
                                   seller.avatar
-                                    ? process.env.NEXT_PUBLIC_URL_GCS +
-                                      seller.avatar
+                                    ? formatImageUrl(seller.avatar) ||
+                                      "/image/header/carbon_user-avatar-filled-alt.svg"
                                     : "/image/header/carbon_user-avatar-filled-alt.svg"
                                 }
                                 alt={seller.full_name}
