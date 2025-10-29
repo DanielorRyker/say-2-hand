@@ -13,7 +13,6 @@ import Link from "next/link";
 import styles from "../payment.module.scss";
 import { Icon } from "@iconify/react";
 import { io, Socket } from "socket.io-client";
-import QRCode from "react-qr-code";
 // import axios from "axios"; // TODO: Sẽ dùng khi backend có endpoint /api/payments
 
 interface PaymentMethod {
@@ -109,44 +108,38 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
   const [selectedMethod, setSelectedMethod] = useState<string>("");
   const [processing, setProcessing] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
-<<<<<<< HEAD
-    //QR
-  // const [openQR, setOpenQR] = useState(false);
-=======
   //QR
   const [openQR, setOpenQR] = useState(false);
->>>>>>> 33d6aaf (Lưu tất cả thay đổi trong workspace)
   const [qrURL, setQrURL] = useState<string | undefined>(undefined);
   const popupRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
 
-<<<<<<< HEAD
-   // QR payment flow
+  // QR payment flow
   const [qrLoading, setQrLoading] = useState(false);
   const [qrModalOpen, setQrModalOpen] = useState(false);
   const [qrData, setQrData] = useState<any>(null);
 
-    //  Ẩn popup khi click ra ngoài
-    useEffect(() => {
-      const handleClickOutside = (e: MouseEvent) => {
-        const target = e.target as Node;
-       if (popupRef.current && popupRef.current.contains(target)) return;
-       if (overlayRef.current && overlayRef.current.contains(target)) return;
-        setQrModalOpen(false);
-      };
-      document.addEventListener("click", handleClickOutside);
-      return () => document.removeEventListener("click", handleClickOutside);
-    }, []);
+  //  Ẩn popup khi click ra ngoài
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (popupRef.current && popupRef.current.contains(target)) return;
+      if (overlayRef.current && overlayRef.current.contains(target)) return;
+      setQrModalOpen(false);
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
 
-   useEffect(() => {
-  if (qrModalOpen) document.body.style.overflow = "hidden";
-  else document.body.style.overflow = "auto";
-}, [qrModalOpen]);
+  useEffect(() => {
+    if (qrModalOpen) document.body.style.overflow = "hidden";
+    else document.body.style.overflow = "auto";
+  }, [qrModalOpen]);
 
-//countdown
-const [countdown, setCountdown] = useState(60);
+  //countdown
+  const [countdown, setCountdown] = useState(60);
 
-useEffect(() => {
+  useEffect(() => {
     if (!qrModalOpen) return; // chỉ chạy khi popup mở
 
     // reset lại khi popup mở
@@ -156,7 +149,7 @@ useEffect(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-           setQrModalOpen(false);
+          setQrModalOpen(false);
           return 0;
         }
         return prev - 1;
@@ -165,23 +158,6 @@ useEffect(() => {
 
     return () => clearInterval(timer); // dọn dẹp khi đóng popup
   }, [qrModalOpen]);
-
- 
-
- 
-=======
-  //  Ẩn popup khi click ra ngoài
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as Node;
-      if (popupRef.current && popupRef.current.contains(target)) return;
-      if (overlayRef.current && overlayRef.current.contains(target)) return;
-      setOpenQR(false);
-    };
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, []);
->>>>>>> 33d6aaf (Lưu tất cả thay đổi trong workspace)
 
   useEffect(() => {
     if (openQR) document.body.style.overflow = "hidden";
@@ -196,37 +172,35 @@ useEffect(() => {
   const [customAddress, setCustomAddress] = useState("");
   const [saveCustomAddress, setSaveCustomAddress] = useState(false);
 
- 
-
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat("vi-VN", {
       style: "currency",
       currency: "VND",
     }).format(amount);
 
-     //Socket
-        const [socket, setSocket] = useState<Socket | null>(null);
-        useEffect(() => {
-          // Kết nối socket.io tới BE (NestJS WebSocketGateway)
-          const newSocket = io("http://localhost:8080", {
-            transports: ["websocket"], 
-          });
-      
-          setSocket(newSocket);
-      
-          newSocket.on("connect", () => {
-            console.log("Connected to socket:", newSocket.id);
-          });
-      
-          newSocket.on("disconnect", () => {
-            console.log("Disconnected from socket");
-          });
-      
-          // cleanup khi unmount
-          return () => {
-            newSocket.disconnect();
-          };
-        }, []);
+  //Socket
+  const [socket, setSocket] = useState<Socket | null>(null);
+  useEffect(() => {
+    // Kết nối socket.io tới BE (NestJS WebSocketGateway)
+    const newSocket = io("http://localhost:8080", {
+      transports: ["websocket"],
+    });
+
+    setSocket(newSocket);
+
+    newSocket.on("connect", () => {
+      console.log("Connected to socket:", newSocket.id);
+    });
+
+    newSocket.on("disconnect", () => {
+      console.log("Disconnected from socket");
+    });
+
+    // cleanup khi unmount
+    return () => {
+      newSocket.disconnect();
+    };
+  }, []);
 
   // Normalize data structure (handle both API and cache formats)
   const normalizedPost = React.useMemo(() => {
@@ -274,17 +248,13 @@ useEffect(() => {
       // Simulate payment processing (2s delay)
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
-<<<<<<< HEAD
       //Cập nhật lại trạng thái shiping cho post
 
       await axios.patch(
-      `http://localhost:8080/api/posts/${normalizedPost._id}`,
-        {status: 'shipping'}
-    );
-      
-      
-=======
->>>>>>> 33d6aaf (Lưu tất cả thay đổi trong workspace)
+        `http://localhost:8080/api/posts/${normalizedPost._id}`,
+        { status: "shipping" }
+      );
+
       //Tạo Transaction và Thông báo cho người bán
       const res = await axios.post("http://localhost:8080/api/transactions", {
         post_id: normalizedPost._id,
@@ -354,9 +324,9 @@ useEffect(() => {
         is_read: false,
       });
 
-       socket?.emit("send_message", {
-          receiverId:normalizedPost.author_id?._id || normalizedPost.author_id,
-          message:'Notification'
+      socket?.emit("send_message", {
+        receiverId: normalizedPost.author_id?._id || normalizedPost.author_id,
+        message: "Notification",
       });
 
       // Redirect đến success page
@@ -824,155 +794,8 @@ useEffect(() => {
                   )}
                 </button>
 
-<<<<<<< HEAD
-            {/* New Address */}
-            <div className={styles["address-option-group"]}>
-              <label className={styles["radio-label"]}>
-                <input
-                  type="radio"
-                  name="addressType"
-                  checked={!useSavedAddress}
-                  onChange={() => setUseSavedAddress(false)}
-                  className={styles["radio-input"]}
-                />
-                <span className={styles["radio-text"]}>
-                  <Icon icon="mdi:plus-circle" width={18} />
-                  Nhập địa chỉ mới
-                </span>
-              </label>
-
-              {!useSavedAddress && (
-                <div className={styles["new-address-form"]}>
-                  <div className={styles["form-group"]}>
-                    <label className={styles["form-label"]}>
-                      <Icon icon="mdi:map-marker" width={16} />
-                      Địa chỉ chi tiết
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Số nhà, Tên đường, Phường/Xã, Quận/Huyện, Tỉnh/TP"
-                      value={customAddress}
-                      onChange={(e) => setCustomAddress(e.target.value)}
-                      className={styles["address-input"]}
-                    />
-                  </div>
-
-                  <label className={styles["checkbox-save"]}>
-                    <input
-                      type="checkbox"
-                      checked={saveCustomAddress}
-                      onChange={(e) => setSaveCustomAddress(e.target.checked)}
-                      className={styles["checkbox-input"]}
-                    />
-                    <span className={styles["checkbox-text"]}>
-                      <Icon icon="mdi:content-save" width={16} />
-                      Lưu địa chỉ này vào danh sách của tôi
-                    </span>
-                  </label>
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
-
-        {/* Payment Summary */}
-        <section className={styles["payment-summary-section"]}>
-          <h2 className={styles["section-title"]}>
-            <Icon icon="mdi:receipt" width={20} />
-            Chi tiết thanh toán
-          </h2>
-          <div className={styles["summary-card"]}>
-            <div className={styles["summary-row"]}>
-              <span className={styles["summary-label"]}>Giá sản phẩm:</span>
-              <span className={styles["summary-value"]}>
-                {formatCurrency(normalizedPost.price)}
-              </span>
-            </div>
-            <div className={styles["summary-row"]}>
-              <span className={styles["summary-label"]}>Phí dịch vụ (3%):</span>
-              <span className={styles["summary-value"]}>
-                {formatCurrency(serviceFee)}
-              </span>
-            </div>
-            <div className={styles["summary-divider"]}></div>
-            <div className={`${styles["summary-row"]} ${styles["total"]}`}>
-              <span className={styles["summary-label"]}>Tổng cộng:</span>
-              <span className={styles["summary-value"]}>
-                {formatCurrency(totalAmount)}
-              </span>
-            </div>
-          </div>
-        </section>
-
-        {/* Terms and Conditions */}
-        <section className={styles["terms-section"]}>
-          <label className={styles["checkbox-label"]}>
-            <input
-              type="checkbox"
-              checked={agreeTerms}
-              onChange={(e) => setAgreeTerms(e.target.checked)}
-              className={styles["checkbox-input"]}
-            />
-            <span className={styles["checkbox-text"]}>
-              Tôi đồng ý với{" "}
-              <Link href="/terms" className={styles["link"]}>
-                điều khoản thanh toán
-              </Link>{" "}
-              và{" "}
-              <Link href="/privacy" className={styles["link"]}>
-                chính sách bảo mật
-              </Link>
-            </span>
-          </label>
-        </section>
-
-        {/* Payment Button */}
-        <div className={styles["payment-actions"]}>
-          {/* If payment method is QR-based, offer Create QR flow */}
-          {selectedMethod === "momo" || selectedMethod === "zalopay" ? (
-            <>
-              <button
-                className={`${styles["payment-btn"]} ${qrLoading ? styles["disabled"] : ""}`}
-                onClick={async (e) => {
-                  createRipple(e);
-                  // If user entered custom address and wants to save it, save before creating QR
-                  if (!useSavedAddress && customAddress && saveCustomAddress) {
-                    const ok = await patchSaveAddress({
-                      address: customAddress,
-                      label: "",
-                      is_default: false,
-                    });
-                    if (!ok) alert("Không thể lưu địa chỉ. Vui lòng thử lại.");
-                  }
-                  // await handleCreateQr();
-                  handleQR();
-                  setQrModalOpen(true)
-                }}
-                disabled={qrLoading || processing}
-              >
-                {qrLoading ? (
-                  <>
-                    <Icon
-                      icon="mdi:loading"
-                      width={24}
-                      className={styles["spin"]}
-                    />
-                    Tạo QR...
-                  </>
-                ) : (
-                  <>
-                    <Icon icon="mdi:qrcode-scan" width={20} />
-                    Tạo QR & Thanh toán {formatCurrency(totalAmount)}
-                  </>
-                )}
-              </button>
-
-              {/* QR failure modal */}
-              {qrModalOpen! && (
-=======
                 {/* QR failure modal */}
                 {/* {qrModalOpen && (
->>>>>>> 33d6aaf (Lưu tất cả thay đổi trong workspace)
                 <div
                   className={styles["qr-modal-overlay"]}
                   onClick={() => setQrModalOpen(true)}
@@ -1040,52 +863,6 @@ useEffect(() => {
                     </div>
                   </div>
                 </div>
-<<<<<<< HEAD
-              )}
-            </>
-          ) : (
-            <button
-              className={`${styles["payment-btn"]} ${
-                !selectedMethod || !agreeTerms || processing
-                  ? styles["disabled"]
-                  : ""
-              }`}
-              onClick={async (e) => {
-                createRipple(e);
-                // Save custom address if requested
-                if (!useSavedAddress && customAddress && saveCustomAddress) {
-                  const ok = await patchSaveAddress({
-                    address: customAddress,
-                    label: "",
-                    is_default: false,
-                  });
-                  if (!ok) alert("Không thể lưu địa chỉ. Vui lòng thử lại.");
-                }
-                handleQR();
-                setQrModalOpen(true)
-                // handlePayment();
-              }}
-              disabled={!selectedMethod || !agreeTerms || processing}
-            >
-              {processing ? (
-                <>
-                  <Icon
-                    icon="mdi:loading"
-                    width={24}
-                    className={styles["spin"]}
-                  />
-                  Đang xử lý...
-                </>
-              ) : (
-                <>
-                  <Icon icon="mdi:lock" width={20} />
-                  Thanh toán {formatCurrency(totalAmount)}
-                </>
-              )}
-            </button>
-          )}
-        </div>
-=======
               )} */}
               </>
             ) : (
@@ -1130,7 +907,6 @@ useEffect(() => {
               </button>
             )}
           </div>
->>>>>>> 33d6aaf (Lưu tất cả thay đổi trong workspace)
 
           {/* Security Notice */}
           <div className={styles["security-notice"]}>
@@ -1156,35 +932,6 @@ useEffect(() => {
         </div>
       )}
     </div>
-<<<<<<< HEAD
-
-{qrModalOpen && (
-  <div
-    className={styles["overlay"] }
-    
-  >
-    <div 
-      ref={overlayRef}
-      className={styles["qrContainer"]}
-      onClick={(e) => (e.stopPropagation() ,handlePayment())} 
-      onMouseDown={(e) => e.stopPropagation()}
-    >
-     
-         <img src={qrURL} alt="" className={styles["qrImg"]}/>
-      
-         <p className={styles["qrLabel"]}>Quét để thanh toán {countdown}</p>
-    
-      
-    </div>
-  </div>
-)}
-
-
-
-</div>
-    
-=======
->>>>>>> 33d6aaf (Lưu tất cả thay đổi trong workspace)
   );
 };
 

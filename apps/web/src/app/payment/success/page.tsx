@@ -216,7 +216,7 @@ const PaymentSuccessPage: React.FC = () => {
               <Icon icon="mdi:home" width={20} />
               Về trang chủ
             </Link>
-            <Link href="/profile" className={styles["btn-secondary"]}>
+            <Link href="/my-orders" className={styles["btn-secondary"]}>
               <Icon icon="mdi:account" width={20} />
               Xem đơn hàng
             </Link>

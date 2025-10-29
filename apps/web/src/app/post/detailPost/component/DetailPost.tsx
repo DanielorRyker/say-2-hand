@@ -1053,16 +1053,6 @@ export const DetailPost: React.FC = () => {
                 <div className={`${styles["desktop-sticky-sidebar"]}`}>
                   <div className={`${styles["seller-card"]}`}>
                     <div className={`${styles["seller-head"]}`}>
-<<<<<<< HEAD
-                     <img
-                      src={
-                        postData.user.avatar
-                          ? base + postData.user.avatar
-                          : "/image/header/carbon_user-avatar-filled-alt.svg"
-                      }
-                      alt="Your Avatar"
-                    />
-=======
                       <img
                         src={
                           formatImageUrl(postData.user.avatar) ||
@@ -1070,7 +1060,6 @@ export const DetailPost: React.FC = () => {
                         }
                         alt="seller"
                       />
->>>>>>> 33d6aaf (Lưu tất cả thay đổi trong workspace)
                       <div>
                         <div className={`${styles["seller-name"]}`}>
                           {postData.user.full_name}{" "}
@@ -1403,7 +1392,9 @@ export const DetailPost: React.FC = () => {
               <Icon icon="lucide:chevron-left" width={24} height={24} />
             </button>
             <img
-              src={base + postData.post.image_urls[currentImageIndex].url}
+              src={formatImageUrl(
+                postData.post.image_urls[currentImageIndex].url
+              )}
               alt="lightbox"
               onClick={(e) => e.stopPropagation()}
             />
