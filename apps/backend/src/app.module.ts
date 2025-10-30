@@ -20,7 +20,7 @@ import { TransactionsModule } from './modules/transactions/transactions.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { QrModule } from './modules/qr/qr.module';
 import { ReportsModule } from './modules/reports/reports.module';
-
+import { GeminiModule } from './modules/gemini/gemini.module';
 @Module({
   imports: [
     MailerModule.forRootAsync({
@@ -42,7 +42,6 @@ import { ReportsModule } from './modules/reports/reports.module';
       inject: [ConfigService],
     }),
     ConfigModule.forRoot({ isGlobal: true }),
-    // MongooseModule.forRoot(process.env.MONGODB_URI || ''),
 
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
@@ -64,6 +63,7 @@ import { ReportsModule } from './modules/reports/reports.module';
     NotificationsModule,
     QrModule,
     ReportsModule,
+    GeminiModule,
   ],
   controllers: [AppController],
   providers: [AppService, ChatGateway],

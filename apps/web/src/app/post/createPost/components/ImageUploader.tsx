@@ -13,7 +13,6 @@ type Props = {
   setCoverIndexProp?: (i: number) => void;
 };
 
-
 export default function ImageUploader({
   images,
   setImages,
@@ -21,10 +20,26 @@ export default function ImageUploader({
   coverIndexProp,
   setCoverIndexProp,
 }: Props) {
+  // Fix passive event issue for onWheel
   const inputRef = useRef<HTMLInputElement | null>(null);
   const previewsRef = useRef<HTMLDivElement | null>(null);
   const [showScrollbar, setShowScrollbar] = useState(false);
   const [coverIndex, setCoverIndex] = useState<number>(0);
+
+  useEffect(() => {
+    const el = previewsRef.current;
+    if (!el) return;
+    const handleWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaY) > 0) {
+        el.scrollLeft += e.deltaY;
+        e.preventDefault();
+      }
+    };
+    el.addEventListener("wheel", handleWheel, { passive: false });
+    return () => {
+      el.removeEventListener("wheel", handleWheel);
+    };
+  }, [showScrollbar]);
 
   const effectiveCover = coverIndexProp ?? coverIndex;
   const setEffectiveCover = (i: number) => {
@@ -61,66 +76,62 @@ export default function ImageUploader({
     };
   }, [images]);
 
-
   // Khi upload ảnh
-function onFiles(e: React.ChangeEvent<HTMLInputElement>) {
-  const files = e.target.files;
-  if (!files) return;
+  function onFiles(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files;
+    if (!files) return;
 
-  if (images.length + files.length > 10) {
-    showMessage?.("Chỉ được tải lên tối đa 10 ảnh!");
+    if (images.length + files.length > 10) {
+      showMessage?.("Chỉ được tải lên tối đa 10 ảnh!");
+      e.currentTarget.value = "";
+      return;
+    }
+
+    const newFiles = Array.from(files);
+
+    const readers = newFiles.map(
+      (file) =>
+        new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        })
+    );
+
+    Promise.all(readers)
+      .then((base64Arr) => {
+        setImages((prev) => {
+          const updated = [...prev, ...base64Arr].slice(0, 10);
+          return updated;
+        });
+      })
+      .catch((err) => console.error(err));
+
     e.currentTarget.value = "";
-    return;
   }
 
-  const newFiles = Array.from(files);
-
-  const readers = newFiles.map(
-    (file) =>
-      new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      })
-  );
-
-  Promise.all(readers)
-    .then((base64Arr) => {
-      setImages((prev) => {
-        const updated = [...prev, ...base64Arr].slice(0, 10);
-        return updated;
-      });
-    })
-    .catch((err) => console.error(err));
-
-  e.currentTarget.value = "";
-}
-
-
   // Khi xóa ảnh
-function removeIndex(i: number) {
-  setImages((prev) => {
-    const newImages = prev.filter((_, idx) => idx !== i);
-    // Nếu ảnh bìa bị xóa, reset về đầu
-    if (effectiveCover === i) setEffectiveCover(0);
-    else if (i < effectiveCover) setEffectiveCover(effectiveCover - 1);
-    return newImages;
-  });
-}
+  function removeIndex(i: number) {
+    setImages((prev) => {
+      const newImages = prev.filter((_, idx) => idx !== i);
+      // Nếu ảnh bìa bị xóa, reset về đầu
+      if (effectiveCover === i) setEffectiveCover(0);
+      else if (i < effectiveCover) setEffectiveCover(effectiveCover - 1);
+      return newImages;
+    });
+  }
 
-
-// Khi đặt ảnh bìa
-function makeCover(idx: number) {
-  setImages((prev) => {
-    const newArr = [...prev];
-    const [selected] = newArr.splice(idx, 1);
-    newArr.unshift(selected);
-    return newArr;
-  });
-  setEffectiveCover(0); // cover luôn là đầu
-}
-
+  // Khi đặt ảnh bìa
+  function makeCover(idx: number) {
+    setImages((prev) => {
+      const newArr = [...prev];
+      const [selected] = newArr.splice(idx, 1);
+      newArr.unshift(selected);
+      return newArr;
+    });
+    setEffectiveCover(0); // cover luôn là đầu
+  }
 
   useEffect(() => {
     if (images.length === 0) setCoverIndex(0);
@@ -133,15 +144,28 @@ function makeCover(idx: number) {
     displayOrder.push(first);
     for (let idx = 0; idx < images.length; idx++)
       if (idx !== first) displayOrder.push(idx);
-
-  
   }
 
-// Effect đồng bộ localStorage
-useEffect(() => {
-  localStorage.setItem("uploadedImages", JSON.stringify(images));
-}, [images]);
+  // Effect đồng bộ localStorage
+  useEffect(() => {
+    localStorage.setItem("uploadedImages", JSON.stringify(images));
+  }, [images]);
 
+  // Fix passive event issue for onWheel
+  useEffect(() => {
+    const el = previewsRef.current;
+    if (!el) return;
+    const handleWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaY) > 0) {
+        el.scrollLeft += e.deltaY;
+        e.preventDefault();
+      }
+    };
+    el.addEventListener("wheel", handleWheel, { passive: false });
+    return () => {
+      el.removeEventListener("wheel", handleWheel);
+    };
+  }, [showScrollbar]);
 
   return (
     <div>
@@ -151,14 +175,6 @@ useEffect(() => {
           className={
             styles.previews + (showScrollbar ? ` ${styles.showScrollbar}` : "")
           }
-          onWheel={(e) => {
-            const el = previewsRef.current;
-            if (!el) return;
-            if (Math.abs(e.deltaY) > 0) {
-              el.scrollLeft += e.deltaY;
-              e.preventDefault();
-            }
-          }}
         >
           <div
             className={styles.addBox}
@@ -234,13 +250,12 @@ useEffect(() => {
                   </div>
                 ) : (
                   <button
-                  className={styles.makeCoverBtn}
-                  aria-label={`Đặt ảnh ${idx + 1} làm ảnh bìa`}
-                  onClick={() => makeCover(idx)} // <-- gọi hàm đã định nghĩa
-                >
-                  Đặt bìa
-                </button>
-
+                    className={styles.makeCoverBtn}
+                    aria-label={`Đặt ảnh ${idx + 1} làm ảnh bìa`}
+                    onClick={() => makeCover(idx)} // <-- gọi hàm đã định nghĩa
+                  >
+                    Đặt bìa
+                  </button>
                 )}
 
                 <button
@@ -259,13 +274,11 @@ useEffect(() => {
               </div>
             );
           })}
-
         </div>
       </div>
       <p className={styles.hint}>
         Tối thiểu 1 ảnh, tối đa 10 ảnh. Cuộn ngang để xem tất cả.
       </p>
     </div>
-
   );
 }

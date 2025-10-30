@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+// Removed unused and incorrect import
 import styles from "./CategoryForm.module.scss";
 import stylesBasicForm from "./BasicInfoForm.module.scss";
 import dynamic from "next/dynamic";
@@ -15,6 +16,7 @@ export default function CategoryForm({
   onSubmit,
   showMessage,
   loading = false,
+  aiTags = [],
 }: any) {
   // trước đây chúng ta có các field riêng tỉnh/quận/đường;
   // giờ hợp nhất thành một input địa chỉ dạng free-text tại
@@ -48,6 +50,7 @@ export default function CategoryForm({
 
   // input tags (lưu trong formData.tags dưới dạng string[])
   const [tagInput, setTagInput] = useState("");
+  // aiTags đã nhận qua props
   const MAX_TAGS = 10;
 
   function addTagFromInput(value?: string) {
@@ -211,6 +214,25 @@ export default function CategoryForm({
                 : "Nhập tag và nhấn Enter hoặc dấu phẩy"
             }
           />
+          {/* Luôn hiển thị nút lấy tag AI vào input */}
+          {tagInput === "" && (
+            <button
+              type="button"
+              className={stylesBasicForm.btnSecondary}
+              onClick={() => {
+                setFormData((fd: any) => ({
+                  ...fd,
+                  tags: Array.isArray(aiTags) ? [...aiTags] : [],
+                }));
+              }}
+              disabled={aiTags.length === 0}
+              title={
+                aiTags.length === 0 ? "Không có gợi ý từ AI" : "Dùng gợi ý AI"
+              }
+            >
+              Dùng gợi ý AI
+            </button>
+          )}
         </div>
 
         <div className={styles.tagList}>
