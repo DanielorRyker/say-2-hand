@@ -6,8 +6,19 @@ import {
   IsDate,
   IsArray,
   ValidateNested,
+  IsNumber,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+
+export class ReputationDto {
+  @IsOptional()
+  @IsNumber()
+  total_score?: number;
+
+  @IsOptional()
+  @IsNumber()
+  total_ratings?: number;
+}
 
 export class AddressDto {
   @IsOptional()
@@ -102,4 +113,10 @@ export class UpdateUserDto {
   @ValidateNested({ each: true })
   @Type(() => BankAccountDto)
   bank_accounts?: BankAccountDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => ReputationDto)
+  reputation?: ReputationDto;
 }
+

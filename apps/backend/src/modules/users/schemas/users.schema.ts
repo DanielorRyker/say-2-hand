@@ -73,6 +73,19 @@ export class User {
 
   @Prop({ type: [BankAccount], default: [] })
   bank_accounts?: BankAccount[];
+
+  @Prop({
+    type: {
+      total_score: { type: Number, default: 0 },
+      total_ratings: { type: Number, default: 0 },
+    },
+    _id: false, 
+    default: { total_score: 0, total_ratings: 0 },
+  })
+  reputation: {
+    total_score: number;
+    total_ratings: number;
+  };
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

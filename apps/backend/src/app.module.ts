@@ -20,6 +20,7 @@ import { TransactionsModule } from './modules/transactions/transactions.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { QrModule } from './modules/qr/qr.module';
 import { ReportsModule } from './modules/reports/reports.module';
+import { RatingsModule } from './modules/ratings/ratings.module';
 
 @Module({
   imports: [
@@ -64,6 +65,7 @@ import { ReportsModule } from './modules/reports/reports.module';
     NotificationsModule,
     QrModule,
     ReportsModule,
+    RatingsModule,
   ],
   controllers: [AppController],
   providers: [AppService, ChatGateway],

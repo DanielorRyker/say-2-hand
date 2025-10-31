@@ -118,4 +118,7 @@ export class UpdatePostDto {
   @IsOptional()
   @IsEnum(['pending_approval', 'active', 'rejected', 'deleted', 'completed', 'shipping'])
   status?: 'pending_approval' | 'active' | 'rejected' | 'deleted' | 'completed' | 'shipping';
+
 }
+
+
