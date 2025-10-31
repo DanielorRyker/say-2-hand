@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { json } from 'body-parser';
 
 async function bootstrap() {
   const logger = new Logger('Connect to MongoDB successfully');
@@ -13,6 +14,7 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
   app.setGlobalPrefix('api', { exclude: [''] });
+  app.use(json({ limit: '10mb' }));
 
   // Bật CORS cho FE, dùng khi FE và BE khác port để tránh bị chặn
   const frontendOrigin =
@@ -29,4 +31,5 @@ async function bootstrap() {
 
   logger.log(`Server is running on: http://localhost:${port}`);
 }
+
 bootstrap();

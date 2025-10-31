@@ -1,7 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
-export type CategoryDocument = Category & Document;
+export interface CategoryDocument extends Category, Document {
+  _id: string;
+}
 @Schema({
   timestamps: true,
   collection: 'categories',

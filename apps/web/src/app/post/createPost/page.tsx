@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./CreatePost.module.scss";
 import stylesBasicForm from "./components/BasicInfoForm.module.scss";
@@ -12,8 +12,40 @@ import {
   FloatingMessage,
 } from "./components";
 import axios from "axios";
+import geminiStyles from "./components/GeminiSuggestion.module.scss";
 // ✅ Import parseAddress
 import { parseAddress } from "../../../lib/address";
+// Gemini AI suggestion integration
+function useGeminiSuggestion() {
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const analyzeImage = async (
+    base64: string,
+    mimeType: string = "image/jpeg"
+  ) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await axios.post(
+        "http://localhost:8080/api/gemini/analyze-image",
+        {
+          base64,
+          mimeType,
+        }
+      );
+      console.log("Gemini FE response:", response.data);
+      setSuggestions(response.data.suggestedTags || []);
+    } catch (err: any) {
+      setError(err?.response?.data?.message || "AI suggestion failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { suggestions, loading, error, analyzeImage };
+}
 
 type PostFormData = {
   title: string;
@@ -49,6 +81,8 @@ export default function Page() {
   const [images, setImages] = useState<string[]>([]);
   const [message, setMessage] = useState<string | null>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  // Gemini AI suggestion state
+  const gemini = useGeminiSuggestion();
 
   //Lấy User
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -98,6 +132,9 @@ export default function Page() {
   }, []);
 
   // Đồng bộ images → selectedFiles
+  // Track last analyzed image to prevent infinite loop (useRef instead of state)
+  const lastAnalyzedImageRef = useRef<string | null>(null);
+
   useEffect(() => {
     if (!images || images.length === 0) {
       setSelectedFiles([]);
@@ -109,6 +146,28 @@ export default function Page() {
     );
     setSelectedFiles(files);
   }, [images]);
+
+  // Only call Gemini AI if first image changes
+  const firstImage = images.length > 0 ? images[0] : null;
+  useEffect(() => {
+    if (firstImage) {
+      let base64 = firstImage;
+      let mimeType = "image/jpeg";
+      if (base64.includes(",")) {
+        const match = base64.match(/^data:(.*?);base64,(.*)$/);
+        if (match) {
+          mimeType = match[1] || "image/jpeg";
+          base64 = match[2];
+        } else {
+          base64 = base64.split(",")[1];
+        }
+      }
+      if (base64 !== lastAnalyzedImageRef.current) {
+        gemini.analyzeImage(base64, mimeType);
+        lastAnalyzedImageRef.current = base64;
+      }
+    }
+  }, [firstImage, gemini]);
 
   function base64ToFile(base64: string, filename: string) {
     const arr = base64.split(",");
@@ -135,6 +194,31 @@ export default function Page() {
               base64ToFile(base64, `image_${i + 1}.png`)
             );
             setSelectedFiles(files);
+            {
+              /* Gemini AI suggestions UI */
+            }
+            {
+              gemini.loading ? (
+                <div className={geminiStyles.loading}>Đang phân tích AI...</div>
+              ) : null;
+            }
+            {
+              gemini.error ? (
+                <div className={geminiStyles.error}>{gemini.error}</div>
+              ) : null;
+            }
+            {
+              gemini.suggestions.length > 0 ? (
+                <div className={geminiStyles.suggestionBox}>
+                  <h4>Gợi ý từ AI:</h4>
+                  <ul>
+                    {gemini.suggestions.map((s, i) => (
+                      <li key={i}>{s}</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null;
+            }
             clearInterval(interval); // ✅ Dừng khi đã có ảnh
           }
         } catch (err) {
@@ -310,11 +394,14 @@ export default function Page() {
                 onClick={() => {
                   if (images.length === 0)
                     return showMessage("Vui lòng tải lên ít nhất 1 ảnh.");
+                  if (gemini.loading) {
+                    return showMessage("Đang phân tích AI, vui lòng chờ...");
+                  }
                   nextStep();
                 }}
-                disabled={loading}
+                disabled={loading || gemini.loading}
               >
-                Tiếp tục
+                {gemini.loading ? "Đang phân tích AI..." : "Tiếp tục"}
               </button>
             </div>
           </section>
@@ -348,6 +435,7 @@ export default function Page() {
             onSubmit={handleSubmit}
             loading={loading}
             showMessage={showMessage}
+            aiTags={gemini.suggestions}
           />
         )}
       </div>
