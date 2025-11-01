@@ -8,6 +8,8 @@ import type { Transaction } from "@repo/types";
 import styles from "./order-detail.module.scss";
 import { useToast } from "@/components/ui/toast/ToastContext";
 import { API_BASE, formatImageUrl } from "@/lib/constants";
+import RatingPopup from "@/app/rating/RatingPopup";
+
 
 const OrderDetailPage = () => {
   const router = useRouter();
@@ -16,6 +18,8 @@ const OrderDetailPage = () => {
   const [order, setOrder] = useState<Transaction | null>(null);
   const [loading, setLoading] = useState(true);
   const { addToast } = useToast();
+  const [ratingOpen, setRatingOpen] = useState(false);
+  const [ratingTarget, setRatingTarget] = useState<Transaction | null>(null);
 
   useEffect(() => {
     const fetchOrderDetail = async () => {
@@ -114,6 +118,17 @@ const OrderDetailPage = () => {
   const post = typeof order.post_id === "object" ? order.post_id : null;
   const seller = typeof order.seller_id === "object" ? order.seller_id : null;
   const buyer = typeof order.buyer_id === "object" ? order.buyer_id : null;
+
+  //Đánh giá người dùng
+  const openRatingFor = (transaction: Transaction) => {
+    setRatingTarget(transaction);
+    setRatingOpen(true);
+  };
+  const submitRatingMock = async (payload: { userId: string; rating: number; comment?: string }) => {
+  console.log("Gửi đánh giá (mock ):", payload);
+  // mock xử lý, có thể show toast
+  setRatingOpen(false);
+};
 
   return (
     <div className={styles.orderDetailPage}>
@@ -447,10 +462,10 @@ const OrderDetailPage = () => {
           {post && order.status === "completed" && (
             <button
               className={styles.reviewButton}
-              onClick={() => router.push(`/post/${post._id}?action=review`)}
+              onClick={() => openRatingFor(order)}
             >
               <Icon icon="mdi:star" width={24} />
-              Đánh giá sản phẩm
+              Đánh giá 
             </button>
           )}
           {seller && (
@@ -466,6 +481,13 @@ const OrderDetailPage = () => {
           )}
         </div>
       </div>
+        <RatingPopup
+        isOpen={ratingOpen}
+        onClose={() => setRatingOpen(false)}
+        onSubmit={submitRatingMock}
+        transaction={ratingTarget}
+        initialRating={0}
+      />
     </div>
   );
 };

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateRatingDto } from './dto/create-rating.dto';
 import { UpdateRatingDto } from './dto/update-rating.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -66,17 +66,17 @@ async create(createRatingDto: CreateRatingDto) {
     }
     else{
       try {
-             const oldScore = oldRating.score;
-      const updatedRating = await this.ratingModel.findByIdAndUpdate(
-      id,
-      {
-        $set: {
-          score: updateRatingDto.score,
-          comment: updateRatingDto.comment,
-        },
-      },
-      { new: true }, 
-    );
+          const oldScore = oldRating.score;
+          const updatedRating = await this.ratingModel.findByIdAndUpdate(
+          id,
+          {
+            $set: {
+              score: updateRatingDto.score,
+              comment: updateRatingDto.comment,
+            },
+          },
+          { new: true }, 
+        );
 
      const userRating = await this.userModel.findById(oldRating.ratee_id);
 
@@ -101,6 +101,24 @@ async create(createRatingDto: CreateRatingDto) {
     }
    
   }
+
+  async findOneByRaterAndRatee(rater_id: string, ratee_id: string): Promise<Rating> {
+  if (!Types.ObjectId.isValid(rater_id) || !Types.ObjectId.isValid(ratee_id)) {
+    throw new BadRequestException('ID không hợp lệ');
+  }
+
+  const rating = await this.ratingModel.findOne({
+    rater_id: new Types.ObjectId(rater_id),
+    ratee_id: new Types.ObjectId(ratee_id),
+  });
+
+  if (!rating) {
+    throw new NotFoundException('Không tìm thấy đánh giá cho cặp người dùng này');
+  }
+
+  return rating;
+}
+
 
   remove(id: number) {
     return `This action removes a #${id} rating`;

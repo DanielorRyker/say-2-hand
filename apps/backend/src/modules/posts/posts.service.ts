@@ -85,7 +85,7 @@ export class PostsService {
   findAll() {
     return this.postModel
       .find()
-      .populate('author_id', 'full_name avatar')
+      .populate('author_id', 'full_name avatar reputation')
       .populate('category_id', 'name')
       .exec();
   }
@@ -94,7 +94,7 @@ export class PostsService {
     return this.postModel
       .find()
       .sort({ createdAt: -1 })
-      .populate('author_id', 'full_name avatar')
+      .populate('author_id', 'full_name avatar reputation')
       .populate('category_id', 'name')
       .exec();
   }
@@ -102,7 +102,7 @@ export class PostsService {
   findAllPending() {
     return this.postModel
       .find({ status: 'pending_approval' })
-      .populate('author_id', 'full_name avatar')
+      .populate('author_id', 'full_name avatar reputation')
       .populate('category_id', 'name')
       .exec();
   }
@@ -110,7 +110,7 @@ export class PostsService {
   findAllActive() {
     return this.postModel
       .find({ status: 'active' })
-      .populate('author_id', 'full_name avatar')
+      .populate('author_id', 'full_name avatar reputation')
       .populate('category_id', 'name')
       .sort({ updatedAt: -1 })
       .exec();
@@ -145,7 +145,7 @@ export class PostsService {
   findByUserId(userId: string) {
     return this.postModel
       .find({ author_id: new Types.ObjectId(userId) })
-      .populate('author_id', 'full_name avatar') // lấy thông tin user
+      .populate('author_id', 'full_name avatar reputation') // lấy thông tin user
       .populate('category_id', 'name') // lấy tên category
       .sort({ updatedAt: -1 })
       .exec();
@@ -154,7 +154,7 @@ export class PostsService {
   async findAllForHome() {
     return this.postModel
       .find({ status: { $in: ['active', 'completed'] } })
-      .populate('author_id', 'full_name avatar') // lấy thông tin user
+      .populate('author_id', 'full_name avatar reputation') // lấy thông tin user
       .populate('category_id', 'name') // lấy tên category
       .sort({ updatedAt: -1 })
       .exec();

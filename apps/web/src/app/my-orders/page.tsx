@@ -8,6 +8,7 @@ import type { Transaction } from "@repo/types";
 import styles from "./my-orders.module.scss";
 import { useToast } from "@/components/ui/toast/ToastContext";
 import { API_BASE, formatImageUrl } from "@/lib/constants";
+import RatingPopup from "@/app/rating/RatingPopup";
 
 type TabType = "all" | "pending" | "shipping" | "completed";
 
@@ -20,6 +21,8 @@ const MyOrdersPage = () => {
   const [orders, setOrders] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const { addToast } = useToast();
+  const [ratingOpen, setRatingOpen] = useState(false);
+  const [ratingTarget, setRatingTarget] = useState<Transaction | null>(null);
 
   // Load user từ localStorage
   useEffect(() => {
@@ -170,6 +173,17 @@ const MyOrdersPage = () => {
     };
     return classMap[status] || "";
   };
+
+  //Đánh giá người dùng
+  const openRatingFor = (transaction: Transaction) => {
+    setRatingTarget(transaction);
+    setRatingOpen(true);
+  };
+  const submitRatingMock = async (payload: { userId: string; rating: number; comment?: string }) => {
+  console.log("Gửi đánh giá (mock ):", payload);
+  // mock xử lý, có thể show toast
+  setRatingOpen(false);
+};
 
   // Render danh sách đơn hàng
   const renderOrders = () => {
@@ -422,20 +436,31 @@ const MyOrdersPage = () => {
                   <button
                     className={styles.reviewButton}
                     onClick={() =>
-                      router.push(`/post/${post._id}?action=review`)
+                      openRatingFor(order)
+                      // router.push(`/post/${post._id}?action=review`)
                     }
                   >
                     <Icon icon="mdi:star" width={20} />
                     Đánh giá
-                  </button>
+                  </button>                 
                 )}
+                 
               </div>
             </div>
           );
         })}
+         <RatingPopup
+            isOpen={ratingOpen}
+            onClose={() => setRatingOpen(false)}
+            onSubmit={submitRatingMock}
+            transaction={ratingTarget}
+            initialRating={0}
+          />
       </div>
     );
   };
+
+
 
   return (
     <div className={styles.myOrdersPage}>

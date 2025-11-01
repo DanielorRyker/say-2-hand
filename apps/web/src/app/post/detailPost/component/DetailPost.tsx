@@ -50,7 +50,10 @@ type User = {
   user_id?: string;
   avatar_url?: string;
   name: string;
-  reputation_score?: number;
+   reputation?: {
+      total_score: number;
+      total_ratings: number;
+    };
   review_count?: number;
   post_count?: number;
   is_verified?: boolean;
@@ -365,9 +368,10 @@ export const DetailPost: React.FC = () => {
               _id: parsed.author_id?._id,
               avatar: parsed.author_id?.avatar,
               full_name: parsed.author_id?.full_name,
-              reputation_score:
-                parsed.author?.reputationScore ||
-                mockData.user.reputation_score,
+              reputation: {
+                total_score: parsed.author_id?.reputation?.total_score || 0,
+                total_ratings: parsed.author_id?.reputation?.total_ratings || 0,
+              },
               review_count:
                 parsed.author?.reviewCount || mockData.user.review_count,
               post_count: parsed.author?.post_count || mockData.user.post_count,
@@ -546,6 +550,12 @@ export const DetailPost: React.FC = () => {
       : text;
 
   const price = formatCurrency(postData.post.price);
+
+    //Tính điểm đánh giá
+  const reputationScore = (data: any) => {
+    if (!data.reputation || data.reputation.total_ratings === 0) return 0;
+    return parseFloat((data.reputation.total_score / data.reputation.total_ratings).toFixed(1));
+  }
 
   const renderRating = (score: number) => {
     const full = Math.floor(score);
@@ -1076,9 +1086,9 @@ export const DetailPost: React.FC = () => {
                           {postData.user.post_count} bài đăng khác
                         </div>
                         <div className={`${styles["seller-rep"]}`}>
-                          {renderRating(postData.user.reputation_score || 0)}{" "}
+                          {renderRating(reputationScore(postData.user) || 0)}{" "}
                           <span className={`${styles["seller-rep-text"]}`}>
-                            {postData.user.reputation_score}/5 (
+                            {reputationScore(postData.user)}/5 (
                             {postData.user.review_count} đánh giá)
                           </span>
                         </div>

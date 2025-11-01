@@ -69,6 +69,10 @@ interface Post {
     _id: string;
     full_name: string;
     avatar: string;
+    reputation?: {
+      total_score: number;
+      total_ratings: number;
+    };
   };
   category_id?: {
     _id?: string;
@@ -77,10 +81,7 @@ interface Post {
   createdAt: string;
   updatedAt: string;
   __v?: number;
-  reputation?: {
-    average_score: number;
-    total_ratings: number;
-  };
+  
   distance_km?: number;
 }
 
@@ -167,6 +168,12 @@ export const ListPost: React.FC<ListPostProps> = ({ posts }) => {
     const years = Math.floor(months / 12);
     return `${years} năm trước`;
   };
+
+  //Tính điểm đánh giá
+  const reputationScore = (data: Post) => {
+    if (!data.author_id.reputation || data.author_id.reputation.total_ratings === 0) return 0;
+    return parseFloat((data.author_id.reputation.total_score / data.author_id.reputation.total_ratings).toFixed(1));
+  }
 
   // Note: rely on CSS `.line-clamp-*` classes for truncation/overflow handling
 
@@ -471,8 +478,9 @@ export const ListPost: React.FC<ListPostProps> = ({ posts }) => {
 
                       {(() => {
                         const rawScore = Math.max(
-                          1,
-                          5 // data.author.reputationScore
+                          0,
+                          reputationScore(data)
+                           // data.author.reputationScore
                         );
 
                         const pct = Math.round((rawScore / 5) * 100);
@@ -506,7 +514,7 @@ export const ListPost: React.FC<ListPostProps> = ({ posts }) => {
                         );
                       })()}
                     </span>
-                    <strong>5/5</strong>{" "}
+                    <strong>{reputationScore(data)}/5</strong>{" "}
                     <span className={styles.reviews}>( đánh giá)</span>
                   </div>
                 </div>
