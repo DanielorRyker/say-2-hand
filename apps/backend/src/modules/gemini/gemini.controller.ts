@@ -29,4 +29,19 @@ export class GeminiController {
     });
     return await this.geminiService.analyzeMultipleImages(images);
   }
+
+  @Post('normalize-address')
+  async normalizeAddress(@Body() body: { address: string }) {
+    if (!body.address || typeof body.address !== 'string') {
+      return {
+        normalized: '',
+        detail_address: '',
+        ward: '',
+        district: '',
+        province: '',
+        confidence: 0,
+      };
+    }
+    return await this.geminiService.normalizeVietnameseAddress(body.address);
+  }
 }
