@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./CreatePost.module.scss";
 import stylesBasicForm from "./components/BasicInfoForm.module.scss";
@@ -18,6 +18,7 @@ import { parseAddress } from "../../../lib/address";
 // Gemini AI suggestion integration
 function useGeminiSuggestion() {
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [suggestedCategory, setSuggestedCategory] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,6 +38,7 @@ function useGeminiSuggestion() {
       );
       console.log("Gemini FE response:", response.data);
       setSuggestions(response.data.suggestedTags || []);
+      setSuggestedCategory(response.data.suggestedCategory || null);
     } catch (err: any) {
       setError(err?.response?.data?.message || "AI suggestion failed");
     } finally {
@@ -44,7 +46,36 @@ function useGeminiSuggestion() {
     }
   };
 
-  return { suggestions, loading, error, analyzeImage };
+  const analyzeMultipleImages = async (
+    images: Array<{ base64: string; mimeType: string }>
+  ) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await axios.post(
+        "http://localhost:8080/api/gemini/analyze-multiple-images",
+        {
+          images,
+        }
+      );
+      console.log("Gemini FE multiple images response:", response.data);
+      setSuggestions(response.data.suggestedTags || []);
+      setSuggestedCategory(response.data.suggestedCategory || null);
+    } catch (err: any) {
+      setError(err?.response?.data?.message || "AI suggestion failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return {
+    suggestions,
+    suggestedCategory,
+    loading,
+    error,
+    analyzeImage,
+    analyzeMultipleImages,
+  };
 }
 
 type PostFormData = {
@@ -132,9 +163,6 @@ export default function Page() {
   }, []);
 
   // Đồng bộ images → selectedFiles
-  // Track last analyzed image to prevent infinite loop (useRef instead of state)
-  const lastAnalyzedImageRef = useRef<string | null>(null);
-
   useEffect(() => {
     if (!images || images.length === 0) {
       setSelectedFiles([]);
@@ -147,12 +175,18 @@ export default function Page() {
     setSelectedFiles(files);
   }, [images]);
 
-  // Only call Gemini AI if first image changes
-  const firstImage = images.length > 0 ? images[0] : null;
-  useEffect(() => {
-    if (firstImage) {
-      let base64 = firstImage;
+  // Function to manually trigger AI analysis (called when user clicks button)
+  const handleAnalyzeImages = () => {
+    if (images.length === 0) {
+      showMessage("Vui lòng tải ảnh lên trước khi dùng AI.");
+      return;
+    }
+
+    // Chuẩn bị tất cả ảnh để gửi
+    const imagesToAnalyze = images.map((img) => {
+      let base64 = img;
       let mimeType = "image/jpeg";
+
       if (base64.includes(",")) {
         const match = base64.match(/^data:(.*?);base64,(.*)$/);
         if (match) {
@@ -162,12 +196,13 @@ export default function Page() {
           base64 = base64.split(",")[1];
         }
       }
-      if (base64 !== lastAnalyzedImageRef.current) {
-        gemini.analyzeImage(base64, mimeType);
-        lastAnalyzedImageRef.current = base64;
-      }
-    }
-  }, [firstImage, gemini]);
+
+      return { base64, mimeType };
+    });
+
+    // Gọi API phân tích tất cả ảnh
+    gemini.analyzeMultipleImages(imagesToAnalyze);
+  };
 
   function base64ToFile(base64: string, filename: string) {
     const arr = base64.split(",");
@@ -436,6 +471,10 @@ export default function Page() {
             loading={loading}
             showMessage={showMessage}
             aiTags={gemini.suggestions}
+            aiSuggestedCategory={gemini.suggestedCategory}
+            onAnalyzeImages={handleAnalyzeImages}
+            aiLoading={gemini.loading}
+            aiError={gemini.error}
           />
         )}
       </div>

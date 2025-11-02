@@ -317,7 +317,82 @@
 .tagsInputRow {
     display: flex;
     gap: 0.5rem;
+    align-items: stretch;
+    margin-bottom: 0.75rem;
+}
+
+.tagsInputRow .input {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+}
+
+.aiButton {
+    display: inline-flex;
     align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 0.5rem 1.25rem;
+    border-radius: 0.5rem;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+    white-space: nowrap;
+    margin-top: 0.5rem;
+}
+
+.aiButton:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.35);
+    background: linear-gradient(135deg, #7c8ef5 0%, #8b5ab8 100%);
+}
+
+.aiButton:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.aiButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+}
+
+.aiIcon {
+    width: 16px;
+    height: 16px;
+    animation: sparkle 2s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+
+    0%,
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.1) rotate(180deg);
+        opacity: 0.8;
+    }
+}
+
+.aiButton:disabled .aiIcon {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .tagList {
@@ -384,13 +459,37 @@
     white-space: nowrap;
 }
 
-.tagsInputRow .input {
-    flex: 1 1 auto;
-    width: auto;
-    min-width: 120px;
+.aiError {
+    color: #DC2626;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: #FEE2E2;
+    border-radius: 0.375rem;
+    border-left: 3px solid #DC2626;
 }
 
-.tagsInputRow .geoButton {
-    padding: 6px 10px;
-    border-radius: 6px;
+.aiCategorySuggestion {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: linear-gradient(135deg, #EEF2FF 0%, #F3E8FF 100%);
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    color: #4C1D95;
+    border: 1px solid #DDD6FE;
+}
+
+.aiIconSmall {
+    width: 14px;
+    height: 14px;
+    color: #7C3AED;
+    flex-shrink: 0;
+}
+
+.aiCategorySuggestion strong {
+    color: #5B21B6;
+    font-weight: 600;
 }

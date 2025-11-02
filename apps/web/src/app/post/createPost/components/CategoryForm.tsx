@@ -17,6 +17,10 @@ export default function CategoryForm({
   showMessage,
   loading = false,
   aiTags = [],
+  aiSuggestedCategory = null,
+  onAnalyzeImages,
+  aiLoading = false,
+  aiError = null,
 }: any) {
   // trước đây chúng ta có các field riêng tỉnh/quận/đường;
   // giờ hợp nhất thành một input địa chỉ dạng free-text tại
@@ -38,6 +42,26 @@ export default function CategoryForm({
     }
     fetchCategories();
   }, []);
+
+  // Tự động set tags khi AI phân tích xong
+  useEffect(() => {
+    if (aiTags && aiTags.length > 0 && !aiLoading) {
+      setFormData((fd: any) => ({
+        ...fd,
+        tags: Array.isArray(aiTags) ? [...aiTags] : [],
+      }));
+    }
+  }, [aiTags, aiLoading, setFormData]);
+
+  // Tự động set category khi AI gợi ý
+  useEffect(() => {
+    if (aiSuggestedCategory && aiSuggestedCategory._id && !aiLoading) {
+      setFormData((fd: any) => ({
+        ...fd,
+        category_id: aiSuggestedCategory._id,
+      }));
+    }
+  }, [aiSuggestedCategory, aiLoading, setFormData]);
 
   const fields = customFieldData[formData.category_id] || [];
 
@@ -100,7 +124,40 @@ export default function CategoryForm({
       }}
     >
       <h2 className={styles.sectionTitle}>3. Phân loại & Tùy biến</h2>
-
+      {/* Nút gọi AI để phân tích ảnh và lấy tag gợi ý */}
+      <button
+        type="button"
+        className={styles.aiButton}
+        onClick={() => {
+          // Gọi phân tích AI
+          onAnalyzeImages?.();
+        }}
+        disabled={aiLoading}
+        title={
+          aiLoading
+            ? "Đang phân tích ảnh..."
+            : "Phân tích ảnh bằng AI để lấy gợi ý tag"
+        }
+      >
+        <svg
+          className={styles.aiIcon}
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
+            fill="currentColor"
+          />
+        </svg>
+        <span>
+          {aiLoading
+            ? "Đang phân tích..."
+            : aiTags.length > 0
+              ? "Phân tích lại"
+              : "Gợi ý từ AI"}
+        </span>
+      </button>
       <label>
         <label className={stylesBasicForm.label}>
           {" "}
@@ -214,26 +271,10 @@ export default function CategoryForm({
                 : "Nhập tag và nhấn Enter hoặc dấu phẩy"
             }
           />
-          {/* Luôn hiển thị nút lấy tag AI vào input */}
-          {tagInput === "" && (
-            <button
-              type="button"
-              className={stylesBasicForm.btnSecondary}
-              onClick={() => {
-                setFormData((fd: any) => ({
-                  ...fd,
-                  tags: Array.isArray(aiTags) ? [...aiTags] : [],
-                }));
-              }}
-              disabled={aiTags.length === 0}
-              title={
-                aiTags.length === 0 ? "Không có gợi ý từ AI" : "Dùng gợi ý AI"
-              }
-            >
-              Dùng gợi ý AI
-            </button>
-          )}
         </div>
+
+        {/* Hiển thị lỗi AI nếu có */}
+        {aiError && <div className={styles.aiError}>{aiError}</div>}
 
         <div className={styles.tagList}>
           {(formData.tags || []).map((t: string, i: number) => (
