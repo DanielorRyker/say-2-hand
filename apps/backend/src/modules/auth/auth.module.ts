@@ -17,7 +17,9 @@ import { JwtStrategy } from '../../common/jwt/jwt.strategy';
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
         signOptions: {
-          expiresIn: configService.get<string>('JWT_ACCESS_TOKEN_EXPIRE'),
+          expiresIn: configService.get<string>(
+            'JWT_ACCESS_TOKEN_EXPIRE',
+          ) as any, // Ép kiểu any để phù hợp với yêu cầu của NestJS JWT
         },
       }),
       inject: [ConfigService],

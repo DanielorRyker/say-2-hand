@@ -33,19 +33,19 @@ const Header = () => {
   // }, []);
 
   useEffect(() => {
-  const loadUser = () => {
-    const s = localStorage.getItem("user");
-    setUser(s ? JSON.parse(s) : null);
-  };
-  loadUser();
-
-  const onUserUpdated = (e: Event) => {
-    // nếu dispatch CustomEvent với detail thì dùng (e as CustomEvent).detail
+    const loadUser = () => {
+      const s = localStorage.getItem("user");
+      setUser(s ? JSON.parse(s) : null);
+    };
     loadUser();
-  };
-  window.addEventListener("user-updated", onUserUpdated);
-  return () => window.removeEventListener("user-updated", onUserUpdated);
-}, []);
+
+    const onUserUpdated = (e: Event) => {
+      // nếu dispatch CustomEvent với detail thì dùng (e as CustomEvent).detail
+      loadUser();
+    };
+    window.addEventListener("user-updated", onUserUpdated);
+    return () => window.removeEventListener("user-updated", onUserUpdated);
+  }, []);
 
   // Xử lý scroll để thay đổi header
   useEffect(() => {
@@ -132,7 +132,7 @@ const Header = () => {
       setProvincesLoading(true);
       setProvincesError(null);
       try {
-        const res = await axios.get("https://provinces.open-api.vn/api/v2/");
+        const res = await axios.get("http://provinces.open-api.vn/api/v2/");
         if (!mounted) return;
         // API returns array of {code, name, division_type, codename, phone_code}
         const mapped = (res.data || []).map((p: any) => ({
@@ -286,11 +286,11 @@ const Header = () => {
   }, []);
 
   useEffect(() => {
-  if (socket && user?._id) {
-    console.log("Joining user socket room:", user._id);
-    socket.emit("join_user", { userId: user._id });
-  }
-}, [socket, user?._id]);
+    if (socket && user?._id) {
+      console.log("Joining user socket room:", user._id);
+      socket.emit("join_user", { userId: user._id });
+    }
+  }, [socket, user?._id]);
 
   // Lắng nghe receive_message => reload API
   useEffect(() => {
@@ -310,7 +310,6 @@ const Header = () => {
       socket.off("conversation_updated", handleUpdate);
     };
   }, [socket, user?._id, fetchConversations]);
-  
 
   //tổng tin chưa đọc
   const [totalUnread, setTotalUnread] = useState(0);

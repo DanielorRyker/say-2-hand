@@ -8,7 +8,8 @@ export const getJwtConfig = (
     secret:
       configService.get<string>('JWT_SECRET') || 'your-super-secret-jwt-key',
     signOptions: {
-      expiresIn: configService.get<string>('JWT_EXPIRES_IN') || '24h',
+      // Ép kiểu sang any để phù hợp với JwtModuleOptions (number | StringValue | undefined)
+      expiresIn: (configService.get<string>('JWT_EXPIRES_IN') || '24h') as any,
     },
   };
 };
