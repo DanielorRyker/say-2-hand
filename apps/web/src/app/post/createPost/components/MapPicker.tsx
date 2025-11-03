@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import axios from "axios";
 // @ts-expect-error - side-effect CSS import for leaflet
 import "leaflet/dist/leaflet.css";
 import styles from "./CategoryForm.module.scss";
@@ -67,6 +68,10 @@ export default function MapPicker({
   const inputRef = useRef<HTMLInputElement | null>(null);
   // trạng thái geoLoading đã bỏ (không dùng trong UI ở đây)
   const [geoError, setGeoError] = useState<string | null>(null);
+
+  // AI address normalization state
+  const [aiNormalizing, setAiNormalizing] = useState(false);
+  const [aiNormalized, setAiNormalized] = useState(false);
 
   // tâm mặc định: Việt Nam (TP. HCM)
   const [center, setCenter] = useState<[number, number]>([
@@ -579,6 +584,35 @@ export default function MapPicker({
     }
   };
 
+  // AI Address Normalization using Gemini
+  const normalizeAddressWithAI = async (rawAddress: string) => {
+    try {
+      setAiNormalizing(true);
+      const response = await fetch(
+        "http://localhost:8080/api/gemini/normalize-address",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ address: rawAddress }),
+        }
+      );
+
+      if (!response.ok) {
+        console.error("AI normalization failed:", response.status);
+        return null;
+      }
+
+      const data = await response.json();
+      console.log("AI normalized address:", data);
+      return data;
+    } catch (error) {
+      console.error("AI normalization error:", error);
+      return null;
+    } finally {
+      setAiNormalizing(false);
+    }
+  };
+
   // Map Nominatim structured address object to our detail/ward/province fields
   function mapNominatimAddressToDetails(
     address: Record<string, any> | undefined
@@ -725,24 +759,63 @@ export default function MapPicker({
     const lon = Number(suggestion.lon);
     onSelectCoords(lat, lon);
     setCenter([lat, lon]);
-    // Prefer structured address from Nominatim if available
-    try {
-      let details = null as any;
-      if ((suggestion as any).addressObj) {
-        details = mapNominatimAddressToDetails((suggestion as any).addressObj);
-      } else {
-        details = parseAddress(suggestion.display_name || "");
+
+    // Use AI to normalize the address for Vietnam post-2025 reforms
+    (async () => {
+      try {
+        const aiResult = await normalizeAddressWithAI(suggestion.display_name);
+        if (aiResult && aiResult.confidence > 0.7) {
+          // Update with AI-normalized address if confidence is high
+          setQuery(aiResult.normalized);
+          onChangeAddress(aiResult.normalized);
+          setAiNormalized(true);
+          setTimeout(() => setAiNormalized(false), 3000); // Hide badge after 3s
+
+          if (onSelectAddressDetails) {
+            onSelectAddressDetails({
+              detail: aiResult.detail_address || "",
+              ward: aiResult.ward || "",
+              province: aiResult.province || "",
+            });
+          }
+        } else {
+          // Fallback to original parsing if AI fails or low confidence
+          let details = null as any;
+          if ((suggestion as any).addressObj) {
+            details = mapNominatimAddressToDetails(
+              (suggestion as any).addressObj
+            );
+          } else {
+            details = parseAddress(suggestion.display_name || "");
+          }
+          if (onSelectAddressDetails) {
+            onSelectAddressDetails({
+              detail: details.detail,
+              ward: details.ward,
+              province: normalizeProvinceName(details.province),
+            });
+          }
+        }
+      } catch (error) {
+        console.error("AI normalization failed, using fallback:", error);
+        // Fallback to original method
+        let details = null as any;
+        if ((suggestion as any).addressObj) {
+          details = mapNominatimAddressToDetails(
+            (suggestion as any).addressObj
+          );
+        } else {
+          details = parseAddress(suggestion.display_name || "");
+        }
+        if (onSelectAddressDetails) {
+          onSelectAddressDetails({
+            detail: details.detail,
+            ward: details.ward,
+            province: normalizeProvinceName(details.province),
+          });
+        }
       }
-      if (onSelectAddressDetails) {
-        onSelectAddressDetails({
-          detail: details.detail,
-          ward: details.ward,
-          province: normalizeProvinceName(details.province),
-        });
-      }
-    } catch {
-      // ignore parse errors
-    }
+    })();
   }
 
   // helper đã bỏ: cuộn được xử lý bằng hover/click chuột
@@ -787,6 +860,40 @@ export default function MapPicker({
           const rev = await reverseGeocode(lat, lng);
           if (rev && rev.display_name) {
             const moved = formatAddress(rev.display_name as string);
+
+            // Try AI normalization first
+            try {
+              const aiResult = await normalizeAddressWithAI(moved);
+              if (aiResult && aiResult.confidence > 0.7) {
+                const improved: Suggestion = {
+                  display_name: aiResult.normalized,
+                  lat: String(lat),
+                  lon: String(lng),
+                };
+                setSelected(improved);
+                setQuery(aiResult.normalized);
+                onChangeAddress(aiResult.normalized);
+                setAiNormalized(true);
+                setTimeout(() => setAiNormalized(false), 3000); // Hide badge after 3s
+
+                if (onSelectAddressDetails) {
+                  onSelectAddressDetails({
+                    detail: aiResult.detail_address || "",
+                    ward: aiResult.ward || "",
+                    province: aiResult.province || "",
+                  });
+                }
+                setCenter([lat, lng]);
+                return; // Exit early if AI succeeded
+              }
+            } catch (aiError) {
+              console.error(
+                "AI normalization failed, using fallback:",
+                aiError
+              );
+            }
+
+            // Fallback to original method
             const improved: Suggestion = {
               display_name: moved,
               lat: String(lat),
@@ -1024,6 +1131,31 @@ export default function MapPicker({
           />
         )}
         {/* control locate của Leaflet sẽ được thêm vào map; giữ phần hiển thị loading/lỗi ở đây */}
+        {aiNormalizing && (
+          <div className={styles.aiNormalizingIndicator}>
+            <svg className={styles.aiSpinner} viewBox="0 0 24 24">
+              <path
+                d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
+                fill="currentColor"
+              />
+            </svg>
+            <span>AI đang chuẩn hóa địa chỉ...</span>
+          </div>
+        )}
+        {aiNormalized && (
+          <div className={styles.aiSuccessIndicator}>
+            <svg className={styles.aiCheckIcon} viewBox="0 0 24 24" fill="none">
+              <path
+                d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <span>✓ AI đã chuẩn hóa địa chỉ</span>
+          </div>
+        )}
         {geoError && <div className={styles.geoError}>{geoError}</div>}
       </div>
 

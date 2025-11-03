@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./CreatePost.module.scss";
 import stylesBasicForm from "./components/BasicInfoForm.module.scss";
@@ -18,8 +18,13 @@ import { parseAddress } from "../../../lib/address";
 // Gemini AI suggestion integration
 function useGeminiSuggestion() {
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [suggestedCategory, setSuggestedCategory] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // lightweight frontend cache to avoid repeated requests for same images
+  const cacheRef = React.useRef<
+    Map<string, { suggestions: string[]; suggestedCategory: any }>
+  >(new Map());
 
   const analyzeImage = async (
     base64: string,
@@ -37,6 +42,7 @@ function useGeminiSuggestion() {
       );
       console.log("Gemini FE response:", response.data);
       setSuggestions(response.data.suggestedTags || []);
+      setSuggestedCategory(response.data.suggestedCategory || null);
     } catch (err: any) {
       setError(err?.response?.data?.message || "AI suggestion failed");
     } finally {
@@ -44,7 +50,57 @@ function useGeminiSuggestion() {
     }
   };
 
-  return { suggestions, loading, error, analyzeImage };
+  const analyzeMultipleImages = async (
+    images: Array<{ base64: string; mimeType: string }>
+  ) => {
+    setLoading(true);
+    setError(null);
+    try {
+      // simple cache key from start of each base64 payload + mimeType
+      const key = images
+        .map((i) => `${i.mimeType}:${i.base64.slice(0, 64)}`)
+        .join("|");
+      const cached = cacheRef.current.get(key);
+      if (cached) {
+        setSuggestions(cached.suggestions || []);
+        setSuggestedCategory(cached.suggestedCategory || null);
+        setLoading(false);
+        return;
+      }
+
+      const response = await axios.post(
+        "http://localhost:8080/api/gemini/analyze-multiple-images",
+        {
+          images,
+        }
+      );
+      console.log("Gemini FE multiple images response:", response.data);
+      const respSuggestions = response.data.suggestedTags || [];
+      const respCategory = response.data.suggestedCategory || null;
+      setSuggestions(respSuggestions);
+      setSuggestedCategory(respCategory);
+      // store in cache
+      try {
+        cacheRef.current.set(key, {
+          suggestions: respSuggestions,
+          suggestedCategory: respCategory,
+        });
+      } catch {}
+    } catch (err: any) {
+      setError(err?.response?.data?.message || "AI suggestion failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return {
+    suggestions,
+    suggestedCategory,
+    loading,
+    error,
+    analyzeImage,
+    analyzeMultipleImages,
+  };
 }
 
 type PostFormData = {
@@ -132,9 +188,6 @@ export default function Page() {
   }, []);
 
   // Đồng bộ images → selectedFiles
-  // Track last analyzed image to prevent infinite loop (useRef instead of state)
-  const lastAnalyzedImageRef = useRef<string | null>(null);
-
   useEffect(() => {
     if (!images || images.length === 0) {
       setSelectedFiles([]);
@@ -147,27 +200,93 @@ export default function Page() {
     setSelectedFiles(files);
   }, [images]);
 
-  // Only call Gemini AI if first image changes
-  const firstImage = images.length > 0 ? images[0] : null;
-  useEffect(() => {
-    if (firstImage) {
-      let base64 = firstImage;
-      let mimeType = "image/jpeg";
-      if (base64.includes(",")) {
-        const match = base64.match(/^data:(.*?);base64,(.*)$/);
+  // resize/compress dataURL (returns dataURL)
+  async function resizeDataUrl(dataUrl: string, maxDim = 1024, quality = 0.75) {
+    // If not in browser (SSR), return original
+    if (typeof window === "undefined") return dataUrl;
+    return new Promise<string>((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width;
+        let h = img.height;
+        if (Math.max(w, h) > maxDim) {
+          const ratio = maxDim / Math.max(w, h);
+          w = Math.round(w * ratio);
+          h = Math.round(h * ratio);
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        if (ctx) ctx.drawImage(img, 0, 0, w, h);
+        try {
+          const out = canvas.toDataURL("image/jpeg", quality);
+          resolve(out);
+        } catch {
+          resolve(dataUrl);
+        }
+      };
+      img.onerror = () => resolve(dataUrl);
+      img.src = dataUrl;
+    });
+  }
+
+  // Function to manually trigger AI analysis (optimized: resize, limit, strip prefix)
+  const handleAnalyzeImagesOptimized = async () => {
+    if (images.length === 0) {
+      showMessage("Vui lòng tải ảnh lên trước khi dùng AI.");
+      return;
+    }
+
+    // limit to first 10 images to reduce payload
+    const toProcess = images.slice(0, 10);
+    const processed: Array<{ base64: string; mimeType: string }> = [];
+
+    for (const img of toProcess) {
+      try {
+        let dataUrl = img;
+        if (!dataUrl.startsWith("data:")) {
+          // assume it's raw base64, wrap it
+          dataUrl = `data:image/jpeg;base64,${dataUrl}`;
+        }
+        const resized = await resizeDataUrl(dataUrl, 1024, 0.75);
+        const match = resized.match(/^data:(.*?);base64,(.*)$/);
         if (match) {
-          mimeType = match[1] || "image/jpeg";
-          base64 = match[2];
+          const mimeType = match[1] || "image/jpeg";
+          const base64 = match[2] || "";
+          processed.push({ base64, mimeType });
         } else {
-          base64 = base64.split(",")[1];
+          // fallback: try to strip original
+          const parts = dataUrl.split(",");
+          const mimeMatch = parts[0]?.match(/data:(.*?);base64/);
+          const mimeType = mimeMatch ? mimeMatch[1] : "image/jpeg";
+          const base64 = parts[1] || dataUrl;
+          processed.push({ base64, mimeType });
+        }
+      } catch {
+        // ignore a single image failure and continue
+        console.error("Image resize failed, sending original");
+        if (img.includes(",")) {
+          const match = img.match(/^data:(.*?);base64,(.*)$/);
+          if (match) processed.push({ base64: match[2], mimeType: match[1] });
+          else
+            processed.push({
+              base64: img.split(",")[1] || img,
+              mimeType: "image/jpeg",
+            });
+        } else {
+          processed.push({ base64: img, mimeType: "image/jpeg" });
         }
       }
-      if (base64 !== lastAnalyzedImageRef.current) {
-        gemini.analyzeImage(base64, mimeType);
-        lastAnalyzedImageRef.current = base64;
-      }
     }
-  }, [firstImage, gemini]);
+
+    gemini.analyzeMultipleImages(processed);
+  };
+
+  // wire original handler to optimized one for compatibility
+  const handleAnalyzeImages = () => {
+    void handleAnalyzeImagesOptimized();
+  };
 
   function base64ToFile(base64: string, filename: string) {
     const arr = base64.split(",");
@@ -436,6 +555,10 @@ export default function Page() {
             loading={loading}
             showMessage={showMessage}
             aiTags={gemini.suggestions}
+            aiSuggestedCategory={gemini.suggestedCategory}
+            onAnalyzeImages={handleAnalyzeImages}
+            aiLoading={gemini.loading}
+            aiError={gemini.error}
           />
         )}
       </div>

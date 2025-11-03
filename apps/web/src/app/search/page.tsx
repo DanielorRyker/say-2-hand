@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, Suspense, useRef } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import styles from "./search.module.scss";
 import { parseAddress } from "@/lib/address";
 import { Icon } from "@iconify/react";
@@ -91,6 +91,7 @@ const SORT_OPTIONS = [
 
 function SearchPageContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   const [postsData, setPostsData] = useState<Post[]>([]);
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
@@ -335,6 +336,10 @@ function SearchPageContent() {
     setDistance(50);
     setSortBy("newest");
     setSearchQuery("");
+    setFilterProvinceParam(null);
+
+    // Navigate to clear URL params
+    router.push("/search");
   };
 
   // Remove individual filters
@@ -359,6 +364,16 @@ function SearchPageContent() {
   const removeLocationFilter = () => {
     setSelectedLocation("");
     setDistance(50);
+    setFilterProvinceParam(null);
+
+    // Navigate to remove province from URL
+    const newParams = new URLSearchParams(searchParams.toString());
+    newParams.delete("province");
+    newParams.delete("provinceCode");
+
+    // Keep other params like search query
+    const query = newParams.toString();
+    router.push(`/search${query ? `?${query}` : ""}`);
   };
 
   // Get category name by ID
@@ -382,7 +397,7 @@ function SearchPageContent() {
     selectedTransactionTypes.length +
     selectedConditions.length +
     selectedCategories.length +
-    (selectedLocation ? 1 : 0) +
+    (selectedLocation || filterProvinceParam ? 1 : 0) +
     (priceRange.min > 0 || priceRange.max < 100000000 ? 1 : 0);
 
   return (
@@ -586,12 +601,13 @@ function SearchPageContent() {
               </div>
             )}
 
-            {/* Location Chip */}
-            {selectedLocation && (
+            {/* Location Chip - hiển thị khi có selectedLocation hoặc filterProvinceParam */}
+            {(selectedLocation || filterProvinceParam) && (
               <div className={`${styles.activeChip} ${styles.chipLocation}`}>
                 <Icon icon="mdi:map-marker" width={16} height={16} />
                 <span className={styles.chipLabel}>
-                  {selectedLocation} ({distance}km)
+                  {filterProvinceParam || selectedLocation}
+                  {selectedLocation && distance && ` (${distance}km)`}
                 </span>
                 <button
                   className={styles.chipRemove}
