@@ -132,7 +132,7 @@ const Header = () => {
       setProvincesLoading(true);
       setProvincesError(null);
       try {
-        const res = await axios.get("https://provinces.open-api.vn/api/v2/");
+        const res = await axios.get("http://provinces.open-api.vn/api/v2/");
         if (!mounted) return;
         // API returns array of {code, name, division_type, codename, phone_code}
         const mapped = (res.data || []).map((p: any) => ({

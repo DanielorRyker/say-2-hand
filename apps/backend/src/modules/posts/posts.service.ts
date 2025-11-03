@@ -153,7 +153,7 @@ export class PostsService {
 
   async findAllForHome() {
     return this.postModel
-      .find({ status: { $in: ['active', 'completed'] } })
+      .find({ status: { $in: ['active'] } })
       .populate('author_id', 'full_name avatar reputation') // lấy thông tin user
       .populate('category_id', 'name') // lấy tên category
       .sort({ updatedAt: -1 })
