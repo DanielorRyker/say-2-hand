@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import cvstStyles from "@/styles/pages/conversation/conversation.module.scss";
+import cvstStyles from "@/app/conversation/conversation.module.scss";
 import Image from "next/image";
 import axios from "axios";
 import { formatImageUrl } from "@/lib/constants";
 import { io, Socket } from "socket.io-client";
 import { useRouter } from "next/navigation";
+import { Icon } from "@iconify/react";
 
 export default function ChatPage() {
   const router = useRouter();
@@ -345,11 +346,11 @@ export default function ChatPage() {
   const endRef = useRef<HTMLDivElement | null>(null);
 
   // Mỗi khi messagesData thay đổi => cuộn xuống cuối
-  useEffect(() => {
-    if (endRef.current) {
-      endRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [messagesData]);
+useEffect(() => {
+  if (endRef.current) {
+    endRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+  }
+}, [messagesData]);
 
   //Gửi ảnh
   const uploadImage = async (file: File, bucket = "conversation") => {
@@ -396,6 +397,16 @@ export default function ChatPage() {
     }
   };
 
+  const checkTypeLastMessage = (text: string) => {
+    return text.includes('conversation/') ? 'image' : 'text';
+  }
+
+    const formatCurrency = (n: number) =>
+    new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(n);
+
   return (
     <div className={cvstStyles.container}>
       {/* Sidebar */}
@@ -421,23 +432,10 @@ export default function ChatPage() {
                     handleChangeConversation(i._id);
                   }}
                 >
-                  <Image
-                    src={
-                      i.post_id?.images?.[0]?.url
-                        ? formatImageUrl(i.post_id.images[0].url) ||
-                          "/image/header/carbon_user-avatar-filled-alt.svg"
-                        : "/image/header/carbon_user-avatar-filled-alt.svg"
-                    }
-                    alt="Post"
-                    className={cvstStyles.squareImage}
-                    width={80}
-                    height={80}
-                  />
+
 
                   {otherUser && (
-                    <div style={{ width: "100%" }}>
-                      <p className={cvstStyles.title}>{i.post_id.title}</p>
-
+                    <div style={{ width: "100%" }}>                     
                       <div className={cvstStyles.conversationItemHeader}>
                         <Image
                           src={
@@ -451,24 +449,28 @@ export default function ChatPage() {
                           width={40}
                           height={40}
                         />
-                        <p className={cvstStyles.name}>
+                         
+                         <div>
+                           <p className={cvstStyles.name}>
                           {otherUser.full_name || "Người dùng"}
                         </p>
+                         <div className={cvstStyles.messageLayout}>
+                            <p className={cvstStyles.lastMessage}>
+                              {i.last_message?.sender_id?.full_name}:{" "}
+                              {checkTypeLastMessage(i.last_message?.text || "") === 'image' ? '[Hình ảnh]' : i.last_message?.text}
+                            </p>
+                            {i.unreadCount != 0 ? (
+                              <p className={cvstStyles.unreadCount}>
+                                {i.unreadCount}
+                              </p>
+                            ) : (
+                              <p></p>
+                            )}
+                        </div>
+                         </div>
+                       
                       </div>
-
-                      <div className={cvstStyles.messageLayour}>
-                        <p className={cvstStyles.lastMessage}>
-                          {i.last_message?.sender_id?.full_name}:{" "}
-                          {i.last_message?.text}
-                        </p>
-                        {i.unreadCount != 0 ? (
-                          <p className={cvstStyles.unreadCount}>
-                            {i.unreadCount}
-                          </p>
-                        ) : (
-                          <p></p>
-                        )}
-                      </div>
+                     
                     </div>
                   )}
                 </div>
@@ -481,36 +483,11 @@ export default function ChatPage() {
       <main className={cvstStyles.chatArea}>
         {/* Header */}
         <div className={cvstStyles.chatHeader}>
-          <div>
-            <Image
-              src={
-                conversation?.post_id?.images?.[0]?.url
-                  ? formatImageUrl(conversation.post_id.images[0].url) ||
-                    "/image/header/carbon_user-avatar-filled-alt.svg"
-                  : "/image/header/carbon_user-avatar-filled-alt.svg"
-              }
-              alt="Post"
-              className={cvstStyles.squareImage}
-              width={80}
-              height={80}
-              onClick={() => {
-                const postId = conversation?.post_id?._id;
-                if (!postId) return;
-                try {
-                  sessionStorage.setItem(
-                    `selectedPost_${postId}`,
-                    JSON.stringify(conversation?.post_id)
-                  );
-                } catch {}
-                router.push(
-                  `/post/detailPost?postId=${encodeURIComponent(postId)}`
-                );
-              }}
-            />
-          </div>
+ 
 
           {otherUser && (
-            <div className={cvstStyles.userInfo}>
+            <div>
+               <div className={cvstStyles.userInfo}>
               <Image
                 src={
                   otherUser.avatar
@@ -523,14 +500,46 @@ export default function ChatPage() {
                 width={50}
                 height={50}
               />
-              <div>
-                <p className={cvstStyles.title}>
-                  {conversation?.post_id.title}
-                </p>
-                <p className={cvstStyles.name}>{otherUser.full_name}</p>
-              </div>
+                <p className={cvstStyles.subtitle}>{otherUser.full_name}</p>         
             </div>
+                      
+            </div>
+           
+            
           )}
+          <div className={cvstStyles.borderLine}></div>
+          <div className={cvstStyles.postInfo}>
+                <Image
+                  src={
+                    conversation?.post_id?.images?.[0]?.url
+                      ? formatImageUrl(conversation.post_id.images[0].url) ||
+                        "/image/header/carbon_user-avatar-filled-alt.svg"
+                      : "/image/header/carbon_user-avatar-filled-alt.svg"
+                  }
+                  alt="Post"
+                  className={cvstStyles.squareImage}
+                  width={80}
+                  height={80}
+                  onClick={() => {
+                    const postId = conversation?.post_id?._id;
+                    if (!postId) return;
+                    try {
+                      sessionStorage.setItem(
+                        `selectedPost_${postId}`,
+                        JSON.stringify(conversation?.post_id)
+                      );
+                    } catch {}
+                    router.push(
+                      `/post/detailPost?postId=${encodeURIComponent(postId)}`
+                    );
+                  }}
+                />
+                <div className={cvstStyles.postText}>
+                  <p className={cvstStyles.postTitle}>{conversation?.post_id?.title}</p>
+                  <p >{formatCurrency(conversation?.post_id?.price ?? 0)}</p>
+                </div>
+              
+              </div>
         </div>
 
         {/* Messages */}
@@ -634,16 +643,16 @@ export default function ChatPage() {
             aria-label="Attach image"
             onClick={() => document.getElementById("fileInput")?.click()}
           >
-            <Image
-              src={"/image/profile/camera.svg"}
-              alt="Attach"
-              width={24}
-              height={24}
-            />
+            <Icon
+                key={`image`}
+                icon="material-symbols:image-outline"
+                width={24}
+                height={24}
+              />
           </button>
 
           <button className={cvstStyles.sendBtn} onClick={handleSendMessage}>
-            Send
+            Gửi
           </button>
         </div>
       </main>
