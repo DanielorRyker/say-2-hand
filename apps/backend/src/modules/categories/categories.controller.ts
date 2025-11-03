@@ -39,4 +39,13 @@ export class CategoriesController {
   remove(@Param('id') id: string) {
     return this.categoriesService.remove(id);
   }
+
+  /**
+   * API endpoint để gợi ý icon cho danh mục
+   */
+  @Post('suggest-icon')
+  async suggestIcon(@Body('name') name: string) {
+    const icon = await this.categoriesService.suggestIcon(name);
+    return { icon };
+  }
 }

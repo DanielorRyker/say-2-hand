@@ -43,20 +43,44 @@ export class GeminiService {
     mimeType: string = 'image/jpeg',
   ): Promise<ImageAnalysisResult> {
     try {
-      const categories = await this.categoryModel.find().exec();
-      const categoryList = categories.map((c) => ({
+      const categories = await this.categoryModel
+        .find()
+        .populate('parent_id', 'name icon')
+        .exec();
+
+      // Phân loại danh mục cha và con
+      const parentCategories = categories.filter((c) => !c.parent_id);
+      const childCategories = categories.filter((c) => c.parent_id);
+
+      const parentList = parentCategories.map((c) => ({
         _id: c._id.toString(),
         name: c.name,
+        icon: c.icon,
+      }));
+
+      const childList = childCategories.map((c) => ({
+        _id: c._id.toString(),
+        name: c.name,
+        icon: c.icon,
+        parent: {
+          _id: (c.parent_id as any)?._id?.toString(),
+          name: (c.parent_id as any)?.name,
+        },
       }));
 
       const prompt = `
 	Bạn là một AI chuyên phân tích hình ảnh để phân loại sản phẩm trong ứng dụng mua bán đồ cũ Say2Hand.
 	Hãy phân tích hình ảnh này và:
 	1. Xác định đối tượng chính trong ảnh
-	2. Chọn danh mục phù hợp nhất từ danh sách sau (trả về _id và name):
-	${categoryList.map((c) => `   - ${c._id}: ${c.name}`).join('\n')}
-	3. Đề xuất 5-10 tags (từ khóa tiếng Việt) phù hợp để tìm kiếm sản phẩm này
-
+	2. **ƯU TIÊN chọn danh mục CON (cụ thể hơn) nếu có**, nếu không có thì chọn danh mục cha
+	
+	**DANH MỤC CHA (tổng quát):**
+	${parentList.map((c) => `   - ${c._id}: ${c.name}${c.icon ? ` [${c.icon}]` : ''}`).join('\n')}
+	
+	**DANH MỤC CON (cụ thể - ưu tiên):**
+	${childList.map((c) => `   - ${c._id}: ${c.name}${c.icon ? ` [${c.icon}]` : ''} (thuộc "${c.parent.name}")`).join('\n')}
+	
+	3. Đề xuất 5-10 tags (từ khóa tiếng Việt) phù hợp
 
 	Trả về kết quả dạng JSON như sau:
 	{
@@ -113,7 +137,6 @@ export class GeminiService {
       const cacheKey = `addr:${rawAddress}`;
       const cached = this.addressCache.get(cacheKey);
       if (cached && Date.now() - cached.ts < this.CACHE_TTL) {
-        this.logger.debug(`Address cache hit for key=${cacheKey}`);
         return cached.result;
       }
       const prompt = `
@@ -124,6 +147,13 @@ Việt Nam đã xóa bỏ cấp Quận/Huyện/Thành phố trực thuộc, ch�
 1. Cấp cơ sở: Phường, Xã, Thị trấn
 2. Cấp tỉnh: Tỉnh, Thành phố trực thuộc TW
 
+**SÁP NHẬP TỈNH QUAN TRỌNG:**
+- **Bình Dương** → Đã SÁP NHẬP vào **Thành phố Hồ Chí Minh**
+- **Thuận An** (trước là thành phố/quận) → Giờ là **Phường Thuận An, TP.HCM**
+- **Dĩ An** (trước là thành phố/quận) → Giờ là **Phường Dĩ An, TP.HCM**
+- **Phường Thông Tây Hội** (Thuận An cũ) → **Phường Thông Tây Hội, TP.HCM**
+- Bất kỳ địa chỉ nào có "Bình Dương" hoặc "Thuận An" → Đều thuộc **TP.HCM**
+
 **Cấu trúc địa chỉ mới (toàn quốc):**
 [Số nhà, Đường] → [Phường/Xã/Thị trấn] → [Tỉnh/Thành phố]
 
@@ -131,6 +161,8 @@ Việt Nam đã xóa bỏ cấp Quận/Huyện/Thành phố trực thuộc, ch�
 - XÓA BỎ hoàn toàn: Quận, Huyện, Thành phố trực thuộc (như Thủ Đức, Thuận An, Dĩ An...)
 - Quận 1, Quận 2, Quận 9, Quận Thủ Đức... → KHÔNG còn tồn tại
 - Huyện Củ Chi, Huyện Nhà Bè... → KHÔNG còn tồn tại
+- **"Bình Dương"** → **"Thành phố Hồ Chí Minh"**
+- **"Thuận An"** (khi là thành phố/quận) → **"Phường Thuận An"** hoặc các phường cụ thể như "Phường Thông Tây Hội"
 - Chuẩn hóa: "P." → "Phường", "X." → "Xã", "TT." → "Thị trấn"
 - Chuẩn hóa: "D." → "Đường", "Đường số" giữ nguyên
 - Chuẩn hóa tỉnh: "TP.HCM" → "Thành phố Hồ Chí Minh", "Hà Nội" → "Thành phố Hà Nội"
@@ -168,6 +200,17 @@ Output:
   "normalized": "5 Đường Trần Phú, Xã Tân Hiệp, Thành phố Hồ Chí Minh",
   "detail_address": "5 Đường Trần Phú",
   "ward": "Xã Tân Hiệp",
+  "district": "",
+  "province": "Thành phố Hồ Chí Minh",
+  "confidence": 0.95
+}
+
+Input: "Đường số 3, Phường Thông Tây Hội, Thuận An, Bình Dương"
+Output:
+{
+  "normalized": "Đường số 3, Phường Thông Tây Hội, Thành phố Hồ Chí Minh",
+  "detail_address": "Đường số 3",
+  "ward": "Phường Thông Tây Hội",
   "district": "",
   "province": "Thành phố Hồ Chí Minh",
   "confidence": 0.95
@@ -231,20 +274,44 @@ Output:
         this.logger.debug(`Image analysis cache hit for key=${cacheKey}`);
         return cached.result;
       }
-      const categories = await this.categoryModel.find().exec();
-      const categoryList = categories.map((c) => ({
+      const categories = await this.categoryModel
+        .find()
+        .populate('parent_id', 'name icon')
+        .exec();
+
+      // Phân loại danh mục cha và con
+      const parentCategories = categories.filter((c) => !c.parent_id);
+      const childCategories = categories.filter((c) => c.parent_id);
+
+      const parentList = parentCategories.map((c) => ({
         _id: c._id.toString(),
         name: c.name,
+        icon: c.icon,
+      }));
+
+      const childList = childCategories.map((c) => ({
+        _id: c._id.toString(),
+        name: c.name,
+        icon: c.icon,
+        parent: {
+          _id: (c.parent_id as any)?._id?.toString(),
+          name: (c.parent_id as any)?.name,
+        },
       }));
 
       const prompt = `
 	Bạn là một AI chuyên phân tích hình ảnh để phân loại sản phẩm trong ứng dụng mua bán đồ cũ Say2Hand.
 	Hãy phân tích TẤT CẢ các hình ảnh này (nhiều góc nhìn của cùng một sản phẩm) và:
 	1. Xác định đối tượng chính trong các ảnh
-	2. Chọn danh mục phù hợp nhất từ danh sách sau (trả về _id và name):
-	${categoryList.map((c) => `   - ${c._id}: ${c.name}`).join('\n')}
-	3. Đề xuất 5-10 tags (từ khóa tiếng Việt) phù hợp để tìm kiếm sản phẩm này, dựa trên TẤT CẢ các ảnh
-
+	2. **ƯU TIÊN chọn danh mục CON (cụ thể hơn) nếu có**, nếu không có thì chọn danh mục cha
+	
+	**DANH MỤC CHA (tổng quát):**
+	${parentList.map((c) => `   - ${c._id}: ${c.name}${c.icon ? ` [${c.icon}]` : ''}`).join('\n')}
+	
+	**DANH MỤC CON (cụ thể - ưu tiên):**
+	${childList.map((c) => `   - ${c._id}: ${c.name}${c.icon ? ` [${c.icon}]` : ''} (thuộc "${c.parent.name}")`).join('\n')}
+	
+	3. Đề xuất 5-10 tags (từ khóa tiếng Việt) phù hợp, dựa trên TẤT CẢ các ảnh
 
 	Trả về kết quả dạng JSON như sau:
 	{
@@ -297,5 +364,205 @@ Output:
         suggestedTags: [],
       };
     }
+  }
+
+  /**
+   * Gợi ý icon Iconify phù hợp dựa trên tên danh mục
+   * @param categoryName - Tên danh mục cần gợi ý icon
+   * @returns Icon name từ Iconify (vd: "mdi:phone", "mdi:laptop")
+   */
+  async suggestIcon(categoryName: string): Promise<string> {
+    try {
+      const prompt = `Bạn là một AI chuyên gợi ý icon từ thư viện Iconify.
+Dựa vào tên danh mục, hãy gợi ý 1 icon phù hợp nhất.
+
+Tên danh mục: "${categoryName}"
+
+Yêu cầu:
+1. Chỉ trả về tên icon từ Iconify (format: prefix:name)
+2. Ưu tiên sử dụng các prefix phổ biến: mdi, fa, bi, lucide, heroicons
+3. Icon phải rõ ràng, dễ hiểu và phù hợp với tên danh mục
+4. Chỉ trả về 1 icon duy nhất, không giải thích
+
+Ví dụ:
+- "Điện thoại" → mdi:cellphone
+- "Laptop" → mdi:laptop
+- "Xe máy" → mdi:motorbike
+- "Thời trang" → mdi:tshirt-crew
+- "Đồ gia dụng" → mdi:silverware-fork-knife
+- "Thú cưng" → mdi:paw
+- "Sách" → mdi:book-open-page-variant
+
+Trả về ĐÚNG format: prefix:name`;
+
+      const response = await this.ai.models.generateContent({
+        model: 'gemini-2.0-flash-exp',
+        contents: prompt,
+        config: {
+          temperature: 0.3, // Giảm nhiệt độ để có kết quả ổn định hơn
+          maxOutputTokens: 50,
+        },
+      });
+
+      const responseText = response.text?.trim() || '';
+
+      // Validate icon format (prefix:name)
+      const iconPattern = /^[a-z0-9-]+:[a-z0-9-]+$/i;
+      if (iconPattern.test(responseText)) {
+        this.logger.log(
+          `Icon suggested for "${categoryName}": ${responseText}`,
+        );
+        return responseText;
+      }
+
+      // Fallback nếu format không đúng
+      this.logger.warn(
+        `Invalid icon format received: ${responseText}, using default`,
+      );
+      return this.getDefaultIcon(categoryName);
+    } catch (error) {
+      // Xử lý lỗi quota exhausted (429) hoặc bất kỳ lỗi AI nào
+      const errorMessage = error.message || JSON.stringify(error);
+
+      if (
+        errorMessage.includes('429') ||
+        errorMessage.includes('RESOURCE_EXHAUSTED')
+      ) {
+        this.logger.warn(
+          `Gemini API quota exhausted for "${categoryName}", using smart fallback`,
+        );
+      } else {
+        this.logger.error(
+          `Error suggesting icon for "${categoryName}": ${errorMessage}`,
+        );
+      }
+
+      // Luôn trả về default icon thay vì throw error
+      return this.getDefaultIcon(categoryName);
+    }
+  }
+
+  /**
+   * Trả về icon mặc định dựa trên từ khóa trong tên danh mục
+   */
+  private getDefaultIcon(categoryName: string): string {
+    const name = categoryName.toLowerCase();
+
+    // Map các từ khóa phổ biến với icon (thứ tự từ cụ thể đến chung)
+    const iconMap: { [key: string]: string } = {
+      // Điện tử & Công nghệ
+      'điện thoại': 'mdi:cellphone',
+      phone: 'mdi:cellphone',
+      smartphone: 'mdi:cellphone-android',
+      iphone: 'mdi:apple',
+      laptop: 'mdi:laptop',
+      'máy tính': 'mdi:laptop',
+      computer: 'mdi:desktop-tower',
+      tablet: 'mdi:tablet',
+      'máy tính bảng': 'mdi:tablet',
+      'tai nghe': 'mdi:headphones',
+      headphone: 'mdi:headphones',
+      camera: 'mdi:camera',
+      'máy ảnh': 'mdi:camera',
+      tivi: 'mdi:television',
+      tv: 'mdi:television',
+      'điện tử': 'mdi:chip',
+      electronic: 'mdi:chip',
+
+      // Phương tiện
+      'xe máy': 'mdi:motorbike',
+      motor: 'mdi:motorbike',
+      'xe đạp': 'mdi:bicycle',
+      bike: 'mdi:bicycle',
+      'ô tô': 'mdi:car',
+      'xe hơi': 'mdi:car',
+      car: 'mdi:car',
+      xe: 'mdi:car-side',
+
+      // Thời trang & Phụ kiện
+      'thời trang': 'mdi:tshirt-crew',
+      'quần áo': 'mdi:tshirt-crew',
+      fashion: 'mdi:tshirt-crew',
+      áo: 'mdi:tshirt-crew',
+      quần: 'mdi:human-handsup',
+      giày: 'mdi:shoe-formal',
+      shoe: 'mdi:shoe-formal',
+      dép: 'mdi:shoe-sneaker',
+      'túi xách': 'mdi:bag-personal',
+      bag: 'mdi:bag-personal',
+      'đồng hồ': 'mdi:watch',
+      watch: 'mdi:watch',
+      kính: 'mdi:glasses',
+      glass: 'mdi:glasses',
+
+      // Nhà cửa & Nội thất
+      'nội thất': 'mdi:sofa',
+      furniture: 'mdi:sofa',
+      bàn: 'mdi:table-furniture',
+      table: 'mdi:table-furniture',
+      ghế: 'mdi:seat',
+      chair: 'mdi:seat',
+      giường: 'mdi:bed',
+      bed: 'mdi:bed',
+      tủ: 'mdi:cupboard',
+      cabinet: 'mdi:cupboard',
+      đèn: 'mdi:lamp',
+      lamp: 'mdi:lamp',
+      'đồ gia dụng': 'mdi:home-variant',
+      'gia dụng': 'mdi:home-variant',
+      nhà: 'mdi:home',
+      home: 'mdi:home',
+
+      // Giải trí & Sở thích
+      sách: 'mdi:book-open-page-variant',
+      book: 'mdi:book-open-page-variant',
+      truyện: 'mdi:book-open-variant',
+      'đồ chơi': 'mdi:toy-brick',
+      toy: 'mdi:toy-brick',
+      game: 'mdi:gamepad-variant',
+      'thể thao': 'mdi:basketball',
+      sport: 'mdi:basketball',
+      'nhạc cụ': 'mdi:guitar-acoustic',
+      music: 'mdi:music',
+
+      // Làm đẹp & Sức khỏe
+      'mỹ phẩm': 'mdi:lipstick',
+      cosmetic: 'mdi:lipstick',
+      makeup: 'mdi:palette',
+      spa: 'mdi:spa',
+      'y tế': 'mdi:medical-bag',
+      health: 'mdi:heart-pulse',
+
+      // Thú cưng & Động vật
+      'thú cưng': 'mdi:paw',
+      pet: 'mdi:paw',
+      chó: 'mdi:dog',
+      dog: 'mdi:dog',
+      mèo: 'mdi:cat',
+      cat: 'mdi:cat',
+
+      // Khác
+      'đồ cũ': 'mdi:recycle',
+      cũ: 'mdi:package-variant',
+      khác: 'mdi:dots-horizontal',
+      other: 'mdi:dots-horizontal',
+    };
+
+    // Tìm từ khóa khớp (từ dài đến ngắn để ưu tiên match cụ thể)
+    const sortedKeys = Object.keys(iconMap).sort((a, b) => b.length - a.length);
+    for (const keyword of sortedKeys) {
+      if (name.includes(keyword)) {
+        this.logger.log(
+          `Default icon matched for "${categoryName}": ${iconMap[keyword]} (keyword: "${keyword}")`,
+        );
+        return iconMap[keyword];
+      }
+    }
+
+    // Icon mặc định cuối cùng
+    this.logger.log(
+      `No match found for "${categoryName}", using default folder icon`,
+    );
+    return 'mdi:folder';
   }
 }

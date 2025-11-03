@@ -142,11 +142,9 @@ export default function AdminLayout({
       {/* Main Content */}
       <div className={styles.mainContent}>
         {/* Header */}
-        <header className={styles.header}>
-          <div className={styles.headerLeft}>
-            <h1>Quản trị hệ thống</h1>
-          </div>
-        </header>
+        {/* <header className={styles.header}>
+        
+        </header> */}
 
         {/* Page Content */}
         <main className={styles.pageContent}>{children}</main>

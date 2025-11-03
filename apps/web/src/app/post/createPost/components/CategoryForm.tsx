@@ -32,8 +32,18 @@ export default function CategoryForm({
     name?: string;
     slug?: string;
     image?: string;
+    icon?: string;
+    parent_id?: {
+      _id: string;
+      name?: string;
+      icon?: string;
+    } | null;
   }
   const [categoriesData, setCategoriesData] = useState<Category[]>([]);
+
+  // Tách danh mục cha và con
+  const parentCategories = categoriesData.filter((cat) => !cat.parent_id);
+  const childCategories = categoriesData.filter((cat) => cat.parent_id);
 
   useEffect(() => {
     async function fetchCategories() {
@@ -158,6 +168,34 @@ export default function CategoryForm({
               : "Gợi ý từ AI"}
         </span>
       </button>
+
+      {/* Hiển thị gợi ý danh mục từ AI */}
+      {aiSuggestedCategory && !aiLoading && (
+        <div className={styles.aiSuggestion}>
+          <svg
+            className={styles.suggestionIcon}
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          <span>
+            AI gợi ý danh mục:{" "}
+            <strong>
+              {aiSuggestedCategory.icon && `${aiSuggestedCategory.icon} `}
+              {aiSuggestedCategory.name}
+            </strong>
+          </span>
+        </div>
+      )}
+
       <label>
         <label className={stylesBasicForm.label}>
           {" "}
@@ -175,12 +213,61 @@ export default function CategoryForm({
           required
         >
           <option value="">-- Chọn danh mục --</option>
-          {categoriesData.map((cate) => (
-            <option key={cate._id} value={cate._id}>
-              {cate.name}
-            </option>
-          ))}
+          {parentCategories.map((parent) => {
+            // Lấy các danh mục con của parent này
+            const children = childCategories.filter(
+              (child) => child.parent_id?._id === parent._id
+            );
+
+            return (
+              <React.Fragment key={parent._id}>
+                {/* Hiển thị danh mục cha với icon nếu có */}
+                <option value={parent._id} className={styles.parentOption}>
+                  {parent.icon ? `${parent.icon} ` : "📁 "}
+                  {parent.name}
+                </option>
+
+                {/* Hiển thị các danh mục con với indent */}
+                {children.map((child) => (
+                  <option
+                    key={child._id}
+                    value={child._id}
+                    className={styles.childOption}
+                  >
+                    {child.icon ? `  ${child.icon} ` : "  └─ "}
+                    {child.name}
+                  </option>
+                ))}
+              </React.Fragment>
+            );
+          })}
         </select>
+
+        {/* Hiển thị thông tin danh mục đã chọn */}
+        {formData.category_id &&
+          (() => {
+            const selected = categoriesData.find(
+              (c) => c._id === formData.category_id
+            );
+            if (!selected) return null;
+
+            return (
+              <div className={styles.selectedCategory}>
+                <span className={styles.selectedLabel}>Đã chọn:</span>
+                <span className={styles.selectedValue}>
+                  {selected.icon && (
+                    <span className={styles.selectedIcon}>{selected.icon}</span>
+                  )}
+                  <span>{selected.name}</span>
+                  {selected.parent_id && (
+                    <span className={styles.parentInfo}>
+                      (thuộc {selected.parent_id.name})
+                    </span>
+                  )}
+                </span>
+              </div>
+            );
+          })()}
       </label>
 
       {fields.length > 0 && (

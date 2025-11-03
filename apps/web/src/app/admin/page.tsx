@@ -128,6 +128,12 @@ export default function AdminDashboard() {
 
   return (
     <div className={styles.dashboard}>
+      <div className={styles.header}>
+        <div className={styles.headerLeft}>
+          <Icon icon="mdi:view-dashboard" />
+          <h1>Quản trị hệ thống</h1>
+        </div>
+      </div>
       <div className={styles.statsGrid}>
         {statCards.map((card, index) => (
           <div key={index} className={styles.statCard}>

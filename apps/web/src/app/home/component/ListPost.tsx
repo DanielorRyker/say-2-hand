@@ -46,8 +46,8 @@ interface Post {
   condition: string;
   transaction_type: string;
   price: number;
-  location: {
-    address: string;
+  location?: {
+    address?: string;
     geo?: {
       type: string;
       coordinates: [number, number];
@@ -81,7 +81,7 @@ interface Post {
   createdAt: string;
   updatedAt: string;
   __v?: number;
-  
+
   distance_km?: number;
 }
 
@@ -171,9 +171,18 @@ export const ListPost: React.FC<ListPostProps> = ({ posts }) => {
 
   //Tính điểm đánh giá
   const reputationScore = (data: Post) => {
-    if (!data.author_id.reputation || data.author_id.reputation.total_ratings === 0) return 0;
-    return parseFloat((data.author_id.reputation.total_score / data.author_id.reputation.total_ratings).toFixed(1));
-  }
+    if (
+      !data.author_id.reputation ||
+      data.author_id.reputation.total_ratings === 0
+    )
+      return 0;
+    return parseFloat(
+      (
+        data.author_id.reputation.total_score /
+        data.author_id.reputation.total_ratings
+      ).toFixed(1)
+    );
+  };
 
   // Note: rely on CSS `.line-clamp-*` classes for truncation/overflow handling
 
@@ -480,7 +489,7 @@ export const ListPost: React.FC<ListPostProps> = ({ posts }) => {
                         const rawScore = Math.max(
                           0,
                           reputationScore(data)
-                           // data.author.reputationScore
+                          // data.author.reputationScore
                         );
 
                         const pct = Math.round((rawScore / 5) * 100);
@@ -532,7 +541,7 @@ export const ListPost: React.FC<ListPostProps> = ({ posts }) => {
                 />
                 <div className={styles["location-text"]}>
                   <span className={styles["location-name"]}>
-                    {data.location.address}
+                    {data.location?.address || "Không có địa chỉ"}
                   </span>
                   <span className={styles.proximity}>.</span>
                 </div>

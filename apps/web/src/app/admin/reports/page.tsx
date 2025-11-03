@@ -331,8 +331,10 @@ export default function AdminReportsPage() {
 
             <div className={styles.modalBody}>
               <div className={styles.formGroup}>
-                <label>Trạng thái</label>
+                {/* Gắn nhãn cho select để đảm bảo khả năng truy cập */}
+                <label htmlFor="report-status">Trạng thái</label>
                 <select
+                  id="report-status"
                   value={actionForm.status}
                   onChange={(e) =>
                     setActionForm({

@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Schema as MongooseSchema } from 'mongoose';
 
 export interface CategoryDocument extends Category, Document {
   _id: string;
@@ -17,8 +17,12 @@ export class Category {
 
   @Prop()
   image?: string;
+
   @Prop()
   icon?: string;
+
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Category', default: null })
+  parent_id?: MongooseSchema.Types.ObjectId | null;
 }
 
 export const CategorySchema = SchemaFactory.createForClass(Category);

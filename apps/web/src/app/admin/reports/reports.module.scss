@@ -1,3 +1,5 @@
+@use "../../../styles/abstracts/colors.scss"as colors;
+
 .reportsPage {
     display: flex;
     flex-direction: column;
@@ -51,12 +53,12 @@
     }
 
     &:hover {
-        background: #f8fafc;
+        background: colors.$ui-header-transparent-015;
         color: #1e293b;
     }
 
     &.active {
-        background: #4ade80;
+        background: colors.$ui-header;
         color: white;
     }
 }
@@ -246,7 +248,7 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.625rem 1.25rem;
-    background: #4ade80;
+    background: colors.$ui-header-transparent-015;
     color: white;
     border: none;
     border-radius: 8px;
@@ -254,9 +256,6 @@
     cursor: pointer;
     transition: all 0.2s;
 
-    &:hover {
-        background: #22c55e;
-    }
 
     svg {
         font-size: 1.25rem;

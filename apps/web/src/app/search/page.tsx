@@ -115,6 +115,8 @@ function SearchPageContent() {
     max: 100000000,
   });
   const [selectedLocation, setSelectedLocation] = useState<string>("");
+  const [selectedProvinceName, setSelectedProvinceName] = useState<string>("");
+  const [selectedWardName, setSelectedWardName] = useState<string>("");
   const [distance, setDistance] = useState<number>(50);
   const [sortBy, setSortBy] = useState<string>("newest");
   const [showListView, setShowListView] = useState(false);
@@ -133,6 +135,7 @@ function SearchPageContent() {
     setSearchQuery(query);
     const prov = searchParams.get("province");
     setFilterProvinceParam(prov);
+
     // if province param present, reflect it in selectedLocation so UI shows active location chip
     if (prov) {
       // clean common prefixes like "tỉnh", "thành phố", "tp" so it matches parsed addresses
@@ -142,6 +145,10 @@ function SearchPageContent() {
         .replace(/\btp\.?\s*/i, "")
         .trim();
       setSelectedLocation(cleaned || prov);
+
+      // ✅ Đồng bộ với chip bên ngoài (từ Header hoặc URL)
+      setSelectedProvinceName(prov);
+
       // ensure list view is visible and scroll to it
       setShowListView(true);
       // scroll after a tick so DOM exists
@@ -205,14 +212,7 @@ function SearchPageContent() {
   const applyFilters = React.useCallback(() => {
     let filtered = [...postsData];
 
-    // If province query param present, filter posts by parsed province token
-    const provinceParam = (filterProvinceParam || "").trim();
-    // remove common prefixes so 'Thành phố Hà Nội' matches 'Hà Nội'
-    const provinceParamClean = provinceParam
-      .replace(/t[h|h\u00E0]nh\s*ph[o|ố]\s*/i, "")
-      .replace(/tinh\s*/i, "")
-      .replace(/\btp\.?\s*/i, "")
-      .trim();
+    // Helper function for Vietnamese text normalization
     const normalizeForCompare = (s: string) =>
       s
         ? s
@@ -222,15 +222,63 @@ function SearchPageContent() {
             .replace(/[^a-z0-9 ]/g, "")
             .trim()
         : "";
-    const provinceParamNorm = normalizeForCompare(
-      provinceParamClean || provinceParam
-    );
-    if (provinceParamNorm) {
+
+    // ==========================================
+    // FILTER BY PROVINCE (Tỉnh/Thành phố) - SAU SÁP NHẬP 07/2025
+    // ==========================================
+    if (selectedProvinceName) {
+      const provinceNorm = normalizeForCompare(selectedProvinceName);
       filtered = filtered.filter((post) => {
         const parsed = parseAddress(post.location?.address || "");
-        const prov = parsed.province || "";
-        const provNorm = normalizeForCompare(prov);
-        return provNorm && provNorm === provinceParamNorm;
+        const provNorm = normalizeForCompare(parsed.province || "");
+        return provNorm && provNorm === provinceNorm;
+      });
+    }
+    // Legacy province filter from URL (for backward compatibility)
+    else if (filterProvinceParam) {
+      const provinceParam = filterProvinceParam.trim();
+      const provinceParamClean = provinceParam
+        .replace(/t[h|h\u00E0]nh\s*ph[o|ố]\s*/i, "")
+        .replace(/tinh\s*/i, "")
+        .replace(/\btp\.?\s*/i, "")
+        .trim();
+      const provinceParamNorm = normalizeForCompare(
+        provinceParamClean || provinceParam
+      );
+      if (provinceParamNorm) {
+        filtered = filtered.filter((post) => {
+          const parsed = parseAddress(post.location?.address || "");
+          const provNorm = normalizeForCompare(parsed.province || "");
+          return provNorm && provNorm === provinceParamNorm;
+        });
+      }
+    }
+
+    // ==========================================
+    // FILTER BY WARD (Phường/Xã/Đặc khu) - SAU SÁP NHẬP 07/2025
+    // ==========================================
+    if (selectedWardName) {
+      const wardNorm = normalizeForCompare(selectedWardName);
+      filtered = filtered.filter((post) => {
+        const parsed = parseAddress(post.location?.address || "");
+        const postWardNorm = normalizeForCompare(parsed.ward || "");
+        return postWardNorm && postWardNorm === wardNorm;
+      });
+    }
+
+    // ==========================================
+    // FILTER BY DISTANCE (if selectedLocation is set with coordinates)
+    // ==========================================
+    // Note: distance filter currently depends on selectedLocation with lat/lon
+    // This will need geolocation coordinates to work properly
+    // For now, we'll keep it as is for backward compatibility
+    if (selectedLocation && distance > 0) {
+      // Distance filtering requires coordinates in post data
+      // This is placeholder logic - adjust based on your coordinate storage
+      filtered = filtered.filter((post) => {
+        if (!post.location?.geo?.coordinates) return true; // Keep posts without coordinates
+        // Add distance calculation logic here if needed
+        return true;
       });
     }
 
@@ -321,6 +369,10 @@ function SearchPageContent() {
     priceRange,
     sortBy,
     filterProvinceParam,
+    selectedProvinceName,
+    selectedWardName,
+    selectedLocation,
+    distance,
   ]);
 
   useEffect(() => {
@@ -359,21 +411,6 @@ function SearchPageContent() {
 
   const removePriceFilter = () => {
     setPriceRange({ min: 0, max: 100000000 });
-  };
-
-  const removeLocationFilter = () => {
-    setSelectedLocation("");
-    setDistance(50);
-    setFilterProvinceParam(null);
-
-    // Navigate to remove province from URL
-    const newParams = new URLSearchParams(searchParams.toString());
-    newParams.delete("province");
-    newParams.delete("provinceCode");
-
-    // Keep other params like search query
-    const query = newParams.toString();
-    router.push(`/search${query ? `?${query}` : ""}`);
   };
 
   // Get category name by ID
@@ -601,19 +638,46 @@ function SearchPageContent() {
               </div>
             )}
 
-            {/* Location Chip - hiển thị khi có selectedLocation hoặc filterProvinceParam */}
-            {(selectedLocation || filterProvinceParam) && (
-              <div className={`${styles.activeChip} ${styles.chipLocation}`}>
-                <Icon icon="mdi:map-marker" width={16} height={16} />
+            {/* Province Chip - SAU SÁP NHẬP 07/2025 */}
+            {selectedProvinceName && !selectedWardName && (
+              <div className={`${styles.activeChip} ${styles.chipProvince}`}>
+                <Icon icon="mdi:city" width={16} height={16} />
                 <span className={styles.chipLabel}>
-                  {filterProvinceParam || selectedLocation}
-                  {selectedLocation && distance && ` (${distance}km)`}
+                  {selectedProvinceName}
+                  {distance > 0 && ` (${distance}km)`}
                 </span>
                 <button
                   className={styles.chipRemove}
-                  onClick={removeLocationFilter}
-                  title="Xóa"
-                  aria-label="Xóa bộ lọc vị trí"
+                  onClick={() => {
+                    setSelectedProvinceName("");
+                    setSelectedWardName("");
+                  }}
+                  title="Xóa tỉnh"
+                  aria-label="Xóa tỉnh đã chọn"
+                >
+                  <Icon icon="mdi:close" width={14} height={14} />
+                </button>
+              </div>
+            )}
+
+            {/* Ward Chip - SAU SÁP NHẬP 07/2025 */}
+            {/* Hiển thị cả province và ward trong 1 chip nếu cả 2 đều được chọn */}
+            {selectedWardName && (
+              <div className={`${styles.activeChip} ${styles.chipWard}`}>
+                <Icon icon="mdi:map-marker" width={16} height={16} />
+                <span className={styles.chipLabel}>
+                  {selectedWardName}
+                  {selectedProvinceName && `, ${selectedProvinceName}`}
+                  {distance > 0 && ` (${distance}km)`}
+                </span>
+                <button
+                  className={styles.chipRemove}
+                  onClick={() => {
+                    setSelectedProvinceName("");
+                    setSelectedWardName("");
+                  }}
+                  title="Xóa vị trí"
+                  aria-label="Xóa vị trí đã chọn"
                 >
                   <Icon icon="mdi:close" width={14} height={14} />
                 </button>
@@ -705,6 +769,13 @@ function SearchPageContent() {
         setSelectedLocation={setSelectedLocation}
         distance={distance}
         setDistance={setDistance}
+        setSelectedProvinceName={setSelectedProvinceName}
+        setSelectedWardName={setSelectedWardName}
+        initialProvinceCode={
+          searchParams.get("provinceCode")
+            ? Number(searchParams.get("provinceCode"))
+            : undefined
+        }
       />
 
       <PriceRangeModal

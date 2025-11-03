@@ -63,33 +63,10 @@ const Header = () => {
     if (searchQuery.trim()) params.set("q", searchQuery.trim());
 
     if (selectedProvince) {
-      // Use AI to normalize province name according to 2025 reform
-      try {
-        const response = await axios.post(
-          `${API_BASE}/api/gemini/normalize-address`,
-          { address: selectedProvince.name }
-        );
-
-        if (response.data && response.data.confidence > 0.7) {
-          // Use AI-normalized province name
-          const normalizedProvince =
-            response.data.province || selectedProvince.name;
-          params.set("province", normalizedProvince);
-          params.set("provinceCode", String(selectedProvince.code));
-        } else {
-          // Fallback to original if AI confidence is low
-          params.set("province", selectedProvince.name);
-          params.set("provinceCode", String(selectedProvince.code));
-        }
-      } catch (error) {
-        console.error(
-          "AI province normalization failed, using original:",
-          error
-        );
-        // Fallback to original on error
-        params.set("province", selectedProvince.name);
-        params.set("provinceCode", String(selectedProvince.code));
-      }
+      // ✅ Navigate ngay, không cần AI normalization ở Header
+      // AI sẽ được xử lý ở search page khi cần filter
+      params.set("province", selectedProvince.name);
+      params.set("provinceCode", String(selectedProvince.code));
     }
 
     const query = params.toString();
@@ -117,10 +94,11 @@ const Header = () => {
   const [provinceQuery, setProvinceQuery] = useState("");
   const [isGettingLocation, setIsGettingLocation] = useState(false);
 
-  // helper to select a province and immediately open search results for it
-  const handleSelectProvince = async (p: { code: number; name: string }) => {
+  // helper to select a province (chỉ select, không navigate)
+  const handleSelectProvince = (p: { code: number; name: string }) => {
     setSelectedItem(p.name);
     setSelectedProvince({ code: p.code, name: p.name });
+
     try {
       localStorage.setItem(
         "selectedProvince",
@@ -129,28 +107,6 @@ const Header = () => {
     } catch {
       // ignore
     }
-
-    // Use AI to normalize province name before navigating
-    const params = new URLSearchParams();
-    try {
-      const response = await axios.post(
-        `${API_BASE}/api/gemini/normalize-address`,
-        { address: p.name }
-      );
-
-      if (response.data && response.data.confidence > 0.7) {
-        const normalizedProvince = response.data.province || p.name;
-        params.set("province", normalizedProvince);
-      } else {
-        params.set("province", p.name);
-      }
-    } catch (error) {
-      console.error("AI province normalization failed:", error);
-      params.set("province", p.name);
-    }
-
-    params.set("provinceCode", String(p.code));
-    router.push(`/search?${params.toString()}`);
   };
 
   // Load persisted selected province from localStorage (store as JSON {code,name})
@@ -176,19 +132,69 @@ const Header = () => {
         async (position) => {
           try {
             const { latitude, longitude } = position.coords;
-            // Reverse geocoding để lấy tỉnh từ tọa độ
+
+            // ✅ Reverse geocoding với Nominatim
             const response = await fetch(
-              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=8&addressdetails=1`
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
             );
             const data = await response.json();
-
-            // Lấy province/state từ kết quả
             const address = data.address || {};
-            const provinceName =
-              address.province || address.state || address.city || "Việt Nam";
 
-            // Tìm province code từ danh sách provinces
-            // (sẽ được set sau khi fetch provinces API hoàn thành)
+            // ✅ Xây dựng địa chỉ tiếng Việt để gửi cho AI
+            const vietnameseAddressParts = [
+              address.road,
+              address.suburb || address.neighbourhood || address.quarter,
+              address.city || address.town || address.village,
+              address.county,
+              address.state || address.province,
+              address.country === "Việt Nam" ? "Việt Nam" : address.country,
+            ].filter(Boolean);
+
+            const enhancedAddress =
+              vietnameseAddressParts.length > 0
+                ? vietnameseAddressParts.join(", ")
+                : data.display_name || "";
+
+            // ✅ Gọi AI để normalize theo cấu trúc VN 2025
+            try {
+              console.log(
+                "📍 Header: Calling AI with address:",
+                enhancedAddress
+              );
+              const aiResponse = await axios.post(
+                `${API_BASE}/api/gemini/normalize-address`,
+                {
+                  address: enhancedAddress,
+                  lat: latitude,
+                  lon: longitude,
+                }
+              );
+
+              console.log("📍 Header: AI response:", aiResponse.data);
+
+              if (aiResponse.data && aiResponse.data.province) {
+                // ✅ Dùng kết quả từ AI (chuẩn xác với cấu trúc 2025)
+                console.log(
+                  "📍 Header: Setting province from AI:",
+                  aiResponse.data.province
+                );
+                setSelectedItem(aiResponse.data.province);
+                setIsGettingLocation(false);
+                return;
+              }
+            } catch (aiError) {
+              console.warn("⚠️ Header AI normalization failed:", aiError);
+              // Fallback to Nominatim below
+            }
+
+            // ⚠️ Fallback: Dùng Nominatim nếu AI thất bại
+            const provinceName =
+              address.state ||
+              address.province ||
+              address.county ||
+              address.city ||
+              "Việt Nam";
+
             setSelectedItem(provinceName);
             setIsGettingLocation(false);
           } catch (error) {
@@ -198,7 +204,32 @@ const Header = () => {
           }
         },
         (error) => {
-          console.error("Geolocation error:", error);
+          // Xử lý lỗi geolocation trong Header (silent, không làm phiền user)
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              console.warn(
+                "⚠️ Header geolocation: Permission denied, using default 'Việt Nam'"
+              );
+              break;
+            case error.POSITION_UNAVAILABLE:
+              console.warn(
+                "⚠️ Header geolocation: Position unavailable, using default 'Việt Nam'"
+              );
+              break;
+            case error.TIMEOUT:
+              console.warn(
+                "⚠️ Header geolocation: Timeout, using default 'Việt Nam'"
+              );
+              break;
+            default:
+              console.warn(
+                "⚠️ Header geolocation unknown error:",
+                error.message || error
+              );
+              break;
+          }
+
+          // Fallback to default "Việt Nam" (silent, không hiện alert)
           setSelectedItem("Việt Nam");
           setIsGettingLocation(false);
         }
@@ -224,23 +255,65 @@ const Header = () => {
         }));
         setProvinces(mapped);
 
-        // Nếu selectedItem đã được set từ geolocation, tìm code tương ứng
+        // ✅ Nếu selectedItem đã được set từ geolocation (AI-normalized), tìm code tương ứng
+        console.log(
+          "📍 Header: Provinces loaded, selectedItem:",
+          selectedItem,
+          "selectedProvince:",
+          selectedProvince
+        );
+
         if (
           selectedItem &&
           selectedItem !== "Đang xác định..." &&
           selectedItem !== "Việt Nam"
         ) {
-          const matchedProvince = mapped.find(
-            (p: any) =>
-              p.name.toLowerCase().includes(selectedItem.toLowerCase()) ||
-              selectedItem.toLowerCase().includes(p.name.toLowerCase())
+          // Helper để normalize text cho việc so sánh
+          const normalizeForMatch = (text: string) =>
+            text
+              .normalize("NFD")
+              .replace(/[\u0300-\u036f]/g, "")
+              .toLowerCase()
+              .replace(/[đĐ]/g, "d")
+              .trim();
+
+          const normalizedSelected = normalizeForMatch(selectedItem);
+
+          console.log("📍 Header: Trying to match:", normalizedSelected);
+
+          // Thử exact match trước
+          let matchedProvince = mapped.find(
+            (p: any) => normalizeForMatch(p.name) === normalizedSelected
           );
+
+          console.log("📍 Header: Exact match result:", matchedProvince);
+
+          // Nếu không có exact match, thử contains
+          if (!matchedProvince) {
+            matchedProvince = mapped.find(
+              (p: any) =>
+                normalizeForMatch(p.name).includes(normalizedSelected) ||
+                normalizedSelected.includes(normalizeForMatch(p.name))
+            );
+            console.log("📍 Header: Contains match result:", matchedProvince);
+          }
+
           if (matchedProvince && !selectedProvince) {
-            setSelectedProvince({
+            const matched = {
               code: matchedProvince.code,
               name: matchedProvince.name,
-            });
+            };
+            console.log("📍 Header: Setting matched province:", matched);
+            setSelectedProvince(matched);
             setSelectedItem(matchedProvince.name);
+
+            // ✅ Lưu vào localStorage để lần sau không cần gọi geolocation nữa
+            try {
+              localStorage.setItem("selectedProvince", JSON.stringify(matched));
+              console.log("📍 Header: Saved to localStorage:", matched);
+            } catch {
+              // ignore localStorage errors
+            }
           }
         }
 
@@ -628,9 +701,7 @@ const Header = () => {
                       key={p.code}
                       onClick={() => handleSelectProvince(p)}
                     >
-                      <span className="dropdown-item-icon">
-                        <Icon icon="mdi:map-marker" width={16} height={16} />
-                      </span>
+                      <Icon icon="mdi:map-marker" width={16} height={16} />
                       <span className="dropdown-item-label">{p.name}</span>
                     </NavDropdown.Item>
                   ))}

@@ -239,9 +239,6 @@ const AdminTransactionsPage = () => {
               <Icon icon="mdi:cash-multiple" width={40} height={40} />
               Quản lý giao dịch
             </h1>
-            <p className={styles.subtitle}>
-              Quản lý và theo dõi tất cả các giao dịch trên hệ thống
-            </p>
           </div>
           <button
             className={styles.refreshBtn}
@@ -257,7 +254,9 @@ const AdminTransactionsPage = () => {
 
         {/* Statistics Cards */}
         {statistics && (
-    <div className={`${styles.statisticsGrid} ${statsExpanded ? styles.statisticsExpanded : ""}`}>
+          <div
+            className={`${styles.statisticsGrid} ${statsExpanded ? styles.statisticsExpanded : ""}`}
+          >
             <div className={styles.statCard}>
               <div className={`${styles.statIcon} ${styles.statIconPrimary}`}>
                 <Icon icon="mdi:cash-multiple" width={32} height={32} />
@@ -308,7 +307,9 @@ const AdminTransactionsPage = () => {
               </div>
             </div>
 
-            <div className={`${styles.statCard} ${styles.statCardRevenue} ${statsExpanded ? styles.statCardWide : ""}`}>
+            <div
+              className={`${styles.statCard} ${styles.statCardRevenue} ${statsExpanded ? styles.statCardWide : ""}`}
+            >
               <div className={`${styles.statIcon} ${styles.statIconRevenue}`}>
                 <Icon icon="mdi:chart-line" width={32} height={32} />
               </div>

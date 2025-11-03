@@ -54,7 +54,7 @@ interface Post {
 type TabType = "all" | "pending_approval" | "active" | "rejected" | "completed";
 
 export default function AdminPostsPage() {
-   const router = useRouter();
+  const router = useRouter();
   const [posts, setPosts] = useState<Post[]>([]);
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -78,74 +78,72 @@ export default function AdminPostsPage() {
     }
   }, [router]);
   //Socket
-    const [socket, setSocket] = useState<Socket | null>(null);
-    useEffect(() => {
-      // Kết nối socket.io tới BE (NestJS WebSocketGateway)
-      const newSocket = io("http://localhost:8080", {
-        transports: ["websocket"], 
-      });
-  
-      setSocket(newSocket);
-  
-      newSocket.on("connect", () => {
-        console.log("Connected to socket:", newSocket.id);
-      });
-  
-      newSocket.on("disconnect", () => {
-        console.log("Disconnected from socket");
-      });
-  
-      // cleanup khi unmount
-      return () => {
-        newSocket.disconnect();
-      };
-    }, []);
+  const [socket, setSocket] = useState<Socket | null>(null);
+  useEffect(() => {
+    // Kết nối socket.io tới BE (NestJS WebSocketGateway)
+    const newSocket = io("http://localhost:8080", {
+      transports: ["websocket"],
+    });
 
-    const sendNotification= async(post: Post, action: string) => {
-       if (!post || !post._id || !user?._id) {
-        console.warn("Thiếu dữ liệu khi gửi thông báo", post);
-        return;
-      }
-      let title = "";
-      let body = "";
-      if(action ==='approve'){
-         title = "Bài đăng của bạn đã được duyệt";
-         body = `Bài đăng ${post.title} của bạn đã được duyệt và hiển thị trên nền tảng.`;
-      }
-      else if(action ==='reject'){
-         title = "Bài đăng của bạn đã bị từ chối";
-         body = `Bài đăng ${post.title} của bạn đã bị từ chối.\nLý do: ${moderationForm.reject_reason}`;
-      }
-      else if(action ==='remove'){
-         title = "Bài đăng của bạn đã bị xóa";
-         body = `Bài đăng ${post.title} của bạn đã bị xóa. Cảm ơn bạn đã sử dụng dịch vụ.`;
-      }
-      try {
-        await axios.post("http://localhost:8080/api/notifications", {      
-          receiver_id: post.author_id._id, 
-          sender_id: user._id,
-          title: title,
-          body: body,
-          type: "moderation",
-          related_id: post._id,
-          related_model: "Post",
-          deeplink: `/post/detailPost?postId=${post._id}`, 
-          channel: "in_app",
-          is_read: false,
-        });
+    setSocket(newSocket);
 
-          // socket?.emit("join_user",  order.buyer_id._id, );
-            socket?.emit("send_message", {
-                receiverId: post.author_id._id,  
-                message:'Notification'
-            });
+    newSocket.on("connect", () => {
+      console.log("Connected to socket:", newSocket.id);
+    });
 
-        console.log("✅ Gửi thông báo thành công cho người bán");
-      } catch (error) {
-        console.error("❌ Gửi thông báo cho người bán thất bại:", error);
-        alert("Gửi thông báo cho người bán thất bại");
-      }
+    newSocket.on("disconnect", () => {
+      console.log("Disconnected from socket");
+    });
+
+    // cleanup khi unmount
+    return () => {
+      newSocket.disconnect();
+    };
+  }, []);
+
+  const sendNotification = async (post: Post, action: string) => {
+    if (!post || !post._id || !user?._id) {
+      console.warn("Thiếu dữ liệu khi gửi thông báo", post);
+      return;
     }
+    let title = "";
+    let body = "";
+    if (action === "approve") {
+      title = "Bài đăng của bạn đã được duyệt";
+      body = `Bài đăng ${post.title} của bạn đã được duyệt và hiển thị trên nền tảng.`;
+    } else if (action === "reject") {
+      title = "Bài đăng của bạn đã bị từ chối";
+      body = `Bài đăng ${post.title} của bạn đã bị từ chối.\nLý do: ${moderationForm.reject_reason}`;
+    } else if (action === "remove") {
+      title = "Bài đăng của bạn đã bị xóa";
+      body = `Bài đăng ${post.title} của bạn đã bị xóa. Cảm ơn bạn đã sử dụng dịch vụ.`;
+    }
+    try {
+      await axios.post("http://localhost:8080/api/notifications", {
+        receiver_id: post.author_id._id,
+        sender_id: user._id,
+        title: title,
+        body: body,
+        type: "moderation",
+        related_id: post._id,
+        related_model: "Post",
+        deeplink: `/post/detailPost?postId=${post._id}`,
+        channel: "in_app",
+        is_read: false,
+      });
+
+      // socket?.emit("join_user",  order.buyer_id._id, );
+      socket?.emit("send_message", {
+        receiverId: post.author_id._id,
+        message: "Notification",
+      });
+
+      console.log("✅ Gửi thông báo thành công cho người bán");
+    } catch (error) {
+      console.error("❌ Gửi thông báo cho người bán thất bại:", error);
+      alert("Gửi thông báo cho người bán thất bại");
+    }
+  };
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
@@ -229,7 +227,7 @@ export default function AdminPostsPage() {
       setPosts((prev) =>
         prev.map((p) => (p._id === post._id ? { ...p, status: "active" } : p))
       );
-      sendNotification(post, 'approve');
+      sendNotification(post, "approve");
       alert("Đã duyệt bài đăng");
       setSelectedPost(null);
     } catch (error) {
@@ -258,7 +256,7 @@ export default function AdminPostsPage() {
         prev.map((p) => (p._id === post._id ? { ...p, status: "rejected" } : p))
       );
       alert("Đã từ chối bài đăng");
-      sendNotification(post, 'reject');
+      sendNotification(post, "reject");
       setSelectedPost(null);
       setModerationForm({ status: "active", reject_reason: "" });
     } catch (error) {
@@ -269,15 +267,15 @@ export default function AdminPostsPage() {
 
   const handleDeletePost = async (post: Post) => {
     if (!confirm("Bạn có chắc chắn muốn xóa bài đăng này?")) return;
-    
+
     try {
-      sendNotification(post, 'remove');
+      sendNotification(post, "remove");
       const token = localStorage.getItem("access_token");
       await axios.delete(`${API_BASE}/api/posts/${post._id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setPosts((prev) => prev.filter((p) => p._id !== post._id));
-      
+
       alert("Đã xóa bài đăng");
     } catch (error) {
       console.error("Error deleting post:", error);
@@ -709,7 +707,9 @@ export default function AdminPostsPage() {
                     <h3>Kiểm duyệt bài đăng</h3>
                     <div className={styles.formGroup}>
                       <label>Hành động</label>
+                      {/* Thêm aria-label để đảm bảo khả năng truy cập cho select */}
                       <select
+                        aria-label="Chọn hành động kiểm duyệt"
                         value={moderationForm.status}
                         onChange={(e) =>
                           setModerationForm({

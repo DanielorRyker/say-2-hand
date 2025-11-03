@@ -140,7 +140,7 @@
 
   &:focus-within {
     box-shadow: 0 4px 20px rgba(59, 130, 246, 0.2), 0 0 0 2px rgba(59, 130, 246, 0.3);
-    transform: translateY(-2px);
+
   }
 
   &:hover {
@@ -153,9 +153,7 @@
   flex-shrink: 0;
   transition: color 0.2s ease;
 
-  .searchInputGroup:focus-within & {
-    color: #3b82f6;
-  }
+
 }
 
 .searchForm {
@@ -481,14 +479,13 @@
   transition: all 0.2s ease;
 
   &:hover {
-    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
     box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
     transform: translateY(-1px);
   }
 
   &:active {
     transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    // box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
   }
 
   @include vars.respond-below('lg') {
