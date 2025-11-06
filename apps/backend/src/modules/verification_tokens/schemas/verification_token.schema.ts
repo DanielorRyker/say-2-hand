@@ -24,3 +24,9 @@ export class VerificationToken {
   consumed: boolean;
 }
 export const TokenSchema = SchemaFactory.createForClass(VerificationToken);
+
+// Thêm các index để tối ưu hiệu suất truy vấn
+TokenSchema.index({ user_id: 1, type: 1, consumed: 1 }); // Index kết hợp cho tra cứu token chưa sử dụng của người dùng theo loại
+TokenSchema.index({ token_hash: 1 }); // Index cho xác thực token
+// TTL Index để tự động xóa token hết hạn sau 24 giờ
+TokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 86400 }); // 24 hours = 86400 seconds

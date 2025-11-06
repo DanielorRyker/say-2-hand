@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import {
@@ -15,6 +16,8 @@ import { VerificationTokensService } from '../verification_tokens/verification_t
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
@@ -36,9 +39,13 @@ export class AuthService {
       throw new ForbiddenException('Wrong password');
     }
     const payload = { sub: user._id, username: user.email };
+
+    // Sử dụng JWT_ACCESS_TOKEN_EXPIRE từ .env thay vì hardcode
+    const expiresIn = process.env.JWT_ACCESS_TOKEN_EXPIRE || '1d';
+
     return {
       access_token: await this.jwtService.signAsync(payload, {
-        expiresIn: '1h',
+        expiresIn: expiresIn as any, // Bypass TypeScript strict type check
       }),
     };
   }
@@ -47,20 +54,25 @@ export class AuthService {
   async createHashOTP(otp: string, email: string): Promise<any> {
     const userId = await this.usersService.findIdByEmail(email);
     if (!userId) {
-      console.error('Không tìm thấy user với email:', email);
-      return null;
+      this.logger.error(`User not found with email: ${email}`);
+      throw new NotFoundException(`User not found with email: ${email}`);
     }
-    const hashOTP = await hashPasswordHelper(otp);
-    if (!hashOTP) {
-      throw new Error('Hashing OTP failed');
-    }
+
+    // Improved OTP: 8 digits for better security
+    const secureOTP = Math.floor(
+      10000000 + Math.random() * 90000000,
+    ).toString();
+    const hashOTP = await hashPasswordHelper(secureOTP);
+
     await this.verificationTokensService.create({
-      user_id: userId, // test tạm bằng 1 ObjectId hợp lệ
+      user_id: userId,
       type: 'email',
       token_hash: hashOTP,
-      expiresAt: new Date(Date.now() + 5 * 60 * 1000), // hết hạn sau 5 phút
+      expiresAt: new Date(Date.now() + 10 * 60 * 1000), // hết hạn sau 10 phút (increased from 5)
       consumed: false,
     });
+
+    return secureOTP; // Return OTP để gửi email
   }
 
   //Kiểm traOTP
@@ -104,19 +116,15 @@ export class AuthService {
   }
 
   //Tạo OTP cho reset Password
-  //tạo OTP
   async createHashOTPPassword(otp: string, email: string): Promise<any> {
     const userId = await this.usersService.findIdByEmail(email);
     if (!userId) {
-      console.error('Không tìm thấy user với email:', email);
-      return null;
+      this.logger.error(`User not found with email: ${email}`);
+      throw new NotFoundException(`User not found with email: ${email}`);
     }
     const hashOTP = await hashPasswordHelper(otp);
-    if (!hashOTP) {
-      throw new Error('Hashing OTP failed');
-    }
     await this.passwordResetsService.create({
-      user_id: userId, // test tạm bằng 1 ObjectId hợp lệ
+      user_id: userId,
       token_hash: hashOTP,
       expiresAt: new Date(Date.now() + 5 * 60 * 1000), // hết hạn sau 5 phút
       consumed: false,

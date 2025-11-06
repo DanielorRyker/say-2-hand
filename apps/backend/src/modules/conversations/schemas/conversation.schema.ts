@@ -31,3 +31,11 @@ export class Conversation extends Document {
 }
 
 export const ConversationSchema = SchemaFactory.createForClass(Conversation);
+
+// Thêm các index để tối ưu hiệu suất truy vấn
+ConversationSchema.index({ post_id: 1 }); // Index cho tra cứu cuộc hội thoại theo bài đăng
+ConversationSchema.index({ participants: 1 }); // Index multikey cho tra cứu cuộc hội thoại theo người tham gia
+// conversation_key đã có unique: true trong @Prop, không cần index riêng
+ConversationSchema.index({ 'last_message.created_at': -1 }); // Index cho sắp xếp theo thời gian tin nhắn cuối
+// Index kết hợp cho truy vấn phổ biến: tìm cuộc hội thoại của người dùng và sắp xếp theo hoạt động gần đây
+ConversationSchema.index({ participants: 1, 'last_message.created_at': -1 });

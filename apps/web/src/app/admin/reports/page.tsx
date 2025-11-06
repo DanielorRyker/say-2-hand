@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
-import axios from "axios";
+import axios from "@/lib/api-client";
 import Image from "next/image";
 import styles from "./reports.module.scss";
 import { API_BASE } from "@/lib/constants";

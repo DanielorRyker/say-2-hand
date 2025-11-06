@@ -3,7 +3,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import styles from "@/styles/pages/profile/edit-v2.module.scss";
 import { useState, useEffect } from "react";
-import axios from "axios";
+import axios from "@/lib/api-client";
 import { formatImageUrl, URL_GCS } from "@/lib/constants";
 
 interface Address {

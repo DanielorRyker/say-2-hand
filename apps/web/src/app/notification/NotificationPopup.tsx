@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { Bell, CheckCircle } from "lucide-react";
-import axios from "axios";
+import axios from "@/lib/api-client";
 import styles from "./notification.module.scss";
 import headerStyles from "@/app/layouts/header.module.scss";
 import Image from "next/image";
@@ -68,22 +68,25 @@ export default function NotificationPopup() {
   }, []);
 
   // 📥 Gọi API lấy thông báo
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     if (!currentUser?._id) return;
     try {
       const res = await axios.get(
         `http://localhost:8080/api/notifications/user/${currentUser._id}`
       );
-      setNotifications(res.data);
 
-      const unread = res.data.filter(
+      // Kiểm tra response có phải array không
+      const notifications = Array.isArray(res.data) ? res.data : [];
+      setNotifications(notifications);
+
+      const unread = notifications.filter(
         (n: { is_read: any }) => !n.is_read
       ).length;
       setUnreadCount(unread);
     } catch (error) {
       console.error("Lỗi khi tải thông báo:", error);
     }
-  };
+  }, [currentUser?._id]);
 
   useEffect(() => {
     if (currentUser?._id) {
@@ -122,45 +125,45 @@ export default function NotificationPopup() {
   };
 
   //Socket
-  
+
   const [socket, setSocket] = useState<Socket | null>(null);
 
-useEffect(() => {
-  const newSocket = io("http://localhost:8080", {
-    transports: ["websocket"],
-  });
-  setSocket(newSocket);
+  useEffect(() => {
+    const newSocket = io("http://localhost:8080", {
+      transports: ["websocket"],
+    });
+    setSocket(newSocket);
 
-  newSocket.on("connect", () => {
-    console.log("Connected to socket:", newSocket.id);
-  });
+    newSocket.on("connect", () => {
+      console.log("Connected to socket:", newSocket.id);
+    });
 
-  newSocket.on("disconnect", () => {
-    console.log("Disconnected from socket");
-  });
+    newSocket.on("disconnect", () => {
+      console.log("Disconnected from socket");
+    });
 
-  return () => {
-    newSocket.disconnect();
-  };
-}, []);
+    return () => {
+      newSocket.disconnect();
+    };
+  }, []);
 
-// Join user khi đã có socket và user
-useEffect(() => {
-  if (!socket || !currentUser?._id) return;
+  // Join user khi đã có socket và user
+  useEffect(() => {
+    if (!socket || !currentUser?._id) return;
 
-  console.log("Joining user room:", currentUser._id);
-  socket.emit("join_user", { userId: currentUser._id });
-
-  // Optional: gửi lại khi socket reconnect
-  socket.on("connect", () => {
-    console.log("Reconnect detected, rejoining user room:", currentUser._id);
+    console.log("Joining user room:", currentUser._id);
     socket.emit("join_user", { userId: currentUser._id });
-  });
 
-  return () => {
-    socket.off("connect");
-  };
-}, [socket, currentUser?._id]);
+    // Optional: gửi lại khi socket reconnect
+    socket.on("connect", () => {
+      console.log("Reconnect detected, rejoining user room:", currentUser._id);
+      socket.emit("join_user", { userId: currentUser._id });
+    });
+
+    return () => {
+      socket.off("connect");
+    };
+  }, [socket, currentUser?._id]);
 
   // Lắng nghe receive_message => reload API
   useEffect(() => {
@@ -315,7 +318,9 @@ useEffect(() => {
                           <div></div>
                         )}
                       </div>
-                      <div className={styles.body}><p className={styles.white_space}>{n.body}</p></div>
+                      <div className={styles.body}>
+                        <p className={styles.white_space}>{n.body}</p>
+                      </div>
                       <div className={styles.time}>
                         {getRelativeTime(n.createdAt)}
                       </div>
@@ -360,7 +365,7 @@ useEffect(() => {
                         height={48}
                       />
                     ) : (
-                      <div ></div>
+                      <div></div>
                     )}
                   </div>
                 </div>

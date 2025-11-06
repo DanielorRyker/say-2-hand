@@ -1,10 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Category, CategoryDocument } from './schemas/category.schema';
 import { Model, Types } from 'mongoose';
 import { GeminiService } from '../gemini/gemini.service';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 
 @Injectable()
 export class CategoriesService {
@@ -12,6 +14,7 @@ export class CategoriesService {
     @InjectModel(Category.name)
     private categoryModel: Model<CategoryDocument>,
     private geminiService: GeminiService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async create(createCategoryDto: CreateCategoryDto) {
@@ -39,25 +42,59 @@ export class CategoriesService {
     return { _id: category._id };
   }
 
-  findAll() {
-    return this.categoryModel
+  // Task 46: Cache categories list (rarely changes)
+  async findAll() {
+    const cacheKey = 'categories:all';
+    const cached = await this.cacheManager.get<Category[]>(cacheKey);
+
+    if (cached) {
+      return cached;
+    }
+
+    const categories = await this.categoryModel
       .find()
       .populate('parent_id', 'name slug icon')
+      .lean()
       .exec();
+
+    // Cache for 30 minutes (categories don't change often)
+    await this.cacheManager.set(cacheKey, categories, 1800000);
+
+    return categories;
   }
 
-  findOne(id: string) {
+  async findOne(id: string) {
     if (!Types.ObjectId.isValid(id)) {
       throw new NotFoundException('Invalid category ID');
     }
-    return this.categoryModel
+
+    const cacheKey = `category:${id}`;
+    const cached = await this.cacheManager.get<Category>(cacheKey);
+
+    if (cached) {
+      return cached;
+    }
+
+    const category = await this.categoryModel
       .findById(id)
       .populate('parent_id', 'name slug icon')
+      .lean()
       .exec();
+
+    if (category) {
+      // Cache for 30 minutes
+      await this.cacheManager.set(cacheKey, category, 1800000);
+    }
+
+    return category;
   }
 
   async update(updateCategoryDto: UpdateCategoryDto) {
     const { _id, parent_id, icon } = updateCategoryDto;
+
+    // Invalidate cache khi update
+    await this.cacheManager.del('categories:all');
+    await this.cacheManager.del(`category:${_id}`);
 
     // Không cho phép set parent_id là chính nó
     if (parent_id && parent_id === _id) {

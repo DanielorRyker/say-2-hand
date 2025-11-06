@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "./payment.module.scss";
-import axios from "axios";
+import axios from "@/lib/api-client";
 import PaymentComponent from "./component";
 
 const PaymentPage: React.FC = () => {

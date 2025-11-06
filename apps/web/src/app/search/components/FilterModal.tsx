@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "@/lib/api-client";
 import { Icon } from "@iconify/react";
 import styles from "./FilterModal.module.scss";
 import CategoryDropdown from "./CategoryDropdown";

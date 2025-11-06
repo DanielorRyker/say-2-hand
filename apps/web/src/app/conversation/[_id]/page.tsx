@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import cvstStyles from "@/app/conversation/conversation.module.scss";
 import Image from "next/image";
-import axios from "axios";
+import axios from "@/lib/api-client";
 import { formatImageUrl } from "@/lib/constants";
 import { io, Socket } from "socket.io-client";
 import { useRouter } from "next/navigation";

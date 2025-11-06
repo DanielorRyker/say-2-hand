@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import styles from "@/styles/pages/auth/register-v2.module.scss";
 import { useState, useEffect } from "react";
-import axios from "axios";
+import axios from "@/lib/api-client";
 import Image from "next/image";
 
 interface Address {
@@ -60,59 +60,45 @@ const RegisterPage = () => {
   // API version: true = v2 (2025, 2 cấp), false = v1 (legacy, 3 cấp)
   const [useApiV2, setUseApiV2] = useState<boolean>(true);
 
-  // Load provinces on mount
+  // Load provinces on mount - Sử dụng API route để tránh CORS
   useEffect(() => {
     const fetchProvinces = async () => {
       try {
-        // Try API v2 first (2025 structure with 34 provinces)
-        const apiUrl = useApiV2
-          ? "https://provinces.open-api.vn/api/v2/p/"
-          : "https://provinces.open-api.vn/api/p/";
-
-        const response = await axios.get(apiUrl);
-        setProvinces(response.data);
+        // Sử dụng Next.js API route thay vì gọi trực tiếp (tránh CORS)
+        const apiUrl = useApiV2 ? "/api/provinces-v2" : "/api/provinces";
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        setProvinces(data);
       } catch (error) {
         console.error("Failed to load provinces:", error);
-        // Fallback to v1 if v2 fails
-        if (useApiV2) {
-          try {
-            const response = await axios.get(
-              "https://provinces.open-api.vn/api/p/"
-            );
-            setProvinces(response.data);
-            setUseApiV2(false);
-          } catch (fallbackError) {
-            console.error(
-              "Failed to load provinces (fallback):",
-              fallbackError
-            );
-          }
-        }
       }
     };
     fetchProvinces();
   }, [useApiV2]);
 
-  // Load districts/wards when province changes
+  // Load districts/wards when province changes - Sử dụng API route
   useEffect(() => {
     if (selectedProvince > 0) {
       const fetchSubdivisions = async () => {
         try {
           if (useApiV2) {
             // API v2 (2025): Province → Ward trực tiếp (bỏ District)
-            const response = await axios.get(
-              `https://provinces.open-api.vn/api/v2/p/${selectedProvince}?depth=2`
+            const response = await fetch(
+              `/api/wards?provinceCode=${selectedProvince}&v2=true`
             );
-            setWards(response.data.wards || []);
+            const data = await response.json();
+            console.log("Wards v2 data:", data);
+            setWards(data);
             setDistricts([]); // Không có district trong mô hình 2 cấp
             setSelectedDistrict(0);
             setSelectedWard(0);
           } else {
             // API v1 (legacy): Province → District → Ward
-            const response = await axios.get(
-              `https://provinces.open-api.vn/api/p/${selectedProvince}?depth=2`
+            const response = await fetch(
+              `/api/districts?provinceCode=${selectedProvince}`
             );
-            setDistricts(response.data.districts || []);
+            const data = await response.json();
+            setDistricts(data);
             setWards([]);
             setSelectedDistrict(0);
             setSelectedWard(0);
@@ -125,15 +111,16 @@ const RegisterPage = () => {
     }
   }, [selectedProvince, useApiV2]);
 
-  // Load wards when district changes (only for API v1 legacy)
+  // Load wards when district changes (only for API v1 legacy) - Sử dụng API route
   useEffect(() => {
     if (!useApiV2 && selectedDistrict > 0) {
       const fetchWards = async () => {
         try {
-          const response = await axios.get(
-            `https://provinces.open-api.vn/api/d/${selectedDistrict}?depth=2`
+          const response = await fetch(
+            `/api/wards?districtCode=${selectedDistrict}`
           );
-          setWards(response.data.wards);
+          const data = await response.json();
+          setWards(data);
           setSelectedWard(0);
         } catch (error) {
           console.error("Failed to load wards:", error);

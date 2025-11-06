@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import styleLogin from "@/styles/pages/auth/login.module.scss";
 import styleVerification from "@/styles/pages/auth/verification.module.scss";
-import axios from "axios";
+import axios from "@/lib/api-client";
 import { useEffect, useState } from "react";
 
 const Home = () => {
@@ -58,15 +58,15 @@ const Home = () => {
   // bấm nút xác nhận
 
   const handleBtn = async () => {
-    if (!form.otp) {
-      alert("Vui lòng nhập OTP");
+    if (!form.otp || form.otp.length !== 8) {
+      alert("Vui lòng nhập đầy đủ 8 số OTP");
       return;
     }
     try {
       await axios.post(
         "http://localhost:8080/api/auth/verify", // API NestJS
         form,
-        { withCredentials: true }, // nếu BE dùng cookie/session
+        { withCredentials: true } // nếu BE dùng cookie/session
       );
       alert("Xác thực thành công");
       router.push("/auth/login");
@@ -89,7 +89,7 @@ const Home = () => {
     <div className={styleLogin["container"]}>
       <div className={styleVerification["card"]}>
         <div>
-          <p className={styleLogin["title"]}>Nhập mã xác nhận </p>
+          <p className={styleLogin["title"]}>Nhập mã xác nhận (8 số)</p>
           <p className={styleVerification["textCenter"]}>
             OTP đã được gửi đến email {form.email}
           </p>
@@ -97,11 +97,13 @@ const Home = () => {
         <div className={styleVerification["gradientBorder"]}>
           <input
             type="text"
-            placeholder="Nhập OTP"
+            placeholder="Nhập OTP 8 số"
             className={styleVerification["input"]}
             value={form.otp}
             name="otp"
             onChange={handleChange}
+            maxLength={8}
+            inputMode="numeric"
           />
         </div>
 

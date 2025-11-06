@@ -80,3 +80,16 @@ export class Transaction {
 }
 
 export const TransactionSchema = SchemaFactory.createForClass(Transaction);
+
+// Thêm các index để tối ưu hiệu suất truy vấn
+TransactionSchema.index({ buyer_id: 1 }); // Index cho tra cứu giao dịch theo người mua
+TransactionSchema.index({ seller_id: 1 }); // Index cho tra cứu giao dịch theo người bán
+TransactionSchema.index({ post_id: 1 }); // Index cho tra cứu giao dịch theo bài đăng
+TransactionSchema.index({ status: 1 }); // Index cho lọc theo trạng thái
+TransactionSchema.index({ payment_status: 1 }); // Index cho lọc theo trạng thái thanh toán
+TransactionSchema.index({ createdAt: -1 }); // Index cho sắp xếp theo thời gian tạo
+// Index kết hợp cho truy vấn phổ biến: tìm giao dịch của người dùng theo trạng thái
+TransactionSchema.index({ buyer_id: 1, status: 1 });
+TransactionSchema.index({ seller_id: 1, status: 1 });
+// Task 22: Unique constraint cho mã giao dịch
+TransactionSchema.index({ transaction_ref: 1 }, { unique: true });

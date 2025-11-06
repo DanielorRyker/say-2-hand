@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import styles from "./CategoryForm.module.scss";
 import stylesBasicForm from "./BasicInfoForm.module.scss";
 import dynamic from "next/dynamic";
-import axios from "axios";
+import axios from "@/lib/api-client";
 
 // import MapPicker động để tránh vấn đề SSR
 const MapPicker = dynamic(() => import("./MapPicker"), { ssr: false });

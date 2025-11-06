@@ -10,18 +10,57 @@ export const getUploadConfig = (
     configService.get<string>('UPLOAD_MAX_FILE_SIZE_MB') ?? '10',
     10,
   );
+
+  // Allowed MIME types
+  const allowedMimeTypes = [
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  ];
+
   return {
     storage: multer.memoryStorage(),
     limits: {
       fileSize: fileSizeMb * 1024 * 1024, // configurable max size
+      files: 10, // Max 10 files per request
     },
     fileFilter: (req, file, callback) => {
-      if (!file.originalname.match(/\.(jpg|jpeg|png|gif|pdf|doc|docx)$/)) {
+      // Check MIME type
+      if (!allowedMimeTypes.includes(file.mimetype)) {
         return callback(
-          new Error('Only image and document files are allowed!'),
+          new Error(
+            `File type ${file.mimetype} is not allowed. Only images and documents are accepted.`,
+          ),
           false,
         );
       }
+
+      // Check file extension
+      if (
+        !file.originalname.match(/\.(jpg|jpeg|png|gif|webp|pdf|doc|docx)$/i)
+      ) {
+        return callback(
+          new Error(
+            'Invalid file extension. Only jpg, jpeg, png, gif, webp, pdf, doc, docx are allowed.',
+          ),
+          false,
+        );
+      }
+
+      // Check for suspicious patterns in filename
+      if (
+        file.originalname.includes('..') ||
+        file.originalname.includes('/') ||
+        file.originalname.includes('\\')
+      ) {
+        return callback(new Error('Invalid filename'), false);
+      }
+
       callback(null, true);
     },
   };

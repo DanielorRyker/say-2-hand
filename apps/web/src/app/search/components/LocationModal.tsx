@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import { Icon } from "@iconify/react";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
+import axiosInstance from "@/lib/api-client";
 import styles from "./LocationModal.module.scss";
 import { API_BASE } from "@/lib/constants";
 
@@ -61,20 +62,20 @@ export default function LocationModal({
     async function fetchProvinces() {
       try {
         setLoading(true);
-        const res = await axios.get<Province[]>(
-          "https://provinces.open-api.vn/api/v2/p/"
-        );
+        // ✅ Sử dụng Next.js API route thay vì gọi trực tiếp
+        const res = await fetch("/api/provinces-v2");
         if (!mounted) return;
-        setProvinces(res.data || []);
+        const data = await res.json();
+        setProvinces(data || []);
 
         // ✅ Chỉ auto-detect khi KHÔNG có initialProvinceCode (chưa chọn từ URL)
-        if (res.data && res.data.length > 0 && !initialProvinceCode) {
+        if (data && data.length > 0 && !initialProvinceCode) {
           // Try to get current location
-          detectCurrentLocation(res.data);
+          detectCurrentLocation(data);
         } else if (initialProvinceCode) {
           // ✅ Đã có province từ URL → Đồng bộ chip ngay
-          const initialProvince = res.data.find(
-            (p) => p.code === initialProvinceCode
+          const initialProvince = data.find(
+            (p: Province) => p.code === initialProvinceCode
           );
           if (initialProvince && setSelectedProvinceName) {
             setSelectedProvinceName(initialProvince.name);
@@ -101,14 +102,16 @@ export default function LocationModal({
     async function fetchWards() {
       try {
         setLoading(true);
-        const res = await axios.get<{ wards: Ward[] }>(
-          `https://provinces.open-api.vn/api/v2/p/${selectedProvinceCode}?depth=2`
+        // ✅ Sử dụng Next.js API route với parameter v2=true
+        const res = await fetch(
+          `/api/wards?provinceCode=${selectedProvinceCode}&v2=true`
         );
         if (!mounted) return;
-        setWards(res.data.wards || []);
+        const data = await res.json();
+        setWards(data || []);
         // Set default to first ward if not already set
-        if (res.data.wards && res.data.wards.length > 0 && !selectedWardCode) {
-          setSelectedWardCode(res.data.wards[0].code);
+        if (data && data.length > 0 && !selectedWardCode) {
+          setSelectedWardCode(data[0].code);
         }
       } catch (error) {
         console.error("Error fetching wards:", error);
@@ -150,7 +153,7 @@ export default function LocationModal({
     confidence: number;
   } | null> => {
     try {
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         `${API_BASE}/api/gemini/normalize-address`,
         {
           address: rawAddress,
@@ -170,7 +173,7 @@ export default function LocationModal({
       return null;
     } catch (error) {
       console.error("❌ AI normalization failed:", error);
-      if (axios.isAxiosError(error)) {
+      if (error instanceof AxiosError) {
         console.error("Response data:", error.response?.data);
         console.error("Response status:", error.response?.status);
       }

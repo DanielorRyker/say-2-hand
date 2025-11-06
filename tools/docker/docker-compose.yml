@@ -14,6 +14,12 @@ services:
     volumes:
       - mongodb_data:/data/db
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     networks:
       - say2hand-network
 
@@ -25,6 +31,12 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
     networks:
       - say2hand-network
 
@@ -43,12 +55,24 @@ services:
       - REDIS_URL=redis://redis:6379
       - JWT_SECRET=development-jwt-secret-key
       - JWT_EXPIRES_IN=24h
+      - CORS_ORIGIN=http://localhost:3000
+      - RATE_LIMIT_TTL=60
+      - RATE_LIMIT_MAX=100
     depends_on:
-      - mongodb
-      - redis
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     volumes:
       - ../../apps/backend:/app
       - /app/node_modules
+      - /app/dist
     networks:
       - say2hand-network
 
@@ -64,7 +88,14 @@ services:
       - NEXT_PUBLIC_API_URL=http://localhost:8080
       - NODE_ENV=development
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     volumes:
       - ../../apps/web:/app
       - /app/node_modules

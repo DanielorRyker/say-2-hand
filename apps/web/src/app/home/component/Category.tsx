@@ -1,6 +1,6 @@
 "use client";
 import styles from "./category.module.scss";
-import axios from "axios";
+import axios from "@/lib/api-client";
 import { API_BASE, formatImageUrl, URL_GCS } from "@/lib/constants";
 import Image from "next/image";
 import { useEffect, useState } from "react";

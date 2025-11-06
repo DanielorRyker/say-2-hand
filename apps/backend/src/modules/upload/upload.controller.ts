@@ -6,15 +6,20 @@ import {
   UploadedFile,
   UploadedFiles,
   UseInterceptors,
+  UseGuards,
+  Logger,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { UploadService } from './upload.service';
+import { JwtAuthGuard } from '../../common/jwt/jwt-auth.guard';
 
 @Controller('upload')
+@UseGuards(JwtAuthGuard) // Bảo vệ toàn bộ controller
 export class UploadController {
-  constructor(private readonly uploadService: UploadService) {}
+  private readonly logger = new Logger(UploadController.name);
 
+  constructor(private readonly uploadService: UploadService) {}
 
   @Post('avatar')
   @UseInterceptors(FileInterceptor('file'))
@@ -43,7 +48,7 @@ export class UploadController {
     return { filename };
   }
 
-   @Post('imgs')
+  @Post('imgs')
   @UseInterceptors(FilesInterceptor('files')) // <-- 'files' là tên field trong FormData
   async uploadImages(
     @UploadedFiles() files: Express.Multer.File[],
@@ -53,14 +58,10 @@ export class UploadController {
     return { filenames };
   }
 
-   @Post('deleteIMG')
-    async deleteIMG(@Body('bucket') bucket: string) {
-      console.log('🪣 Bucket cần xóa:', bucket);
-      const result = await this.uploadService.deleteFileOrFolder(bucket);
-      return result;
-    }
-
-
-
-  
+  @Post('deleteIMG')
+  async deleteIMG(@Body('bucket') bucket: string) {
+    this.logger.log(`Deleting bucket: ${bucket}`);
+    const result = await this.uploadService.deleteFileOrFolder(bucket);
+    return result;
+  }
 }

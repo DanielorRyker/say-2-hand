@@ -20,7 +20,10 @@
     "clean": "turbo run clean",
     "type-check": "turbo run type-check",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "setup": "bun run tools/scripts/setup.js"
+    "setup": "bun run tools/scripts/setup.js",
+    "load-test": "k6 run load-test.js",
+    "load-test:spike": "k6 run load-test-spike.js",
+    "load-test:stress": "k6 run load-test-stress.js"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",

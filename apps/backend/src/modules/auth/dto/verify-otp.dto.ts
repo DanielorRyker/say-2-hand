@@ -7,6 +7,6 @@ export class VerifyOtpDto {
 
   @IsString({ message: 'OTP phải là chuỗi ký tự' })
   @IsNotEmpty({ message: 'OTP không được để trống' })
-  @Length(6, 6, { message: 'OTP phải có đúng 6 ký tự' })
+  @Length(8, 8, { message: 'OTP phải có đúng 8 ký tự' })
   otp: string;
 }

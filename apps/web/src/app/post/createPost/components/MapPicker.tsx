@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import axios from "axios";
+import axios from "@/lib/api-client";
 // @ts-expect-error - side-effect CSS import for leaflet
 import "leaflet/dist/leaflet.css";
 import styles from "./CategoryForm.module.scss";

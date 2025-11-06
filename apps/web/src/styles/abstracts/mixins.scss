@@ -1,0 +1,338 @@
+// ==========================================
+// SAY2HAND - SCSS MIXINS
+// ==========================================
+// Task 25-29: Tối ưu CSS với reusable mixins
+
+@use './variables.scss'as *;
+@use './colors.scss'as colors;
+
+// ==========================================
+// RESPONSIVE BREAKPOINTS
+// ==========================================
+$breakpoints: ('xs': 320px,
+    'sm': 640px,
+    'md': 768px,
+    'lg': 1024px,
+    'xl': 1280px,
+    '2xl': 1536px);
+
+// Mixin cho responsive design
+@mixin respond-to($breakpoint) {
+    @if map-has-key($breakpoints, $breakpoint) {
+        @media (min-width: map-get($breakpoints, $breakpoint)) {
+            @content;
+        }
+    }
+
+    @else {
+        @warn "Breakpoint '#{$breakpoint}' không tồn tại.";
+    }
+}
+
+// Mobile-first responsive
+@mixin mobile {
+    @media (max-width: 639px) {
+        @content;
+    }
+}
+
+@mixin tablet {
+    @media (min-width: 640px) and (max-width: 1023px) {
+        @content;
+    }
+}
+
+@mixin desktop {
+    @media (min-width: 1024px) {
+        @content;
+    }
+}
+
+// ==========================================
+// FLEXBOX UTILITIES
+// ==========================================
+@mixin flex-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+@mixin flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+@mixin flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+@mixin flex-column-center {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+// ==========================================
+// TYPOGRAPHY UTILITIES
+// ==========================================
+@mixin text-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@mixin text-truncate-lines($lines: 2) {
+    display: -webkit-box;
+    -webkit-line-clamp: $lines;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@mixin font-smooth {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+// ==========================================
+// CARD & SHADOW UTILITIES
+// ==========================================
+@mixin card-base {
+    background: white;
+    border-radius: $border-radius-lg;
+    padding: $spacing-lg;
+    box-shadow: $shadow-sm;
+    transition: all $transition-normal;
+}
+
+@mixin card-hover {
+    &:hover {
+        box-shadow: $shadow-lg;
+        transform: translateY(-2px);
+    }
+}
+
+@mixin glass-effect {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+// ==========================================
+// BUTTON UTILITIES
+// ==========================================
+@mixin button-base {
+    padding: $spacing-sm $spacing-lg;
+    border-radius: $border-radius-md;
+    font-weight: $font-weight-medium;
+    font-size: $font-size-base;
+    cursor: pointer;
+    transition: all $transition-fast;
+    border: none;
+    outline: none;
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}
+
+@mixin button-gradient($gradient) {
+    background: $gradient;
+    color: white;
+
+    &:hover:not(:disabled) {
+        opacity: 0.9;
+        transform: translateY(-1px);
+    }
+
+    &:active:not(:disabled) {
+        transform: translateY(0);
+    }
+}
+
+// ==========================================
+// FORM UTILITIES
+// ==========================================
+@mixin input-base {
+    width: 100%;
+    padding: $spacing-sm $spacing-md;
+    border: 1px solid colors.$border-medium;
+    border-radius: $border-radius-md;
+    font-size: $font-size-base;
+    transition: all $transition-fast;
+
+    &:focus {
+        outline: none;
+        border-color: colors.$solid-primary;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    &::placeholder {
+        color: colors.$text-tertiary;
+    }
+
+    &:disabled {
+        background-color: colors.$bg-disabled;
+        cursor: not-allowed;
+    }
+}
+
+// ==========================================
+// ANIMATION UTILITIES
+// ==========================================
+@mixin fade-in($duration: 0.3s) {
+    animation: fadeIn $duration ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@mixin slide-up($duration: 0.3s) {
+    animation: slideUp $duration ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@mixin spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+// ==========================================
+// POSITION UTILITIES
+// ==========================================
+@mixin absolute-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+@mixin absolute-full {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+// ==========================================
+// SCROLL UTILITIES
+// ==========================================
+@mixin custom-scrollbar($width: 8px) {
+    &::-webkit-scrollbar {
+        width: $width;
+        height: $width;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: colors.$solid-bg-light;
+        border-radius: $width;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: colors.$solid-border-medium;
+        border-radius: $width;
+
+        &:hover {
+            background: colors.$solid-border-dark;
+        }
+    }
+}
+
+@mixin hide-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+// ==========================================
+// IMAGE UTILITIES
+// ==========================================
+@mixin aspect-ratio($width, $height) {
+    aspect-ratio: $width / $height;
+
+    @supports not (aspect-ratio: 1) {
+        &::before {
+            content: '';
+            display: block;
+            padding-top: calc($height / $width * 100%);
+        }
+    }
+}
+
+@mixin object-fit-cover {
+    object-fit: cover;
+    object-position: center;
+}
+
+// ==========================================
+// ACCESSIBILITY UTILITIES
+// ==========================================
+@mixin sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+@mixin focus-visible {
+    &:focus-visible {
+        outline: 2px solid colors.$solid-primary;
+        outline-offset: 2px;
+    }
+}
+
+// ==========================================
+// GRID UTILITIES
+// ==========================================
+@mixin grid-auto-fit($min-width: 250px, $gap: $spacing-md) {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax($min-width, 1fr));
+    gap: $gap;
+}
+
+@mixin grid-auto-fill($min-width: 250px, $gap: $spacing-md) {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax($min-width, 1fr));
+    gap: $gap;
+}

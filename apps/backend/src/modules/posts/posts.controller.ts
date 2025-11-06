@@ -6,23 +6,33 @@ import {
   Param,
   Delete,
   Patch,
+  UseGuards,
+  Request,
+  Query,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { JwtAuthGuard } from '../../common/jwt/jwt-auth.guard';
+import { PaginationDto } from '../../common/dto/pagination.dto';
 
 @Controller('posts')
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
   create(@Body() createPostDto: CreatePostDto) {
     return this.postsService.create(createPostDto);
   }
 
+  // Task 23: Thêm pagination params
   @Get('postmap')
-  findAllForHome() {
-    return this.postsService.findAllForHome();
+  findAllForHome(@Query() paginationDto: PaginationDto) {
+    return this.postsService.findAllForHome(
+      paginationDto.page,
+      paginationDto.limit,
+    );
   }
 
   @Get()
@@ -35,6 +45,7 @@ export class PostsController {
   }
 
   @Get('pending')
+  @UseGuards(JwtAuthGuard)
   findAllPending() {
     return this.postsService.findAllPending();
   }
@@ -45,6 +56,7 @@ export class PostsController {
   }
 
   @Get('rejected')
+  @UseGuards(JwtAuthGuard)
   findAllRejected() {
     return this.postsService.findAllRejected();
   }
@@ -55,18 +67,28 @@ export class PostsController {
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
   update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
     return this.postsService.update(id, updatePostDto);
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard)
   remove(@Param('id') id: string) {
     return this.postsService.removePost(id);
   }
 
+  // Task 23: Thêm pagination params
   @Get('user/:userId')
-  findByUserId(@Param('userId') userId: string) {
-    return this.postsService.findByUserId(userId);
+  findByUserId(
+    @Param('userId') userId: string,
+    @Query() paginationDto: PaginationDto,
+  ) {
+    return this.postsService.findByUserId(
+      userId,
+      paginationDto.page,
+      paginationDto.limit,
+    );
   }
 
   @Post('by-ids')

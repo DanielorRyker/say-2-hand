@@ -77,5 +77,7 @@
 /* Clickable */
 .clickable {
     cursor: pointer;
+    /* Thêm thuộc tính -webkit-user-select để hỗ trợ Safari */
+    -webkit-user-select: none;
     user-select: none;
 }

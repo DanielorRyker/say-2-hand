@@ -11,7 +11,7 @@ import {
   CategoryForm,
   FloatingMessage,
 } from "./components";
-import axios from "axios";
+import axios from "@/lib/api-client";
 import geminiStyles from "./components/GeminiSuggestion.module.scss";
 // ✅ Import parseAddress
 import { parseAddress } from "../../../lib/address";

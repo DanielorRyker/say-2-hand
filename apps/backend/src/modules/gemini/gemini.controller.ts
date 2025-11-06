@@ -1,5 +1,6 @@
 import { Controller, Post, Body } from '@nestjs/common';
 import { GeminiService } from './gemini.service';
+import type { CustomField } from '../../common/types';
 
 @Controller('gemini')
 export class GeminiController {
@@ -43,5 +44,75 @@ export class GeminiController {
       };
     }
     return await this.geminiService.normalizeVietnameseAddress(body.address);
+  }
+
+  @Post('generate-custom-fields')
+  async generateCustomFields(
+    @Body() body: { categoryId: string; categoryName: string },
+  ) {
+    if (!body.categoryId || !body.categoryName) {
+      return {
+        success: false,
+        message: 'categoryId and categoryName are required',
+        fields: [],
+      };
+    }
+
+    try {
+      const fields = await this.geminiService.generateCustomFields(
+        body.categoryId,
+        body.categoryName,
+      );
+      return {
+        success: true,
+        categoryId: body.categoryId,
+        categoryName: body.categoryName,
+        fields,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message,
+        fields: [],
+      };
+    }
+  }
+
+  @Post('auto-fill-custom-fields')
+  async autoFillCustomFields(
+    @Body()
+    body: {
+      categoryName: string;
+      customFields: CustomField[];
+      images: Array<{ base64: string; mimeType?: string }>;
+      description: string;
+    },
+  ) {
+    if (!body.categoryName || !body.customFields) {
+      return {
+        success: false,
+        message: 'categoryName and customFields are required',
+        filledValues: {},
+      };
+    }
+
+    try {
+      const filledValues = await this.geminiService.autoFillCustomFields(
+        body.categoryName,
+        body.customFields,
+        body.images || [],
+        body.description || '',
+      );
+      return {
+        success: true,
+        filledValues,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message,
+        filledValues: {},
+      };
+    }
   }
 }

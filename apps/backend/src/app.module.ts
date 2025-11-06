@@ -3,9 +3,11 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from './modules/users/users.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { getDatabaseConfig } from './config/database.config';
+import { getJwtConfig } from './config/jwt.config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
+import { JwtModule } from '@nestjs/jwt';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { VerificationTokensModule } from './modules/verification_tokens/verification_tokens.module';
 import { PasswordResetsModule } from './modules/password_resets/password_resets.module';
@@ -22,8 +24,33 @@ import { QrModule } from './modules/qr/qr.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { RatingsModule } from './modules/ratings/ratings.module';
 import { GeminiModule } from './modules/gemini/gemini.module';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { validationSchema } from './config/env.validation';
+import { HealthModule } from './common/health/health.module';
+import { CacheConfigModule } from './config/cache.config';
+import { PerformanceInterceptor } from './common/interceptors/performance.interceptor';
+
 @Module({
   imports: [
+    // Rate limiting configuration - Adjusted for better UX
+    ThrottlerModule.forRoot([
+      {
+        name: 'short',
+        ttl: 1000, // 1 giây
+        limit: 10, // 10 requests (tăng từ 3 để cho phép load trang)
+      },
+      {
+        name: 'medium',
+        ttl: 10000, // 10 giây
+        limit: 50, // 50 requests (tăng từ 20)
+      },
+      {
+        name: 'long',
+        ttl: 60000, // 1 phút
+        limit: 100, // 100 requests
+      },
+    ]),
     MailerModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
@@ -42,7 +69,19 @@ import { GeminiModule } from './modules/gemini/gemini.module';
       }),
       inject: [ConfigService],
     }),
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      validationSchema, // Validate env variables at startup
+    }),
+    CacheConfigModule, // Task 46: Redis caching
+
+    // JWT Module (global) - Cần cho ChatGateway và các services khác
+    JwtModule.registerAsync({
+      global: true,
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => getJwtConfig(configService),
+      inject: [ConfigService],
+    }),
 
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
@@ -66,8 +105,20 @@ import { GeminiModule } from './modules/gemini/gemini.module';
     ReportsModule,
     RatingsModule,
     GeminiModule,
+    HealthModule,
   ],
   controllers: [AppController],
-  providers: [AppService, ChatGateway],
+  providers: [
+    AppService,
+    ChatGateway,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard, // Apply rate limiting globally
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: PerformanceInterceptor, // Task 50: Performance monitoring
+    },
+  ],
 })
 export class AppModule {}

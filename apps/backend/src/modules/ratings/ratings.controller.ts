@@ -1,9 +1,21 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { RatingsService } from './ratings.service';
 import { CreateRatingDto } from './dto/create-rating.dto';
 import { UpdateRatingDto } from './dto/update-rating.dto';
+import { JwtAuthGuard } from '../../common/jwt/jwt-auth.guard';
 
 @Controller('ratings')
+@UseGuards(JwtAuthGuard) // Bảo vệ toàn bộ controller
 export class RatingsController {
   constructor(private readonly ratingsService: RatingsService) {}
 
@@ -17,14 +29,13 @@ export class RatingsController {
     return this.ratingsService.findAll();
   }
 
-@Get('find')
+  @Get('find')
   async findOne(
     @Query('rater_id') rater_id: string,
     @Query('ratee_id') ratee_id: string,
   ) {
     return this.ratingsService.findOneByRaterAndRatee(rater_id, ratee_id);
-}
-
+  }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateRatingDto: UpdateRatingDto) {

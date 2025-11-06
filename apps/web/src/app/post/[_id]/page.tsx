@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import styles from "./post.module.scss";
 import Image from "next/image";
 import { formatImageUrl } from "@/lib/constants";
-import axios from "axios";
+import axios from "@/lib/api-client";
 import { useRouter } from "next/navigation";
 
 const Home = () => {

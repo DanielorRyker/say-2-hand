@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import styles from "@/styles/pages/auth/changePassword-v2.module.scss";
-import axios from "axios";
+import axios from "@/lib/api-client";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Icon } from "@iconify/react";
@@ -310,17 +310,17 @@ const ChangePasswordPage = () => {
               {/* OTP Section */}
               <div className={styles.otpSection}>
                 <div className={styles.inputGroup}>
-                  <label className={styles.label}>Mã OTP</label>
+                  <label className={styles.label}>Mã OTP (8 chữ số)</label>
                   <div className={styles.otpInputWrapper}>
                     <div className={styles.otpInputInner}>
                       <input
                         type="text"
-                        placeholder="Nhập mã OTP"
+                        placeholder="Nhập mã OTP 8 số"
                         className={styles.otpInput}
                         value={form.otp}
                         name="otp"
                         onChange={handleChange}
-                        maxLength={6}
+                        maxLength={8}
                         disabled={loading}
                       />
                     </div>

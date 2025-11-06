@@ -28,3 +28,8 @@ export class Message {
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);
+
+// Thêm các index để tối ưu hiệu suất truy vấn
+MessageSchema.index({ conversation_id: 1, created_at: -1 }); // Index kết hợp cho tra cứu tin nhắn theo cuộc hội thoại và sắp xếp theo thời gian
+MessageSchema.index({ sender_id: 1 }); // Index cho tra cứu tin nhắn theo người gửi
+MessageSchema.index({ read_by: 1 }); // Index multikey cho tra cứu tin nhắn đã đọc bởi người dùng

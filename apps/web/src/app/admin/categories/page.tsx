@@ -1,6 +1,6 @@
 ﻿"use client";
 import { useState, useEffect } from "react";
-import axios from "axios";
+import axios from "@/lib/api-client";
 import Image from "next/image";
 import { Icon } from "@iconify/react";
 import { formatImageUrl } from "@/lib/constants";
