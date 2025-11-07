@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
-import axios from "@/lib/api-client";
+import axios from "axios";
 import Image from "next/image";
 import { Icon } from "@iconify/react";
 import type { Transaction } from "@repo/types";

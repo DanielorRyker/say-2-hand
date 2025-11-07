@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import styleVerification from "@/styles/pages/auth/verification-v2.module.scss";
-import axios from "@/lib/api-client";
+import axios from "axios";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 
@@ -17,7 +17,7 @@ const Home = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, ""); // Chỉ cho phép số
-    if (value.length <= 8) {
+    if (value.length <= 6) {
       setForm({ ...form, otp: value });
     }
   };
@@ -73,8 +73,8 @@ const Home = () => {
 
   // bấm nút xác nhận
   const handleBtn = async () => {
-    if (!form.otp || form.otp.length !== 8) {
-      alert("Vui lòng nhập đầy đủ 8 số OTP");
+    if (!form.otp || form.otp.length !== 6) {
+      alert("Vui lòng nhập đầy đủ 6 số OTP");
       return;
     }
 
@@ -137,23 +137,23 @@ const Home = () => {
         {/* OTP Input section */}
         <div className={styleVerification["otpSection"]}>
           <label htmlFor="otp-input" className={styleVerification["label"]}>
-            Nhập mã xác thực (8 số)
+            Nhập mã xác thực (6 số)
           </label>
           <div className={styleVerification["inputWrapper"]}>
             <input
               id="otp-input"
               type="text"
               inputMode="numeric"
-              placeholder="00000000"
+              placeholder="000000"
               className={styleVerification["otpInput"]}
               value={form.otp}
               name="otp"
               onChange={handleChange}
-              maxLength={8}
+              maxLength={6}
               autoComplete="one-time-code"
             />
             <div className={styleVerification["inputIndicator"]}>
-              {form.otp.length}/8
+              {form.otp.length}/6
             </div>
           </div>
         </div>
@@ -162,12 +162,12 @@ const Home = () => {
         <div className={styleVerification["buttonSection"]}>
           <button
             className={`${styleVerification["btnPrimary"]} ${
-              verifying || form.otp.length !== 8
+              verifying || form.otp.length !== 6
                 ? styleVerification["btnDisabled"]
                 : ""
             }`}
             onClick={handleBtn}
-            disabled={verifying || form.otp.length !== 8}
+            disabled={verifying || form.otp.length !== 6}
             type="button"
           >
             {verifying ? (

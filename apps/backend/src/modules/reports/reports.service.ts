@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { Report, ReportDocument } from './schemas/report.schema';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
@@ -38,14 +38,7 @@ export class ReportsService {
     id: string,
     updateReportDto: UpdateReportDto,
   ): Promise<Report | null> {
-    const updateData: any = {
-      ...updateReportDto,
-    };
-
-    // Convert resolved_by từ string sang ObjectId nếu có
-    if (updateReportDto.resolved_by) {
-      updateData.resolved_by = new Types.ObjectId(updateReportDto.resolved_by);
-    }
+    const updateData: any = { ...updateReportDto };
 
     if (
       updateReportDto.status === 'resolved' ||

@@ -1,28 +1,25 @@
 import bcrypt from 'bcrypt';
-import { Logger } from '@nestjs/common';
-
 const saltRounds = 10;
-const logger = new Logger('PasswordHelper');
 
 export const hashPasswordHelper = async (
   plainPassword: string,
-): Promise<string> => {
+): Promise<string | undefined> => {
   try {
     return await bcrypt.hash(plainPassword, saltRounds);
   } catch (error) {
-    logger.error('Error hashing password', error);
-    throw new Error('Failed to hash password');
+    console.error(error);
+    return undefined;
   }
 };
 
 export const comparePasswordHelper = async (
   plainPassword: string,
   hashPassword: string,
-): Promise<boolean> => {
+): Promise<boolean | undefined> => {
   try {
     return await bcrypt.compare(plainPassword, hashPassword);
   } catch (error) {
-    logger.error('Error comparing password', error);
-    throw new Error('Failed to compare password');
+    console.error(error);
+    return undefined;
   }
 };

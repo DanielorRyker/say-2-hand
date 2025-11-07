@@ -2,10 +2,11 @@
 import { useEffect, useRef, useState } from "react";
 import styles from "./ratingpopup.module.scss";
 import { Transaction } from "@repo/types";
-import { formatImageUrl, API_BASE } from "@/lib/constants";
+import {  formatImageUrl ,API_BASE} from "@/lib/constants";
 import Image from "next/image";
-import axios from "@/lib/api-client";
+import axios from "axios";
 import { useRouter } from "next/navigation";
+
 
 interface Rating {
   _id: string;
@@ -20,43 +21,31 @@ interface Rating {
 interface RatingPopupProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (payload: {
-    userId: string;
-    rating: number;
-    comment?: string;
-  }) => Promise<void> | void;
+  onSubmit: (payload: { userId: string; rating: number; comment?: string }) => Promise<void> | void;
   transaction: Transaction | null;
   initialRating?: number;
 }
 
-export default function RatingPopup({
-  isOpen,
-  onClose,
-  onSubmit,
-  transaction,
-  initialRating = 0,
-}: RatingPopupProps) {
+export default function RatingPopup({ isOpen, onClose, onSubmit, transaction, initialRating = 0 }: RatingPopupProps) {
   const router = useRouter();
   const [rating, setRating] = useState<number>(initialRating);
   const [hover, setHover] = useState<number>(0);
   const [comment, setComment] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
   const modalRef = useRef<HTMLDivElement | null>(null);
-  const [user, setUser] = useState<{
-    _id: string;
-    full_name: string;
-    avatar: string;
-  } | null>(null);
+  const [user, setUser] = useState<{ _id: string; full_name: string ;avatar:string} | null>(
+      null
+    );
   const [oldRating, setOldRating] = useState<Rating | null>(null);
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    } else {
-      router.push("/auth/login");
-    }
-  }, [router]);
+    useEffect(() => {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      } else {
+        router.push("/auth/login");
+      }
+    }, [router]);
 
   useEffect(() => {
     if (isOpen) {
@@ -76,39 +65,41 @@ export default function RatingPopup({
   }, [isOpen, onClose]);
 
   // ✅ Lấy đánh giá cũ nếu đã từng đánh giá
-  useEffect(() => {
-    if (!isOpen || !transaction || !user) return;
+useEffect(() => {
+  if (!isOpen || !transaction || !user) return;
 
-    const fetchExistingRating = async () => {
-      try {
-        const res = await axios.get(
-          `${API_BASE}/api/ratings/find?rater_id=${user._id}&ratee_id=${transaction.seller_id._id}`
-        );
-        const data = res.data;
-        if (data) {
-          setOldRating(data);
-          setRating(data.score || 0);
-          setComment(data.comment || "");
-        } else {
-          // Không có đánh giá cũ => reset
-          setOldRating(null);
-          setRating(0);
-          setComment("");
-        }
-      } catch (err: any) {
-        // Nếu lỗi là 404 hoặc tương tự thì bỏ qua
-        if (err.response?.status === 404) {
-          setOldRating(null);
-          setRating(0);
-          setComment("");
-        } else {
-          console.error("⚠️ Lỗi khi tải đánh giá cũ:", err.message);
-        }
+  const fetchExistingRating = async () => {
+    try {
+      const res = await axios.get(
+        `${API_BASE}/api/ratings/find?rater_id=${user._id}&ratee_id=${transaction.seller_id._id}`
+      );
+      const data = res.data;
+      if (data) {
+        setOldRating(data);
+        setRating(data.score || 0);
+        setComment(data.comment || "");
+      } else {
+        // Không có đánh giá cũ => reset
+        setOldRating(null);
+        setRating(0);
+        setComment("");
       }
-    };
+    } catch (err: any) {
+      // Nếu lỗi là 404 hoặc tương tự thì bỏ qua
+      if (err.response?.status === 404) {
+        setOldRating(null);
+        setRating(0);
+        setComment("");
+      } else {
+        console.error("⚠️ Lỗi khi tải đánh giá cũ:", err.message);
+      }
+    }
+  };
 
-    fetchExistingRating();
-  }, [isOpen, transaction, user]);
+  fetchExistingRating();
+}, [isOpen, transaction, user]);
+
+
 
   const handleSubmit = async () => {
     if (!transaction) return;
@@ -118,27 +109,24 @@ export default function RatingPopup({
     }
     try {
       setSubmitting(true);
-      await onSubmit({
-        userId: transaction.seller_id._id,
-        rating,
-        comment: comment.trim() || undefined,
-      });
-      if (oldRating) {
-        await axios.patch(`${API_BASE}/api/ratings/${oldRating._id}`, {
+      await onSubmit({ userId: transaction.seller_id._id, rating, comment: comment.trim() || undefined });
+      if(oldRating){
+         await axios.patch(`${API_BASE}/api/ratings/${oldRating._id}`, {
           score: rating,
           comment: comment.trim() || undefined,
         });
-      } else {
+      }
+      else{
         await axios.post(`${API_BASE}/api/ratings`, {
-          rater_id: user?._id,
+          rater_id: user?._id, 
           ratee_id: transaction.seller_id._id,
           transaction_id: transaction._id,
           post_id: transaction.post_id._id,
           score: Number(rating),
-          comment: comment.trim() || undefined,
-        });
+        comment: comment.trim() || undefined
+      });
       }
-
+     
       alert("Bạn đã đánh giá thành công");
       onClose();
     } catch (err: any) {
@@ -168,39 +156,24 @@ export default function RatingPopup({
         <header className={styles.header}>
           <div className={styles.userInfo}>
             <Image
-              src={
-                formatImageUrl(transaction.seller_id.avatar) ??
-                "/default-avatar.png"
-              }
+              src={formatImageUrl(transaction.seller_id.avatar) || "/default-avatar.png"}
               alt={transaction.seller_id.full_name || "User"}
               className={styles.avatar}
-              width={100}
+               width={100}
               height={100}
             />
-            <div className={styles.name}>
-              {transaction.seller_id.full_name || "Người dùng"}
-            </div>
+            <div className={styles.name}>{transaction.seller_id.full_name || "Người dùng"}</div>
           </div>
-          <button
-            className={styles.closeBtn}
-            onClick={onClose}
-            aria-label="Đóng"
-          >
-            ×
-          </button>
+          <button className={styles.closeBtn} onClick={onClose} aria-label="Đóng">×</button>
         </header>
 
         <div className={styles.body}>
-          <div className={styles.stars}>
+          <div className={styles.stars} aria-hidden={submitting}>
             {[1, 2, 3, 4, 5].map((i) => (
               <button
                 key={i}
                 type="button"
-                className={
-                  i <= (hover || rating)
-                    ? `${styles.star} ${styles.filled}`
-                    : styles.star
-                }
+                className={`${styles.star} ${i <= (hover || rating) ? styles.filled : ""}`}
                 onClick={() => setRating(i)}
                 onMouseEnter={() => setHover(i)}
                 onMouseLeave={() => setHover(0)}
@@ -223,13 +196,7 @@ export default function RatingPopup({
         </div>
 
         <footer className={styles.footer}>
-          <button
-            className={styles.btnCancel}
-            onClick={onClose}
-            disabled={submitting}
-          >
-            Hủy
-          </button>
+          <button className={styles.btnCancel} onClick={onClose} disabled={submitting}>Hủy</button>
           <button
             className={styles.btnSubmit}
             onClick={handleSubmit}

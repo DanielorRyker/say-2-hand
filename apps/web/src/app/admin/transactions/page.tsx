@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import axios from "@/lib/api-client";
+import axios from "axios";
 import Image from "next/image";
 import { formatImageUrl } from "@/lib/constants";
 import { Icon } from "@iconify/react";

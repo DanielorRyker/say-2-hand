@@ -79,7 +79,7 @@ export class User {
       total_score: { type: Number, default: 0 },
       total_ratings: { type: Number, default: 0 },
     },
-    _id: false,
+    _id: false, 
     default: { total_score: 0, total_ratings: 0 },
   })
   reputation: {
@@ -89,10 +89,3 @@ export class User {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
-
-// Indexes
-UserSchema.index({ email: 1 }, { unique: true }); // Task 22: Unique constraint
-UserSchema.index({ phone_number: 1 }, { sparse: true });
-UserSchema.index({ status: 1 });
-UserSchema.index({ role: 1 });
-UserSchema.index({ createdAt: -1 });

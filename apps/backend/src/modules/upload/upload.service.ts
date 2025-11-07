@@ -1,11 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Storage } from '@google-cloud/storage';
 import * as path from 'path';
 import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class UploadService {
-  private readonly logger = new Logger(UploadService.name);
   private storage: Storage;
   private bucketName = 'say2hand'; // tên bucket
 
@@ -112,85 +111,86 @@ export class UploadService {
     });
   }
 
-  //Upload nhiều ảnh
-  async uploadImgs(files: Express.Multer.File[], folder: string) {
-    const bucket = this.storage.bucket(this.bucketName);
+    //Upload nhiều ảnh
+    async uploadImgs(files: Express.Multer.File[], folder: string) {
+      const bucket = this.storage.bucket(this.bucketName);
 
-    const uploadPromises = files.map((file) => {
-      const nameSlugify = this.slugify(folder);
-      const random = Math.floor(100000 + Math.random() * 900000).toString();
-      const fileName = `${nameSlugify}/${Date.now()}-${random}-${file.originalname}`;
-      const blob = bucket.file(fileName);
+      
+      const uploadPromises = files.map((file) => {
+        const nameSlugify = this.slugify(folder);
+        const random = Math.floor(100000 + Math.random() * 900000).toString();
+        const fileName = `${nameSlugify}/${Date.now()}-${random}-${file.originalname}`;
+        const blob = bucket.file(fileName);
 
-      const blobStream = blob.createWriteStream({
-        resumable: false,
-        contentType: file.mimetype,
+        const blobStream = blob.createWriteStream({
+          resumable: false,
+          contentType: file.mimetype,
+        });
+
+        return new Promise<string>((resolve, reject) => {
+          blobStream.on('finish', () => resolve(fileName));
+          blobStream.on('error', (err) =>
+            reject(new Error(`Unable to upload ${file.originalname}: ${err}`)),
+          );
+          blobStream.end(file.buffer);
+        });
       });
 
-      return new Promise<string>((resolve, reject) => {
-        blobStream.on('finish', () => resolve(fileName));
-        blobStream.on('error', (err) =>
-          reject(new Error(`Unable to upload ${file.originalname}: ${err}`)),
-        );
-        blobStream.end(file.buffer);
-      });
-    });
-
-    const results = await Promise.all(uploadPromises);
-    return results; // Trả về mảng tên file
-  }
-
-  //Xóa ảnh
-  async deleteFileOrFolder(filePath: string) {
-    const bucket = this.storage.bucket(this.bucketName);
-
-    try {
-      const normalizedPath = this.slugify(filePath);
-
-      //  Thêm "/" để tìm tất cả file con
-      const prefix = normalizedPath.endsWith('/')
-        ? normalizedPath
-        : `${normalizedPath}/`;
-
-      this.logger.log(`Attempting to delete: ${prefix}`);
-
-      const [files] = await bucket.getFiles({ prefix });
-
-      if (files.length > 0) {
-        // Xóa thư mục và tất cả file con
-        await Promise.all(files.map((file) => file.delete()));
-        this.logger.log(
-          `Deleted folder "${normalizedPath}" with ${files.length} files.`,
-        );
-        return {
-          message: `Đã xóa thư mục ${normalizedPath} và toàn bộ nội dung.`,
-        };
-      } else {
-        // Nếu không có file nào, thử xóa 1 file cụ thể
-        await bucket.file(normalizedPath).delete();
-        this.logger.log(`Deleted file: ${normalizedPath}`);
-        return { message: `Đã xóa file ${normalizedPath}` };
-      }
-    } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error(
-        `Error deleting ${filePath}: ${errorMessage}`,
-        error instanceof Error ? error.stack : undefined,
-      );
-      throw new Error(`Không thể xóa ${filePath}: ${errorMessage}`);
+      const results = await Promise.all(uploadPromises);
+      return results; // Trả về mảng tên file
     }
-  }
 
-  slugify(input: string): string {
-    return input
-      .normalize('NFD') // tách dấu
-      .replace(/đ/g, 'd') // xử lý chữ đ
-      .replace(/Đ/g, 'd') // xử lý chữ Đ
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, '-') // space -> -
-      .replace(/[^a-z0-9\-\\/]/g, '')
-      .replace(/-+/g, '-'); // gộp nhiều -
+    //Xóa ảnh
+async deleteFileOrFolder(filePath: string) {
+  const bucket = this.storage.bucket(this.bucketName);
+
+  try {
+    //  Tách phần cuối để slugify (chỉ slugify tên bài viết)
+
+    // const normalizedPath = [...parts, slugifiedLast].join('/');
+    const normalizedPath = this.slugify(filePath)
+
+    //  Thêm "/" để tìm tất cả file con
+    const prefix = normalizedPath.endsWith('/')
+      ? normalizedPath
+      : `${normalizedPath}/`;
+
+    console.log(' Đang xóa:', prefix);
+
+    const [files] = await bucket.getFiles({ prefix });
+
+    if (files.length > 0) {
+      // Xóa thư mục và tất cả file con
+      await Promise.all(files.map((file) => file.delete()));
+      console.log(` Đã xóa thư mục "${normalizedPath}" cùng ${files.length} file con.`);
+      return { message: `Đã xóa thư mục ${normalizedPath} và toàn bộ nội dung.` };
+    } else {
+      // Nếu không có file nào, thử xóa 1 file cụ thể
+      await bucket.file(normalizedPath).delete();
+      console.log(` Đã xóa file: ${normalizedPath}`);
+      return { message: `Đã xóa file ${normalizedPath}` };
+    }
+  } catch (error: any) {
+    console.error(` Lỗi khi xóa ${filePath}:`, error.message);
+    throw new Error(`Không thể xóa ${filePath}: ${error.message}`);
   }
 }
+
+
+
+
+    slugify(input: string): string {
+      return input
+        .normalize('NFD') // tách dấu
+        .replace(/đ/g, 'd') // xử lý chữ đ
+        .replace(/Đ/g, 'd') // xử lý chữ Đ
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, '-') // space -> -
+        .replace(/[^a-z0-9\-\\/]/g, '') 
+        .replace(/-+/g, '-'); // gộp nhiều -
+    }
+
+
+}
+

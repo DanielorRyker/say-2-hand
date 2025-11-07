@@ -3,9 +3,8 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import styles from "./DetailPost.module.scss";
 import { Icon } from "@iconify/react";
 import { useRouter } from "next/navigation";
-import axios from "@/lib/api-client";
+import axios from "axios";
 import { formatImageUrl, URL_GCS } from "@/lib/constants";
-import Image from "next/image";
 
 // Helper to create a ripple span on a button. Call from button onClick: createRipple(e)
 export function createRipple(
@@ -51,10 +50,10 @@ type User = {
   user_id?: string;
   avatar_url?: string;
   name: string;
-  reputation?: {
-    total_score: number;
-    total_ratings: number;
-  };
+   reputation?: {
+      total_score: number;
+      total_ratings: number;
+    };
   review_count?: number;
   post_count?: number;
   is_verified?: boolean;
@@ -552,13 +551,11 @@ export const DetailPost: React.FC = () => {
 
   const price = formatCurrency(postData.post.price);
 
-  //Tính điểm đánh giá
+    //Tính điểm đánh giá
   const reputationScore = (data: any) => {
     if (!data.reputation || data.reputation.total_ratings === 0) return 0;
-    return parseFloat(
-      (data.reputation.total_score / data.reputation.total_ratings).toFixed(1)
-    );
-  };
+    return parseFloat((data.reputation.total_score / data.reputation.total_ratings).toFixed(1));
+  }
 
   const renderRating = (score: number) => {
     const full = Math.floor(score);
@@ -797,18 +794,12 @@ export const DetailPost: React.FC = () => {
                     className={`${styles["main-image-container"]}`}
                     onClick={() => openLightbox(currentImageIndex)}
                   >
-                    {/* Sử dụng Image của Next.js cho ảnh chính */}
-                    <Image
+                    <img
                       id="main-image"
-                      src={
-                        formatImageUrl(
-                          postData.post.image_urls[currentImageIndex].url
-                        ) || ""
-                      }
+                      src={formatImageUrl(
+                        postData.post.image_urls[currentImageIndex].url
+                      )}
                       alt="main"
-                      width={600}
-                      height={400}
-                      className=""
                     />
                     <div
                       id="image-count"
@@ -859,13 +850,9 @@ export const DetailPost: React.FC = () => {
                           }`}
                           onClick={() => handleSetImage(idx)}
                         >
-                          {/* Sử dụng Image của Next.js cho thumbnail */}
-                          <Image
-                            src={formatImageUrl(imageUrl.url) || ""}
+                          <img
+                            src={formatImageUrl(imageUrl.url)}
                             alt={`thumb-${idx}`}
-                            width={60}
-                            height={40}
-                            className=""
                           />
                         </div>
                       )
@@ -980,16 +967,12 @@ export const DetailPost: React.FC = () => {
                     <div className={`${styles["skeleton-line"]}`} />
                   )}
                   <div className={`${styles["comment-input-row"]}`}>
-                    {/* Sử dụng Image của Next.js cho avatar người dùng */}
-                    <Image
+                    <img
                       src={
                         formatImageUrl(postData.user.avatar) ||
                         "/image/header/carbon_user-avatar-filled-alt.svg"
                       }
                       alt="Your Avatar"
-                      width={40}
-                      height={40}
-                      className=""
                     />
                     <form
                       className={`${styles["comment-form"]}`}
@@ -1024,14 +1007,7 @@ export const DetailPost: React.FC = () => {
                         key={comment.id}
                         className={`${styles["comment-item"]}`}
                       >
-                        {/* Sử dụng Image của Next.js cho avatar bình luận */}
-                        <Image
-                          src={comment.user.avatar || ""}
-                          alt="avatar"
-                          width={40}
-                          height={40}
-                          className=""
-                        />
+                        <img src={comment.user.avatar} alt="avatar" />
                         <div className={`${styles["comment-content"]}`}>
                           <div className={`${styles["comment-box"]}`}>
                             <p className={`${styles["author"]}`}>
@@ -1056,13 +1032,10 @@ export const DetailPost: React.FC = () => {
                                 key={reply.id}
                                 className={`${styles["reply-row"]}`}
                               >
-                                {/* Sử dụng Image của Next.js cho avatar trả lời */}
-                                <Image
-                                  src={reply.user.avatar || ""}
+                                <img
+                                  src={reply.user.avatar}
                                   alt="reply"
-                                  width={32}
-                                  height={32}
-                                  className={styles["reply-avatar"]}
+                                  className={`${styles["reply-avatar"]}`}
                                 />
                                 <div className={`${styles["reply-content"]}`}>
                                   <div className={`${styles["reply-box"]}`}>
@@ -1090,16 +1063,12 @@ export const DetailPost: React.FC = () => {
                 <div className={`${styles["desktop-sticky-sidebar"]}`}>
                   <div className={`${styles["seller-card"]}`}>
                     <div className={`${styles["seller-head"]}`}>
-                      {/* Sử dụng Image của Next.js cho avatar seller */}
-                      <Image
+                      <img
                         src={
                           formatImageUrl(postData.user.avatar) ||
                           "/image/header/carbon_user-avatar-filled-alt.svg"
                         }
                         alt="seller"
-                        width={40}
-                        height={40}
-                        className=""
                       />
                       <div>
                         <div className={`${styles["seller-name"]}`}>
@@ -1314,13 +1283,9 @@ export const DetailPost: React.FC = () => {
                       </button>
 
                       <div className={`${styles["product-aspect"]}`}>
-                        {/* Sử dụng Image của Next.js cho ảnh sản phẩm tương tự */}
-                        <Image
-                          src={formatImageUrl(product.img) || ""}
+                        <img
+                          src={formatImageUrl(product.img)}
                           alt={product.title}
-                          width={120}
-                          height={80}
-                          className=""
                         />
                       </div>
 
@@ -1377,14 +1342,9 @@ export const DetailPost: React.FC = () => {
 
                           <div className={`${styles["seller-small"]}`}>
                             <div className={`${styles["seller-avatar"]}`}>
-                              <Image
-                                src={
-                                  formatImageUrl(product.seller.avatar) || ""
-                                }
+                              <img
+                                src={formatImageUrl(product.seller.avatar)}
                                 alt={product.seller.name}
-                                width={30}
-                                height={30}
-                                className=""
                               />
                             </div>
 
@@ -1441,18 +1401,12 @@ export const DetailPost: React.FC = () => {
             >
               <Icon icon="lucide:chevron-left" width={24} height={24} />
             </button>
-            {/* Sử dụng Image của Next.js để tối ưu ảnh lightbox */}
-            <Image
-              src={
-                formatImageUrl(
-                  postData.post.image_urls[currentImageIndex].url
-                ) || ""
-              }
+            <img
+              src={formatImageUrl(
+                postData.post.image_urls[currentImageIndex].url
+              )}
               alt="lightbox"
-              width={800}
-              height={600}
               onClick={(e) => e.stopPropagation()}
-              className=""
             />
             <button
               className={`${styles["nav-arrow"]} ${styles["right"]}`}

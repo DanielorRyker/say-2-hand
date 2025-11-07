@@ -7,16 +7,12 @@ import {
   Param,
   Delete,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
-import { JwtAuthGuard } from '../../common/jwt/jwt-auth.guard';
-import { PaginationDto } from '../../common/dto/pagination.dto';
 
 @Controller('transactions')
-@UseGuards(JwtAuthGuard) // Áp dụng guard cho toàn bộ controller
 export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
 
@@ -30,34 +26,22 @@ export class TransactionsController {
     return this.transactionsService.findAll();
   }
 
-  // Task 23: Lấy đơn hàng của người bán với pagination
+  // Lấy đơn hàng của người bán (đã bán)
   @Get('seller/:sellerId')
   getSellerOrders(
     @Param('sellerId') sellerId: string,
     @Query('status') status?: string,
-    @Query() paginationDto?: PaginationDto,
   ) {
-    return this.transactionsService.getSellerOrders(
-      sellerId,
-      status,
-      paginationDto?.page,
-      paginationDto?.limit,
-    );
+    return this.transactionsService.getSellerOrders(sellerId, status);
   }
 
-  // Task 23: Lấy đơn hàng của người mua với pagination
+  // Lấy đơn hàng của người mua
   @Get('buyer/:buyerId')
   getBuyerOrders(
     @Param('buyerId') buyerId: string,
     @Query('status') status?: string,
-    @Query() paginationDto?: PaginationDto,
   ) {
-    return this.transactionsService.getBuyerOrders(
-      buyerId,
-      status,
-      paginationDto?.page,
-      paginationDto?.limit,
-    );
+    return this.transactionsService.getBuyerOrders(buyerId, status);
   }
 
   // Lấy chi tiết đơn hàng

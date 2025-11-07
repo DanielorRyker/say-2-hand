@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import styles from "@/app/home/component/postList.module.scss";
 // Iconify import (replace HeartSVG with this icon)
 import { Icon } from "@iconify/react";
-import axios from "@/lib/api-client";
+import axios from "axios";
 import { formatImageUrl } from "@/lib/constants";
 
 // Local SVG icons (matching files in public/image/feed)

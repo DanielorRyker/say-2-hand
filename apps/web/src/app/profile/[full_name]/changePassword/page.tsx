@@ -280,12 +280,12 @@ const ChangePasswordPage = () => {
                   <div className={styleChangePassword["otpInputInner"]}>
                     <input
                       type="text"
-                      placeholder="Nhập mã OTP 8 số"
+                      placeholder="Nhập mã OTP"
                       className={styleChangePassword["otpInput"]}
                       value={form.otp}
                       name="otp"
                       onChange={handleChange}
-                      maxLength={8}
+                      maxLength={6}
                     />
                   </div>
                 </div>

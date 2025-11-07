@@ -1,19 +1,9 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Query,
-  BadRequestException,
-  Logger,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, BadRequestException } from '@nestjs/common';
 import { QrService } from './qr.service';
-import type { PaymentCallbackBody } from '../../common/types';
+
 
 @Controller('qr')
 export class QrController {
-  private readonly logger = new Logger(QrController.name);
-
   constructor(private readonly qrService: QrService) {}
 
   private mockPayments = new Map<string, boolean>();
@@ -23,7 +13,7 @@ export class QrController {
     @Query('accountNo') accountNo: string,
     @Query('accountName') accountName: string,
     @Query('amount') amount: string,
-    @Query('addInfo') addInfo: string,
+    @Query('addInfo') addInfo: string
   ) {
     const amountNumber = Number(amount);
     if (isNaN(amountNumber)) {
@@ -46,7 +36,7 @@ export class QrController {
   pay(
     @Query('txnId') txnId: string,
     @Query('accountNo') accountNo: string,
-    @Query('amount') amount: string,
+    @Query('amount') amount: string
   ) {
     if (!this.mockPayments.has(txnId)) {
       return { success: false, message: 'Transaction not found' };
@@ -55,17 +45,16 @@ export class QrController {
     // Giả lập thanh toán thành công
     this.mockPayments.set(txnId, true);
 
-    // Log payment success (không log sensitive details)
-    this.logger.log(`Payment simulation completed for transaction: ${txnId}`);
+    // Gọi callback nội bộ (thường là webhook của ngân hàng)
+    console.log(`Transaction ${txnId} paid: account=${accountNo}, amount=${amount}`);
 
     return { success: true, message: 'Payment simulated' };
   }
 
   // Endpoint callback (nếu ngân hàng thật gọi)
   @Post('callback')
-  paymentCallback(@Body() body: PaymentCallbackBody) {
-    this.logger.log(`Payment callback received for transaction`);
-    // TODO: Xử lý webhook callback từ ngân hàng
+  paymentCallback(@Body() body: any) {
+    console.log('Received payment callback:', body);
     return { received: true };
   }
 
@@ -75,4 +64,6 @@ export class QrController {
     const paid = this.mockPayments.get(txnId) || false;
     return { txnId, paid };
   }
+
+  
 }

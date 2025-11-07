@@ -1,12 +1,12 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
-import axios from "@/lib/api-client";
+import axios from "axios";
 import Link from "next/link";
 import styles from "../payment.module.scss";
 import { Icon } from "@iconify/react";
 import { io, Socket } from "socket.io-client";
-// import axios from "@/lib/api-client"; // TODO: Sẽ dùng khi backend có endpoint /api/payments
+// import axios from "axios"; // TODO: Sẽ dùng khi backend có endpoint /api/payments
 
 interface PaymentMethod {
   id: string;

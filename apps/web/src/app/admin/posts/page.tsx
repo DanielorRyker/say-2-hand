@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { Icon } from "@iconify/react";
-import axios from "@/lib/api-client";
+import axios from "axios";
 import Image from "next/image";
 import { Table, Pagination, FilterBar } from "@/components/admin";
 import styles from "./posts.module.scss";

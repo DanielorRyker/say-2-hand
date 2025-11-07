@@ -7,7 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import NotificationPopup from "@/app/notification/NotificationPopup";
 import { io, Socket } from "socket.io-client";
-import axios from "@/lib/api-client";
+import axios from "axios";
 import { Icon } from "@iconify/react";
 import { API_BASE, formatImageUrl } from "@/lib/constants";
 
@@ -239,21 +239,17 @@ const Header = () => {
     }
   }, []);
 
-  // Fetch provinces list from Next.js API route (tránh CORS)
+  // Fetch provinces list from open API
   useEffect(() => {
     let mounted = true;
     const fetchProvinces = async () => {
       setProvincesLoading(true);
       setProvincesError(null);
-
       try {
-        // ✅ Sử dụng Next.js API route thay vì gọi trực tiếp (tránh CORS)
-        const res = await fetch("/api/provinces-v2");
+        const res = await axios.get("http://provinces.open-api.vn/api/v2/");
         if (!mounted) return;
-        const data = await res.json();
-
         // API returns array of {code, name, division_type, codename, phone_code}
-        const mapped = (data || []).map((p: any) => ({
+        const mapped = (res.data || []).map((p: any) => ({
           code: p.code,
           name: p.name,
         }));

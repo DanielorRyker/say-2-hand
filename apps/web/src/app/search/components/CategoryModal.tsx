@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { Icon } from "@iconify/react";
 import styles from "./CategoryModal.module.scss";
-import axios from "@/lib/api-client";
+import axios from "axios";
 
 interface CategoryModalProps {
   isOpen: boolean;

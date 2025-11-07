@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import styles from "@/styles/pages/auth/forgotPassword-v2.module.scss";
-import axios from "@/lib/api-client";
+import axios from "axios";
 import { useState } from "react";
 
 export default function ForgotPassword() {

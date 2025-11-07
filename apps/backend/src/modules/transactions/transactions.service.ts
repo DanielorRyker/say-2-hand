@@ -2,7 +2,6 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
-  Logger,
 } from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
@@ -10,15 +9,9 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Transaction, TransactionDocument } from './schemas/transaction.schema';
 import { Model, Types } from 'mongoose';
 import { Post, PostDocument } from '../posts/schemas/post.schema';
-import {
-  PaginatedResult,
-  createPaginatedResult,
-} from '../../common/dto/pagination.dto';
 
 @Injectable()
 export class TransactionsService {
-  private readonly logger = new Logger(TransactionsService.name);
-
   constructor(
     @InjectModel(Transaction.name)
     private transactionModel: Model<TransactionDocument>,
@@ -47,7 +40,8 @@ export class TransactionsService {
         data: savedTransaction,
       };
     } catch (error) {
-      this.logger.error(`Mongo Save Error: ${error.message}`, error.stack);
+      console.error(' Mongo Save Error:', error.message);
+      console.error(' Stack:', error.stack);
       throw error; // tạm thời ném thẳng lỗi thật ra ngoài
     }
   }
@@ -89,22 +83,14 @@ export class TransactionsService {
     };
   }
 
-  // Task 23: Lấy đơn hàng của người bán với pagination
-  async getSellerOrders(
-    sellerId: string,
-    status?: string,
-    page: number = 1,
-    limit: number = 20,
-  ): Promise<PaginatedResult<Transaction>> {
+  // Lấy đơn hàng của người bán
+  async getSellerOrders(sellerId: string, status?: string) {
     const query: Record<string, any> = {
       seller_id: new Types.ObjectId(sellerId),
     };
     if (status) {
       query.status = status;
     }
-
-    const skip = (page - 1) * limit;
-    const total = await this.transactionModel.countDocuments(query);
 
     const orders = await this.transactionModel
       .find(query)
@@ -118,21 +104,16 @@ export class TransactionsService {
         select: 'full_name email phone avatar',
       })
       .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean()
       .exec();
 
-    return createPaginatedResult(orders as Transaction[], total, page, limit);
+    return {
+      message: 'Seller orders retrieved successfully',
+      data: orders,
+    };
   }
 
-  // Task 23: Lấy đơn hàng của người mua với pagination
-  async getBuyerOrders(
-    buyerId: string,
-    status?: string,
-    page: number = 1,
-    limit: number = 20,
-  ): Promise<PaginatedResult<Transaction>> {
+  // Lấy đơn hàng của người mua
+  async getBuyerOrders(buyerId: string, status?: string) {
     const query: Record<string, any> = {
       buyer_id: new Types.ObjectId(buyerId),
     };
@@ -140,13 +121,11 @@ export class TransactionsService {
       query.status = status;
     }
 
-    const skip = (page - 1) * limit;
-    const total = await this.transactionModel.countDocuments(query);
-
     const orders = await this.transactionModel
       .find(query)
       .populate({
         path: 'post_id',
+        // select: 'title images price transaction_type status',
         populate: {
           path: 'category_id',
         },
@@ -156,12 +135,12 @@ export class TransactionsService {
         select: 'full_name email phone avatar',
       })
       .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean()
       .exec();
 
-    return createPaginatedResult(orders as Transaction[], total, page, limit);
+    return {
+      message: 'Buyer orders retrieved successfully',
+      data: orders,
+    };
   }
 
   // Lấy chi tiết đơn hàng
@@ -274,10 +253,7 @@ export class TransactionsService {
               await this.completeOrder(id);
             }
           } catch (err) {
-            this.logger.error(
-              `Auto-complete error for transaction ${id}`,
-              err.stack,
-            );
+            console.error('Auto-complete error for transaction', id, err);
           } finally {
             this.autoCompleteTimers.delete(id);
           }
@@ -286,10 +262,7 @@ export class TransactionsService {
 
       this.autoCompleteTimers.set(id, timer);
     } catch (err) {
-      this.logger.error(
-        `Failed to schedule auto-complete for ${id}`,
-        err.stack,
-      );
+      console.error('Failed to schedule auto-complete for', id, err);
     }
 
     return {
