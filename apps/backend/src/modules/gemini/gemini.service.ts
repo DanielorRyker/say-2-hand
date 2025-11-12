@@ -28,6 +28,8 @@ export class GeminiService {
   > = new Map();
   private addressCache: Map<string, { ts: number; result: any }> = new Map();
   private readonly CACHE_TTL = 1000 * 60 * 60; // 1 hour
+  private readonly MAX_RETRIES = 3;
+  private readonly RETRY_DELAY = 2000; // 2 seconds
 
   constructor(
     private configService: ConfigService,
@@ -36,6 +38,36 @@ export class GeminiService {
   ) {
     this.ai = new GoogleGenAI({});
     this.logger.log('Gemini AI initialized');
+  }
+
+  /**
+   * Retry logic cho Gemini API calls
+   */
+  private async retryWithBackoff<T>(
+    fn: () => Promise<T>,
+    retries = this.MAX_RETRIES,
+  ): Promise<T> {
+    try {
+      return await fn();
+    } catch (error: any) {
+      if (
+        retries > 0 &&
+        (error.message?.includes('503') ||
+          error.message?.includes('UNAVAILABLE'))
+      ) {
+        this.logger.warn(
+          `Gemini API unavailable, retrying... (${this.MAX_RETRIES - retries + 1}/${this.MAX_RETRIES})`,
+        );
+        await new Promise((resolve) =>
+          setTimeout(
+            resolve,
+            this.RETRY_DELAY * (this.MAX_RETRIES - retries + 1),
+          ),
+        );
+        return this.retryWithBackoff(fn, retries - 1);
+      }
+      throw error;
+    }
   }
 
   async analyzeImage(
@@ -97,9 +129,11 @@ export class GeminiService {
         },
       };
 
-      const response = await this.ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: [imagePart, prompt],
+      const response = await this.retryWithBackoff(async () => {
+        return await this.ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: [imagePart, prompt],
+        });
       });
 
       this.logger.debug(`Gemini response: ${response.text}`);
@@ -217,9 +251,11 @@ Output:
 }
 `;
 
-      const response = await this.ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: [prompt],
+      const response = await this.retryWithBackoff(async () => {
+        return await this.ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: [prompt],
+        });
       });
 
       this.logger.debug(`Gemini address normalization: ${response.text}`);
@@ -330,9 +366,11 @@ Output:
       }));
 
       // Gửi tất cả ảnh cùng lúc cho Gemini
-      const response = await this.ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: [...imageParts, prompt],
+      const response = await this.retryWithBackoff(async () => {
+        return await this.ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: [...imageParts, prompt],
+        });
       });
 
       this.logger.debug(`Gemini multi-image response: ${response.text}`);
@@ -395,13 +433,15 @@ Ví dụ:
 
 Trả về ĐÚNG format: prefix:name`;
 
-      const response = await this.ai.models.generateContent({
-        model: 'gemini-2.0-flash-exp',
-        contents: prompt,
-        config: {
-          temperature: 0.3, // Giảm nhiệt độ để có kết quả ổn định hơn
-          maxOutputTokens: 50,
-        },
+      const response = await this.retryWithBackoff(async () => {
+        return await this.ai.models.generateContent({
+          model: 'gemini-2.0-flash-exp',
+          contents: prompt,
+          config: {
+            temperature: 0.3, // Giảm nhiệt độ để có kết quả ổn định hơn
+            maxOutputTokens: 50,
+          },
+        });
       });
 
       const responseText = response.text?.trim() || '';
@@ -564,5 +604,72 @@ Trả về ĐÚNG format: prefix:name`;
       `No match found for "${categoryName}", using default folder icon`,
     );
     return 'mdi:folder';
+  }
+
+  /**
+   * Tự động generate tags từ title và description của post
+   */
+  async generateTagsFromText(
+    title: string,
+    description: string,
+  ): Promise<string[]> {
+    try {
+      const prompt = `
+Bạn là AI chuyên phân tích nội dung bài đăng trong ứng dụng mua bán đồ cũ.
+Hãy đọc tiêu đề và mô tả bên dưới, sau đó đề xuất 5-10 từ khóa (tags) phù hợp bằng tiếng Việt.
+
+**Yêu cầu:**
+- Tags phải ngắn gọn, dễ hiểu (1-3 từ)
+- Ưu tiên các từ khóa liên quan đến: thương hiệu, loại sản phẩm, tính năng đặc biệt, tình trạng
+- Không trùng lặp
+- Chỉ trả về JSON array
+
+**Tiêu đề:** ${title}
+**Mô tả:** ${description}
+
+Trả về JSON:
+{
+  "tags": ["tag1", "tag2", "tag3", ...]
+}`;
+
+      const response = await this.retryWithBackoff(async () => {
+        return await this.ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: [prompt],
+        });
+      });
+
+      this.logger.debug(`Gemini tags response: ${response.text}`);
+      const jsonMatch = response.text?.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        this.logger.warn('Invalid JSON response from Gemini for tags');
+        return [];
+      }
+
+      const parsed = JSON.parse(jsonMatch[0]);
+      return parsed.tags || [];
+    } catch (error) {
+      this.logger.error(`Error generating tags: ${error.message}`, error.stack);
+      return [];
+    }
+  }
+
+  /**
+   * Generate tags từ image analysis (sử dụng kết quả từ analyzeImage)
+   */
+  async generateTagsFromImage(
+    imageBase64: string,
+    mimeType: string = 'image/jpeg',
+  ): Promise<string[]> {
+    try {
+      const analysis = await this.analyzeImage(imageBase64, mimeType);
+      return analysis.suggestedTags || [];
+    } catch (error) {
+      this.logger.error(
+        `Error generating tags from image: ${error.message}`,
+        error.stack,
+      );
+      return [];
+    }
   }
 }

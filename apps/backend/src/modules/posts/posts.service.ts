@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  Logger,
 } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { Post, PostDocument } from './schemas/post.schema';
@@ -11,15 +12,21 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { ConversationsService } from '../conversations/conversations.service';
 import { MessagesService } from '../messages/messages.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { SearchPostDto, GeoSearchPostDto } from './dto/search-post.dto';
+import { removeVietnameseTones } from '../../common/helpers/text-utils';
+import { GeminiService } from '../gemini/gemini.service';
 
 @Injectable()
 export class PostsService {
+  private readonly logger = new Logger(PostsService.name);
+
   constructor(
     @InjectModel(Post.name)
     private postModel: Model<PostDocument>,
     private conversationService: ConversationsService,
     private messageService: MessagesService,
     private notificationsService: NotificationsService,
+    private geminiService: GeminiService,
   ) {}
 
   async create(createPostDto: CreatePostDto) {
@@ -63,6 +70,21 @@ export class PostsService {
       }
     }
 
+    // 🤖 Auto-generate tags nếu không có tags hoặc tags rỗng
+    let finalTags = tags || [];
+    if (!finalTags || finalTags.length === 0) {
+      try {
+        const generatedTags = await this.geminiService.generateTagsFromText(
+          title,
+          description,
+        );
+        finalTags = generatedTags;
+        this.logger.log(`Auto-generated tags: ${generatedTags.join(', ')}`);
+      } catch (error) {
+        this.logger.error(`Failed to auto-generate tags: ${error.message}`);
+      }
+    }
+
     // ✅ Tạo document mới
     const newPost = new this.postModel({
       author_id: new Types.ObjectId(author_id),
@@ -75,7 +97,7 @@ export class PostsService {
       price: price ?? null,
       location: locationData,
       custom_fields: custom_fields || {},
-      tags: tags || [],
+      tags: finalTags,
       status: 'pending_approval',
     });
 
@@ -219,7 +241,316 @@ export class PostsService {
       { $project: { _id: 0, province: '$_id', count: 1 } },
     ];
 
-    const result = await this.postModel.aggregate(pipeline as any);
+    const result = await this.postModel.aggregate(pipeline);
     return result as Array<{ province: string | null; count: number }>;
+  }
+
+  /**
+   * Full-text search với hỗ trợ tiếng Việt không dấu
+   */
+  async searchPosts(searchDto: SearchPostDto) {
+    const {
+      q,
+      category_id,
+      transaction_type,
+      condition,
+      min_price,
+      max_price,
+      tags,
+      province,
+      status = 'active',
+      page = 1,
+      limit = 20,
+      sort_by = 'createdAt',
+      sort_order = 'desc',
+    } = searchDto;
+
+    const query: any = {};
+
+    // Filter theo status
+    if (status) {
+      query.status = status;
+    }
+
+    // Full-text search với hỗ trợ tiếng Việt không dấu
+    if (q && q.trim()) {
+      const normalizedQuery = removeVietnameseTones(q.trim());
+      const escapedQuery = normalizedQuery.replace(
+        /[.*+?^${}()|[\]\\]/g,
+        '\\$&',
+      );
+
+      query.$or = [
+        { title: { $regex: q, $options: 'i' } },
+        { description: { $regex: q, $options: 'i' } },
+        { title_normalized: { $regex: escapedQuery, $options: 'i' } },
+        { description_normalized: { $regex: escapedQuery, $options: 'i' } },
+        { tags: { $regex: escapedQuery, $options: 'i' } },
+      ];
+    }
+
+    // Filter theo category
+    if (category_id && Types.ObjectId.isValid(category_id)) {
+      query.category_id = new Types.ObjectId(category_id);
+    }
+
+    // Filter theo transaction_type
+    if (transaction_type) {
+      query.transaction_type = transaction_type;
+    }
+
+    // Filter theo condition
+    if (condition) {
+      query.condition = condition;
+    }
+
+    // Filter theo price range
+    if (min_price !== undefined || max_price !== undefined) {
+      query.price = {};
+      if (min_price !== undefined) {
+        query.price.$gte = min_price;
+      }
+      if (max_price !== undefined) {
+        query.price.$lte = max_price;
+      }
+    }
+
+    // Filter theo tags
+    if (tags && tags.length > 0) {
+      query.tags = { $in: tags };
+    }
+
+    // Filter theo province
+    if (province) {
+      query['location.province'] = province;
+    }
+
+    // Xác định sort options
+    const sortOptions: any = {};
+    if (sort_by === 'price') {
+      sortOptions.price = sort_order === 'asc' ? 1 : -1;
+    } else if (sort_by === 'createdAt') {
+      sortOptions.createdAt = sort_order === 'asc' ? 1 : -1;
+    } else {
+      sortOptions.updatedAt = sort_order === 'asc' ? 1 : -1;
+    }
+
+    // Pagination
+    const skip = (page - 1) * limit;
+
+    // Execute query
+    const [results, total] = await Promise.all([
+      this.postModel
+        .find(query)
+        .populate('author_id', 'full_name avatar reputation')
+        .populate('category_id', 'name')
+        .sort(sortOptions)
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+      this.postModel.countDocuments(query),
+    ]);
+
+    return {
+      data: results,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  /**
+   * Geospatial search - Tìm kiếm posts gần vị trí hiện tại
+   */
+  async geoSearchPosts(geoSearchDto: GeoSearchPostDto) {
+    const {
+      lat,
+      lng,
+      max_distance = 50, // Default 50km
+      q,
+      category_id,
+      transaction_type,
+      condition,
+      min_price,
+      max_price,
+      tags,
+      province,
+      status = 'active',
+      page = 1,
+      limit = 20,
+    } = geoSearchDto;
+
+    // Validate coordinates
+    if (lat === undefined || lng === undefined) {
+      throw new BadRequestException(
+        'Latitude and longitude are required for geo search',
+      );
+    }
+
+    // Build match query
+    const matchQuery: any = {};
+
+    if (status) {
+      matchQuery.status = status;
+    }
+
+    // Full-text search
+    if (q && q.trim()) {
+      const normalizedQuery = removeVietnameseTones(q.trim());
+      const escapedQuery = normalizedQuery.replace(
+        /[.*+?^${}()|[\]\\]/g,
+        '\\$&',
+      );
+
+      matchQuery.$or = [
+        { title: { $regex: q, $options: 'i' } },
+        { description: { $regex: q, $options: 'i' } },
+        { title_normalized: { $regex: escapedQuery, $options: 'i' } },
+        { description_normalized: { $regex: escapedQuery, $options: 'i' } },
+        { tags: { $regex: escapedQuery, $options: 'i' } },
+      ];
+    }
+
+    if (category_id && Types.ObjectId.isValid(category_id)) {
+      matchQuery.category_id = new Types.ObjectId(category_id);
+    }
+
+    if (transaction_type) {
+      matchQuery.transaction_type = transaction_type;
+    }
+
+    if (condition) {
+      matchQuery.condition = condition;
+    }
+
+    if (min_price !== undefined || max_price !== undefined) {
+      matchQuery.price = {};
+      if (min_price !== undefined) {
+        matchQuery.price.$gte = min_price;
+      }
+      if (max_price !== undefined) {
+        matchQuery.price.$lte = max_price;
+      }
+    }
+
+    if (tags && tags.length > 0) {
+      matchQuery.tags = { $in: tags };
+    }
+
+    if (province) {
+      matchQuery['location.province'] = province;
+    }
+
+    // Chỉ tìm posts có location.geo
+    matchQuery['location.geo'] = { $exists: true };
+
+    // Build aggregation pipeline với $geoNear
+    const pipeline: any[] = [
+      {
+        $geoNear: {
+          near: {
+            type: 'Point',
+            coordinates: [lng, lat], // [longitude, latitude]
+          },
+          distanceField: 'distance', // Trường chứa khoảng cách (tính bằng mét)
+          maxDistance: max_distance * 1000, // Chuyển km sang mét
+          spherical: true,
+          query: matchQuery,
+        },
+      },
+      {
+        $addFields: {
+          distanceKm: { $divide: ['$distance', 1000] }, // Chuyển mét sang km
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'author_id',
+          foreignField: '_id',
+          as: 'author_id',
+        },
+      },
+      {
+        $unwind: {
+          path: '$author_id',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'categories',
+          localField: 'category_id',
+          foreignField: '_id',
+          as: 'category_id',
+        },
+      },
+      {
+        $unwind: {
+          path: '$category_id',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          'author_id.password': 0,
+          'author_id.email': 0,
+          'author_id.phone': 0,
+        },
+      },
+    ];
+
+    // Count total
+    const countPipeline = [...pipeline, { $count: 'total' }];
+    const countResult = await this.postModel.aggregate(countPipeline);
+    const total = countResult.length > 0 ? countResult[0].total : 0;
+
+    // Add pagination
+    const skip = (page - 1) * limit;
+    pipeline.push({ $skip: skip });
+    pipeline.push({ $limit: limit });
+
+    // Execute aggregation
+    const results = await this.postModel.aggregate(pipeline);
+
+    return {
+      data: results,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  /**
+   * Tự động generate tags cho post bằng Gemini AI
+   */
+  async autoGenerateTags(postId: string): Promise<string[]> {
+    const post = await this.postModel.findById(postId);
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+
+    // Nếu post có images, sử dụng Gemini để phân tích ảnh
+    if (post.images && post.images.length > 0) {
+      // TODO: Implement image analysis với Gemini
+      // const firstImage = post.images[0];
+      // const analysis = await this.geminiService.analyzeImage(firstImage.url);
+      // return analysis.suggestedTags;
+    }
+
+    // Nếu không có ảnh, generate tags từ title và description
+    const text = `${post.title} ${post.description}`.toLowerCase();
+
+    // Basic keyword extraction (có thể cải thiện với AI)
+    const keywords = text.split(/\s+/).filter((word) => word.length > 3);
+    const uniqueKeywords = [...new Set(keywords)].slice(0, 10);
+
+    return uniqueKeywords;
   }
 }

@@ -8,6 +8,11 @@ import styles from "./postList.module.scss";
 import { Icon } from "@iconify/react";
 import { apiClient } from "@/lib/api-client";
 import { formatImageUrl } from "@/lib/constants";
+import {
+  getUserLocation,
+  calculateDistanceFromUser,
+  formatDistance,
+} from "@/lib/geolocation";
 
 // Local SVG icons (matching files in public/image/feed)
 const ICONS = {
@@ -94,9 +99,21 @@ export const ListPost: React.FC<ListPostProps> = ({ posts }) => {
   const router = useRouter();
   //Lấy user hiện tại
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [userLocation, setUserLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
+
   useEffect(() => {
     const userData = localStorage.getItem("user");
     setCurrentUser(userData ? JSON.parse(userData) : null);
+
+    // Lấy vị trí người dùng
+    getUserLocation().then((location) => {
+      if (location) {
+        setUserLocation(location);
+      }
+    });
   }, []);
 
   //Lấy dữ liệu từ database
@@ -543,24 +560,32 @@ export const ListPost: React.FC<ListPostProps> = ({ posts }) => {
                   <span className={styles["location-name"]}>
                     {data.location?.address || "Không có địa chỉ"}
                   </span>
-                  <span className={styles.proximity}>.</span>
+                  {(() => {
+                    // Tính khoảng cách nếu có vị trí người dùng và vị trí bài đăng
+                    const distance = calculateDistanceFromUser(
+                      userLocation,
+                      data.location?.geo
+                    );
+                    if (distance !== null && distance !== undefined) {
+                      return (
+                        <span className={styles.proximity}>
+                          {" "}
+                          {formatDistance(distance)}
+                        </span>
+                      );
+                    }
+                    // Nếu có distanceKm từ API (geospatial search)
+                    if (data.distance_km !== undefined) {
+                      return (
+                        <span className={styles.proximity}>
+                          {" "}
+                          {formatDistance(data.distance_km)}
+                        </span>
+                      );
+                    }
+                    return null;
+                  })()}
                 </div>
-              </div>
-
-              <div className={styles["small-stats"]}>
-                <span className={styles["text-xs"]}>
-                  <img src={ICONS.eye} alt="Lượt xem" width={15} height={15} />
-                  {/* {data.views} */}0
-                </span>
-                <span className={`${styles["text-xs"]} ${styles["stat-fav"]}`}>
-                  <img
-                    src={ICONS.heart_viewer}
-                    alt="Yêu thích"
-                    width={15}
-                    height={15}
-                  />
-                  {/* {data.favorites} */}0
-                </span>
               </div>
             </div>
           </div>

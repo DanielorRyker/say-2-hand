@@ -81,14 +81,14 @@ body {
 }
 
 .price-gradient {
-	
+
 	-webkit-text-fill-color: transparent;
 	font-size: 28px;
-    font-weight: 800;
-    background: linear-gradient(90deg, #2563eb, #10b981);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+	font-weight: 800;
+	background: linear-gradient(90deg, #2563eb, #10b981);
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
 }
 
 .ripple-target {
@@ -290,14 +290,16 @@ body {
 }
 
 .price {
-  font-size: 28px;
-  font-weight: 800;
-  display: inline-block; /* ✅ giúp background bọc đúng chữ */
-  background: linear-gradient(90deg, #2563eb, #10b981);
-  background-size: 100%; /* có thể điều chỉnh để trải đều màu */
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+	font-size: 28px;
+	font-weight: 800;
+	display: inline-block;
+	/* ✅ giúp background bọc đúng chữ */
+	background: linear-gradient(90deg, #2563eb, #10b981);
+	background-size: 100%;
+	/* có thể điều chỉnh để trải đều màu */
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
 }
 
 
@@ -504,6 +506,7 @@ body {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
+	gap: 0.5rem;
 	border-top: 1px solid transparent;
 	color: #6b7280;
 }
@@ -513,12 +516,14 @@ body {
 	align-items: center;
 	gap: 0.375rem;
 	min-width: 0;
+	flex: 1;
 }
 
 .small-stats {
 	display: flex;
 	gap: 0.75rem;
 	align-items: center;
+	flex-shrink: 0;
 }
 
 .text-xs {
@@ -644,22 +649,60 @@ body {
 
 .location-text {
 	display: flex;
-	align-items: baseline;
+	justify-content: space-around;
+	align-items: center;
+	gap: 4px;
 	font-size: 0.875rem;
+	min-width: 0;
+	flex: 1;
 }
 
 .location-name {
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	max-width: 150px;
+	flex-shrink: 1;
+	min-width: 0;
+	margin-right: 4rem;
 }
 
 .proximity {
 	color: #9ca3af;
-	margin-left: 6px;
+	white-space: nowrap;
+	flex-shrink: 0;
+	font-weight: 450;
+	font-size: 0.875rem;
 }
 
 .stat-fav {
 	margin-left: 8px;
+}
+
+// Responsive adjustments
+@media (max-width: 640px) {
+	.location-text {
+		font-size: 0.8125rem;
+	}
+
+	.location-name {
+		max-width: 120px;
+	}
+
+	.proximity {
+		font-size: 0.75rem;
+	}
+
+	.small-stats {
+		gap: 0.5rem;
+	}
+
+	.text-xs {
+		font-size: 0.6875rem;
+	}
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+	.location-name {
+		max-width: 180px;
+	}
 }

@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
+import { removeVietnameseTones } from '../../../common/helpers/text-utils';
 
 export type PostDocument = Post & Document;
 
@@ -47,6 +48,12 @@ export class Post {
   @Prop({ required: true })
   description: string;
 
+  @Prop()
+  title_normalized?: string; // Tiêu đề không dấu cho tìm kiếm
+
+  @Prop()
+  description_normalized?: string; // Mô tả không dấu cho tìm kiếm
+
   @Prop({
     type: [
       {
@@ -88,7 +95,14 @@ export class Post {
 
   @Prop({
     required: true,
-    enum: ['pending_approval', 'active', 'completed', 'rejected', 'deleted','shipping'],
+    enum: [
+      'pending_approval',
+      'active',
+      'completed',
+      'rejected',
+      'deleted',
+      'shipping',
+    ],
     default: 'pending_approval',
   })
   status: string;
@@ -123,6 +137,43 @@ export class Post {
 
 export const PostSchema = SchemaFactory.createForClass(Post);
 
+// Middleware để tự động tạo normalized text trước khi save
+PostSchema.pre('save', function (next) {
+  if (this.title) {
+    this.title_normalized = removeVietnameseTones(this.title);
+  }
+  if (this.description) {
+    this.description_normalized = removeVietnameseTones(this.description);
+  }
+  next();
+});
+
+// Middleware để tự động update normalized text khi update
+PostSchema.pre('findOneAndUpdate', function (next) {
+  const update = this.getUpdate() as any;
+  if (update.$set) {
+    if (update.$set.title && typeof update.$set.title === 'string') {
+      update.$set.title_normalized = removeVietnameseTones(update.$set.title);
+    }
+    if (
+      update.$set.description &&
+      typeof update.$set.description === 'string'
+    ) {
+      update.$set.description_normalized = removeVietnameseTones(
+        update.$set.description,
+      );
+    }
+  } else {
+    if (update.title && typeof update.title === 'string') {
+      update.title_normalized = removeVietnameseTones(update.title);
+    }
+    if (update.description && typeof update.description === 'string') {
+      update.description_normalized = removeVietnameseTones(update.description);
+    }
+  }
+  next();
+});
+
 // Indexes
 PostSchema.index({ author_id: 1 });
 PostSchema.index({ category_id: 1 });
@@ -133,6 +184,8 @@ PostSchema.index({ 'location.geo': '2dsphere' }, { sparse: true });
 PostSchema.index({ tags: 1 });
 // text index for title, description and tags
 PostSchema.index({ title: 'text', description: 'text', tags: 'text' });
+// text index cho normalized fields để search không dấu
+PostSchema.index({ title_normalized: 'text', description_normalized: 'text' });
 // partial index to optimize feed — only for active posts
 PostSchema.index(
   { createdAt: 1 },

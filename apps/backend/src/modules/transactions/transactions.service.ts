@@ -23,6 +23,17 @@ export class TransactionsService {
   private autoCompleteTimers: Map<string, NodeJS.Timeout> = new Map();
 
   async create(createTransactionDto: CreateTransactionDto) {
+    // Kiểm tra trùng đơn: cùng post_id, buyer_id, status chưa hoàn thành
+    const existing = await this.transactionModel.findOne({
+      post_id: new Types.ObjectId(createTransactionDto.post_id),
+      buyer_id: new Types.ObjectId(createTransactionDto.buyer_id),
+      status: { $in: ['pending', 'shipping'] },
+    });
+    if (existing) {
+      throw new BadRequestException(
+        'Bạn đã có đơn hàng đang xử lý cho sản phẩm này. Vui lòng không thao tác lặp.',
+      );
+    }
     try {
       const newTransaction = new this.transactionModel({
         ...createTransactionDto,
@@ -32,17 +43,15 @@ export class TransactionsService {
         transaction_ref: `VNPAY${Date.now()}${Math.floor(Math.random() * 1000)}`,
         paid_at: new Date(), // Assume payment is made on creation
       });
-
       const savedTransaction = await newTransaction.save();
-
       return {
-        message: 'Transaction created successfully',
+        message: 'Tạo đơn hàng thành công',
         data: savedTransaction,
       };
     } catch (error) {
       console.error(' Mongo Save Error:', error.message);
       console.error(' Stack:', error.stack);
-      throw error; // tạm thời ném thẳng lỗi thật ra ngoài
+      throw error;
     }
   }
 

@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from './modules/users/users.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -24,6 +25,17 @@ import { RatingsModule } from './modules/ratings/ratings.module';
 import { GeminiModule } from './modules/gemini/gemini.module';
 @Module({
   imports: [
+    // ThrottlerModule cấu hình rate limit toàn cục (có thể override ở controller)
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          limit: 5,
+          ttl: 60, // 60 giây
+        },
+      ],
+      errorMessage:
+        'Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau 1 phút.',
+    }),
     MailerModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({

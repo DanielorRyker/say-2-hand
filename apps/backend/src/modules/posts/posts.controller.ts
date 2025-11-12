@@ -6,10 +6,12 @@ import {
   Param,
   Delete,
   Patch,
+  Query,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { SearchPostDto, GeoSearchPostDto } from './dto/search-post.dto';
 
 @Controller('posts')
 export class PostsController {
@@ -77,5 +79,20 @@ export class PostsController {
   @Get('counts/province')
   countsByProvince() {
     return this.postsService.countsByProvince();
+  }
+
+  @Get('search')
+  searchPosts(@Query() searchDto: SearchPostDto) {
+    return this.postsService.searchPosts(searchDto);
+  }
+
+  @Get('search/nearby')
+  geoSearchPosts(@Query() geoSearchDto: GeoSearchPostDto) {
+    return this.postsService.geoSearchPosts(geoSearchDto);
+  }
+
+  @Post(':id/generate-tags')
+  autoGenerateTags(@Param('id') id: string) {
+    return this.postsService.autoGenerateTags(id);
   }
 }
