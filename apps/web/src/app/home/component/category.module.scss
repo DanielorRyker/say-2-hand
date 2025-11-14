@@ -7,11 +7,9 @@
    ========================================== */
 
 .container {
-  margin-top: 1.5rem;
   border-radius: vars.$radius-2xl;
   width: 70%;
-  padding: vars.$spacing-xl 0;
-  background-color: #fff;
+  background: colors.$bg-main;
 }
 
 .categoryList {
@@ -62,6 +60,7 @@
 
   &:hover {
     transform: translateY(-8px);
+    background: colors.$neutral-white;
 
     &::before {
       opacity: 1;
@@ -118,5 +117,28 @@
 
   @include vars.respond-below('md') {
     font-size: vars.$font-size-sm;
+  }
+}
+
+/* Skeleton Loading */
+.categorySkeleton {
+  width: 100%;
+  height: 180px;
+  background: linear-gradient(90deg,
+      #f3f4f6 25%,
+      #e5e7eb 50%,
+      #f3f4f6 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+  border-radius: vars.$radius-xl;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
   }
 }

@@ -1,0 +1,188 @@
+@use '../../../styles/abstracts/variables.scss'as vars;
+@use '../../../styles/abstracts/colors.scss'as colors;
+
+/* ==========================================
+   QUICK STATS SECTION
+   ========================================== */
+
+.statsSection {
+    width: 100%;
+    padding: vars.$spacing-3xl vars.$spacing-lg;
+    background: colors.$bg-main;
+
+    @include vars.respond-below('md') {
+        padding: vars.$spacing-2xl vars.$spacing-md;
+    }
+}
+
+.statsContainer {
+    max-width: 1280px;
+    margin: 0 auto;
+}
+
+.sectionHeader {
+    text-align: center;
+    margin-bottom: vars.$spacing-2xl;
+}
+
+.sectionTitle {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: colors.$solid-text-primary;
+    margin-bottom: vars.$spacing-sm;
+
+    @include vars.respond-below('md') {
+        font-size: 2rem;
+    }
+}
+
+.sectionSubtitle {
+    font-size: 1.125rem;
+    color: colors.$solid-text-secondary;
+    max-width: 600px;
+    margin: 0 auto;
+
+    @include vars.respond-below('md') {
+        font-size: 1rem;
+    }
+}
+
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: vars.$spacing-lg;
+
+    @include vars.respond-below('lg') {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    @include vars.respond-below('md') {
+        grid-template-columns: 1fr;
+        gap: vars.$spacing-md;
+    }
+}
+
+.statCard {
+    background: white;
+    border: 2px solid #f3f4f6;
+    border-radius: vars.$radius-xl;
+    padding: vars.$spacing-xl;
+    display: flex;
+    align-items: center;
+    gap: vars.$spacing-md;
+    transition: all vars.$transition-base;
+    position: relative;
+    overflow: hidden;
+
+    &[data-color="#3b82f6"] {
+        --stat-color: #3b82f6;
+        --stat-bg: rgba(59, 130, 246, 0.1);
+    }
+
+    &[data-color="#10b981"] {
+        --stat-color: #10b981;
+        --stat-bg: rgba(16, 185, 129, 0.1);
+    }
+
+    &[data-color="#8b5cf6"] {
+        --stat-color: #8b5cf6;
+        --stat-bg: rgba(139, 92, 246, 0.1);
+    }
+
+    &[data-color="#f59e0b"] {
+        --stat-color: #f59e0b;
+        --stat-bg: rgba(245, 158, 11, 0.1);
+    }
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--stat-color, #3b82f6);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform vars.$transition-base;
+    }
+
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--stat-color, #3b82f6);
+
+        &::before {
+            transform: scaleX(1);
+        }
+
+        .statIcon {
+            transform: scale(1.1) rotate(5deg);
+        }
+    }
+}
+
+.statIcon {
+    width: 64px;
+    height: 64px;
+    border-radius: vars.$radius-lg;
+    background: var(--stat-bg, #f3f4f6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--stat-color, #3b82f6);
+    flex-shrink: 0;
+    transition: transform vars.$transition-base;
+
+    @include vars.respond-below('md') {
+        width: 56px;
+        height: 56px;
+    }
+}
+
+.statContent {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.statValue {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--stat-color, #3b82f6);
+    line-height: 1;
+
+    @include vars.respond-below('md') {
+        font-size: 1.75rem;
+    }
+}
+
+.statLabel {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: colors.$solid-text-secondary;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Skeleton Loading */
+.statCardSkeleton {
+    background: linear-gradient(90deg,
+            #f3f4f6 25%,
+            #e5e7eb 50%,
+            #f3f4f6 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s ease-in-out infinite;
+    border-radius: vars.$radius-xl;
+    height: 120px;
+}
+
+@keyframes loading {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}

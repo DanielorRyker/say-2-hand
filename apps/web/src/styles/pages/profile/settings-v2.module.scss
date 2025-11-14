@@ -11,7 +11,7 @@
     padding: 40px 20px;
     position: relative;
     overflow: hidden;
-    background: linear-gradient(135deg, #bfdbfe 0%, #a7f3d0 100%);
+    background: linear-gradient(135deg, #dbeafe 0%, #ede9fe 100%);
     animation: gradientShift 15s ease infinite;
 }
 
@@ -139,7 +139,7 @@
 .title {
     font-size: 32px;
     font-weight: 700;
-    background: linear-gradient(90deg, #3b82f6 0%, #10b981 100%);
+    background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -284,7 +284,7 @@
 .roleBadge {
     display: inline-block;
     padding: 6px 12px;
-    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    background: linear-gradient(135deg, #dbeafe 0%, #ede9fe 100%);
     border: 1px solid #3b82f6;
     border-radius: 8px;
     font-size: 13px;
@@ -336,7 +336,7 @@
     border: 2px solid transparent;
     border-radius: 14px;
     background: linear-gradient(white, white) padding-box,
-        linear-gradient(135deg, #3b82f6, #10b981) border-box;
+        linear-gradient(135deg, #3b82f6, #8b5cf6) border-box;
     font-size: 15px;
     color: #1f2937;
     outline: none;
@@ -428,7 +428,7 @@
         height: 0;
 
         &:checked+.slider {
-            background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%);
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
         }
 
         &:checked+.slider:before {
@@ -471,7 +471,7 @@
 
 .btnPrimary {
     padding: 14px 32px;
-    background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%);
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
     border: none;
     border-radius: 14px;
     color: white;
@@ -632,3 +632,6 @@
         display: none;
     }
 }
+
+
+

@@ -13,14 +13,14 @@
 /* CSS Custom Properties - Định nghĩa biến toàn cục */
 :root {
   /* Primary Colors */
-  --primary-brand: linear-gradient(90deg, #bfdbfe 0%, #a7f3d0 100%);
-  --primary-dark: linear-gradient(90deg, #3b82f6 0%, #10b981 100%);
-  --primary-light: linear-gradient(90deg, #ebf8ff 0%, #f0fdf4 100%);
+  --primary-brand: linear-gradient(90deg, #dbeafe 0%, #ede9fe 100%);
+  --primary-dark: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+  --primary-light: linear-gradient(90deg, #f0f9ff 0%, #faf5ff 100%);
 
   /* Secondary Colors */
-  --secondary-main: linear-gradient(90deg, #2de099 0%, #3b82f6 100%);
-  --secondary-dark: linear-gradient(90deg, #059669 0%, #1e40af 100%);
-  --secondary-light: linear-gradient(90deg, #a7f3d0 0%, #dbeafe 100%);
+  --secondary-main: linear-gradient(90deg, #8b5cf6 0%, #7c3aed 100%);
+  --secondary-dark: linear-gradient(90deg, #6d28d9 0%, #5b21b6 100%);
+  --secondary-light: linear-gradient(90deg, #ede9fe 0%, #dbeafe 100%);
 
   /* Status Colors */
   --status-success: linear-gradient(90deg, #10b981 0%, #059669 100%);
@@ -31,18 +31,18 @@
   /* UI Elements */
   --ui-header: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
   --ui-card: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  --ui-button-primary: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
-  --ui-button-secondary: linear-gradient(90deg, #a7f3d0 0%, #bfdbfe 100%);
+  --ui-button-primary: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+  --ui-button-secondary: linear-gradient(90deg, #ede9fe 0%, #dbeafe 100%);
   --ui-footer: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 100%);
 
   /* Backgrounds */
-  --bg-main: linear-gradient(135deg, #f0f9ff 0%, #f0fdf4 100%);
-  --bg-section: linear-gradient(135deg, #f8fafc 0%, #f0fdf4 100%);
+  --bg-main: linear-gradient(135deg, #f0f9ff 0%, #faf5ff 100%);
+  --bg-section: linear-gradient(135deg, #f8fafc 0%, #faf5ff 100%);
   --bg-hero: linear-gradient(135deg, #dbeafe 0%, #d1fae5 100%);
 
   /* Solid Colors */
   --color-primary: #3b82f6;
-  --color-secondary: #10b981;
+  --color-secondary: #8b5cf6;
   --color-success: #059669;
   --color-warning: #f59e0b;
   --color-error: #ef4444;

@@ -3,27 +3,50 @@
 
 /* ==========================================
    SAY2HAND - FOOTER STYLES
-   Modern gradient footer với social links
+   Modern professional footer design
    ========================================== */
 
 .footerBar {
-  background: var(--ui-footer);
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
   width: 100%;
-  padding: vars.$spacing-3xl vars.$spacing-lg;
-  margin-top: vars.$spacing-3xl;
-  border-top: 1px solid colors.$solid-border-light;
+  padding: vars.$spacing-3xl vars.$spacing-lg vars.$spacing-xl;
+  color: white;
+  position: relative;
+  overflow: hidden;
+
+  // Decorative background pattern
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+      radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.03) 0%, transparent 50%);
+    pointer-events: none;
+  }
 
   @include vars.respond-below('md') {
-    padding: vars.$spacing-2xl vars.$spacing-md;
+    padding: vars.$spacing-2xl vars.$spacing-md vars.$spacing-lg;
   }
 }
 
 .footerContainer {
-  @include vars.container;
+  max-width: 1280px;
+  margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: vars.$spacing-2xl;
-  margin-bottom: vars.$spacing-xl;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: vars.$spacing-3xl;
+  margin-bottom: vars.$spacing-2xl;
+  position: relative;
+  z-index: 1;
+
+  @include vars.respond-below('lg') {
+    grid-template-columns: repeat(2, 1fr);
+    gap: vars.$spacing-2xl;
+  }
 
   @include vars.respond-below('md') {
     grid-template-columns: 1fr;
@@ -38,70 +61,152 @@
 }
 
 .footerTitle {
-  font-size: vars.$font-size-xl;
-  font-weight: vars.$font-weight-bold;
-  @include colors.gradient-text(colors.$primary-dark);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: white;
   margin-bottom: vars.$spacing-sm;
+  position: relative;
+  padding-bottom: vars.$spacing-sm;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 40px;
+    height: 3px;
+    background: linear-gradient(90deg, colors.$primary-brand, transparent);
+    border-radius: 2px;
+  }
+
+  @include vars.respond-below('md') {
+    font-size: 1.125rem;
+  }
 }
 
 .footerText {
-  font-size: vars.$font-size-base;
-  color: colors.$solid-text-secondary;
-  line-height: vars.$line-height-relaxed;
+  font-size: 0.938rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.7;
+  max-width: 350px;
+
+  @include vars.respond-below('md') {
+    font-size: 0.875rem;
+    max-width: 100%;
+  }
 }
 
 .footerLink {
-  font-size: vars.$font-size-base;
-  color: colors.$solid-text-secondary;
+  font-size: 0.938rem;
+  color: rgba(255, 255, 255, 0.75);
   text-decoration: none;
-  transition: all vars.$transition-fast;
-  display: inline-block;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: vars.$spacing-xs;
+  width: fit-content;
+  position: relative;
+
+  &::before {
+    content: '›';
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.3s ease;
+  }
 
   &:hover {
-    color: colors.$solid-primary;
-    transform: translateX(4px);
+    color: white;
+    transform: translateX(8px);
+
+    &::before {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @include vars.respond-below('md') {
+    font-size: 0.875rem;
   }
 }
 
 .socialLinks {
   display: flex;
-  gap: vars.$spacing-md;
-  margin-top: vars.$spacing-md;
+  gap: vars.$spacing-sm;
+  margin-top: vars.$spacing-sm;
+  flex-wrap: wrap;
 }
 
 .socialIcon {
-  width: 40px;
-  height: 40px;
-  border-radius: vars.$radius-full;
-  background: colors.$solid-bg-white;
-  @include vars.flex-center;
-  transition: all vars.$transition-base;
-  box-shadow: vars.$shadow-sm;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  color: rgba(255, 255, 255, 0.8);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: vars.$shadow-md;
-    background: colors.$ui-button-primary;
-
-    img {
-      filter: brightness(0) invert(1);
-    }
+    transform: translateY(-4px) scale(1.05);
+    background: colors.$primary-brand;
+    color: white;
+    border-color: colors.$primary-brand;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
   }
 
-  img {
-    width: 20px;
-    height: 20px;
+  @include vars.respond-below('md') {
+    width: 38px;
+    height: 38px;
   }
 }
 
 .footerBottom {
   padding-top: vars.$spacing-xl;
-  border-top: 1px solid colors.$solid-border-light;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   text-align: center;
+  position: relative;
+  z-index: 1;
 
   p {
-    font-size: vars.$font-size-sm;
-    color: colors.$solid-text-tertiary;
-    font-weight: vars.$font-weight-medium;
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 400;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: vars.$spacing-xs;
+    flex-wrap: wrap;
+
+    @include vars.respond-below('md') {
+      font-size: 0.813rem;
+    }
+  }
+}
+
+.heartIcon {
+  color: #e74c3c;
+  animation: heartbeat 1.5s ease-in-out infinite;
+  display: inline-block;
+}
+
+@keyframes heartbeat {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  10%,
+  30% {
+    transform: scale(1.1);
+  }
+
+  20%,
+  40% {
+    transform: scale(1);
   }
 }

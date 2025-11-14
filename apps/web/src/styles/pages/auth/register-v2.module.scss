@@ -4,7 +4,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #bfdbfe 0%, #a7f3d0 100%);
+    background: linear-gradient(135deg, #dbeafe 0%, #ede9fe 100%);
     padding: 20px;
     position: relative;
     overflow: hidden;
@@ -82,7 +82,7 @@
 .title {
     font-size: 32px;
     font-weight: 700;
-    background: linear-gradient(90deg, #3b82f6 0%, #10b981 100%);
+    background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -153,7 +153,7 @@
         content: "";
         width: 4px;
         height: 20px;
-        background: linear-gradient(180deg, #3b82f6 0%, #10b981 100%);
+        background: linear-gradient(180deg, #3b82f6 0%, #8b5cf6 100%);
         border-radius: 2px;
     }
 }
@@ -184,7 +184,7 @@
 
 .inputWrapper {
     position: relative;
-    background: linear-gradient(135deg, #bfdbfe 0%, #a7f3d0 100%);
+    background: linear-gradient(135deg, #dbeafe 0%, #ede9fe 100%);
     padding: 2px;
     border-radius: 12px;
     transition: all 0.3s ease;
@@ -195,7 +195,7 @@
 
     &:focus-within {
         box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
-        background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%);
+        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
     }
 }
 
@@ -485,7 +485,7 @@
 .btnPrimary {
     width: 100%;
     padding: 16px;
-    background: linear-gradient(90deg, #3b82f6 0%, #10b981 100%);
+    background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
     color: white;
     border: none;
     border-radius: 12px;
@@ -726,3 +726,5 @@
         transform: rotate(360deg);
     }
 }
+
+

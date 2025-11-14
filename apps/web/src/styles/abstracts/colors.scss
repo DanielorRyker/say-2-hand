@@ -7,16 +7,18 @@
 // ==========================================
 // PRIMARY COLORS - Màu Chính
 // ==========================================
-$primary-brand: linear-gradient(90deg, #bfdbfe 0%, #a7f3d0 100%);
-$primary-dark: linear-gradient(90deg, #3b82f6 0%, #10b981 100%);
-$primary-light: linear-gradient(90deg, #ebf8ff 0%, #f0fdf4 100%);
+$primary-brand: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+$primary-dark: linear-gradient(90deg, #2563eb 0%, #7c3aed 100%);
+$primary-light: linear-gradient(90deg, #dbeafe 0%, #ede9fe 100%);
 
 // ==========================================
 // SECONDARY COLORS - Màu Phụ
 // ==========================================
-$secondary-main: linear-gradient(90deg, #2de099 0%, #3b82f6 100%);
-$secondary-dark: linear-gradient(90deg, #059669 0%, #1e40af 100%);
-$secondary-light: linear-gradient(90deg, #a7f3d0 0%, #dbeafe 100%);
+$secondary-main: linear-gradient(90deg, #8b5cf6 0%, #6366f1 100%);
+$secondary-dark: linear-gradient(90deg, #7c3aed 0%, #4f46e5 100%);
+$secondary-light: linear-gradient(90deg, #ede9fe 0%, #e0e7ff 100%);
+
+
 
 // ==========================================
 // STATUS COLORS - Màu Trạng Thái
@@ -50,16 +52,16 @@ $ui-header-transparent-03: linear-gradient(90deg, rgba(59, 131, 246, 0.3) 0%, rg
 $ui-header-transparent-015: linear-gradient(90deg, rgba(59, 131, 246, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
 $ui-card: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
 $ui-button-primary: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
-$ui-button-secondary: linear-gradient(90deg, #a7f3d0 0%, #bfdbfe 100%);
+$ui-button-secondary: linear-gradient(90deg, #6366f1 0%, #a78bfa 100%);
 $ui-footer: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 100%);
 $ui-modal: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%);
 
 // ==========================================
 // BACKGROUND COLORS - Màu Nền
 // ==========================================
-$bg-main: linear-gradient(135deg, #f0f9ff 0%, #f0fdf4 100%);
-$bg-section: linear-gradient(135deg, #f8fafc 0%, #f0fdf4 100%);
-$bg-hero: linear-gradient(135deg, #dbeafe 0%, #d1fae5 100%);
+$bg-main: linear-gradient(135deg, #f0f9ff 0%, #faf5ff 100%);
+$bg-section: linear-gradient(135deg, #f0f9ff 0%, #ede9fe 50%, #faf5ff 100%);
+$bg-hero: linear-gradient(135deg, #dbeafe 0%, #ede9fe 100%);
 $bg-loading: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 50%, #f1f5f9 100%);
 
 // ==========================================
@@ -76,17 +78,17 @@ $effect-sunset: linear-gradient(135deg, #fbbf24 0%, #f97316 50%, #ec4899 100%);
 // INTERACTION COLORS - Màu Tương Tác
 // ==========================================
 $interaction-favorite: linear-gradient(90deg, #ec4899 0%, #f43f5e 100%);
-$interaction-follow: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+$interaction-follow: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
 $interaction-share: linear-gradient(90deg, #10b981 0%, #059669 100%);
 $interaction-comment: linear-gradient(90deg, #8b5cf6 0%, #7c3aed 100%);
 $interaction-rating: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
-$interaction-view-more: linear-gradient(90deg, #06b6d4 0%, #0891b2 100%);
+$interaction-view-more: linear-gradient(90deg, #3b82f6 0%, #6366f1 100%);
 $interaction-completed: linear-gradient(90deg, #94a3b8 0%, #64748b 100%);
 $interaction-contact: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
 $interaction-history: linear-gradient(90deg, #64748b 0%, #475569 100%);
 $interaction-notification: linear-gradient(90deg, #f97316 0%, #ea580c 100%);
 $interaction-bookmark: linear-gradient(90deg, #eab308 0%, #ca8a04 100%);
-$interaction-social: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%);
+$interaction-social: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
 
 // ==========================================
 // NEUTRAL COLORS - Màu Trung Tính
@@ -100,7 +102,7 @@ $neutral-white: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
 // SOLID COLORS - Màu Đặc (cho text, borders)
 // ==========================================
 $solid-primary: #3b82f6;
-$solid-secondary: #10b981;
+$solid-secondary: #8b5cf6;
 $solid-success: #059669;
 $solid-warning: #f59e0b;
 $solid-error: #ef4444;

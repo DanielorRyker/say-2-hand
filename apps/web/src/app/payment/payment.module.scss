@@ -76,7 +76,7 @@
     align-items: center;
     gap: 16px;
     padding: 20px 24px;
-    background: linear-gradient(135deg, #bfdbfe 0%, #a7f3d0 100%);
+    background: linear-gradient(135deg, #dbeafe 0%, #ede9fe 100%);
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
@@ -994,7 +994,7 @@
 /* Match profile edit input styles for consistency */
 .inputWrapper {
     position: relative;
-    background: linear-gradient(135deg, #bfdbfe 0%, #a7f3d0 100%);
+    background: linear-gradient(135deg, #dbeafe 0%, #ede9fe 100%);
     padding: 2px;
     border-radius: 12px;
     transition: all 0.3s ease;
@@ -1005,7 +1005,7 @@
 
     &:focus-within {
         box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
-        background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%);
+        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
     }
 }
 
@@ -1072,7 +1072,7 @@
     display: inline-flex;
     align-items: center;
     padding: 4px 8px;
-    background: linear-gradient(90deg, #3b82f6 0%, #10b981 100%);
+    background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
     color: white;
     border-radius: 6px;
     font-size: 11px;
@@ -1155,3 +1155,4 @@
     font-size: 18;
     
 }
+

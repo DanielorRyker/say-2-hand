@@ -172,29 +172,27 @@ const ChangePasswordPage = () => {
               <div className={styles.inputGroup}>
                 <label className={styles.label}>Mật khẩu mới</label>
                 <div className={styles.inputWrapper}>
-                  <div className={styles.inputInner}>
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Nhập mật khẩu mới"
-                      className={styles.input}
-                      value={form.password}
-                      name="password"
-                      onChange={handleChange}
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Nhập mật khẩu mới"
+                    className={styles.input}
+                    value={form.password}
+                    name="password"
+                    onChange={handleChange}
+                  />
+                  <button
+                    type="button"
+                    className={styles.eyeButton}
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label="Toggle password visibility"
+                  >
+                    <Icon
+                      icon={showPassword ? "mdi:eye" : "mdi:eye-off"}
+                      style={{ color: "#D5D5DF" }}
+                      width={20}
+                      height={20}
                     />
-                    <button
-                      type="button"
-                      className={styles.eyeButton}
-                      onClick={() => setShowPassword(!showPassword)}
-                      aria-label="Toggle password visibility"
-                    >
-                      <Icon
-                        icon={showPassword ? "mdi:eye" : "mdi:eye-off"}
-                        style={{ color: "#D5D5DF" }}
-                        width={20}
-                        height={20}
-                      />
-                    </button>
-                  </div>
+                  </button>
                 </div>
               </div>
 
@@ -312,18 +310,16 @@ const ChangePasswordPage = () => {
                 <div className={styles.inputGroup}>
                   <label className={styles.label}>Mã OTP</label>
                   <div className={styles.otpInputWrapper}>
-                    <div className={styles.otpInputInner}>
-                      <input
-                        type="text"
-                        placeholder="Nhập mã OTP"
-                        className={styles.otpInput}
-                        value={form.otp}
-                        name="otp"
-                        onChange={handleChange}
-                        maxLength={6}
-                        disabled={loading}
-                      />
-                    </div>
+                    <input
+                      type="text"
+                      placeholder="Nhập mã OTP"
+                      className={styles.otpInput}
+                      value={form.otp}
+                      name="otp"
+                      onChange={handleChange}
+                      maxLength={6}
+                      disabled={loading}
+                    />
                   </div>
                 </div>
 
@@ -388,12 +384,6 @@ const ChangePasswordPage = () => {
               >
                 <div className={styles.btnSecondaryInner}>
                   <div className={styles.btnSecondaryText}>
-                    <Icon
-                      icon={"formkit:arrowleft"}
-                      style={{
-                        color: "linear-gradient(135deg, #3b82f6, #10b981)",
-                      }}
-                    />
                     <p>Quay lại đăng nhập</p>
                   </div>
                 </div>

@@ -21,30 +21,56 @@ body {
 .item-card {
 	transition: transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 260ms ease, filter 260ms ease;
 	position: relative;
-	display: block;
+	display: flex;
+	flex-direction: column;
 	width: 100%;
-	max-width: 100%;
-	margin-top: 20px;
+	height: 100%;
+	max-width: 320px;
+	/* Giảm từ 360px xuống 320px */
+	margin-top: 0;
 	margin-bottom: 0;
 	/* remove fixed min-width here to avoid overflow; grid controls minimum column size */
 	min-width: 0;
-	/* grid's column min will enforce the 340px minimum so cards wrap instead of overlapping */
+	/* grid's column min will enforce the responsive minimum so cards wrap instead of overlapping */
 }
 
 .item-card:hover {
 	/* More subtle lift */
-	transform: translateY(-3px);
+	transform: translateY(-2px);
 	/* Softer shadow for a modern, less heavy look */
-	box-shadow: 0 10px 20px rgba(16, 24, 40, 0.06), 0 4px 8px rgba(16, 24, 40, 0.04);
+	box-shadow: 0 8px 16px rgba(16, 24, 40, 0.05), 0 2px 4px rgba(16, 24, 40, 0.03);
 	/* Slight contrast boost */
-	filter: saturate(1.02) contrast(1.01);
+	filter: saturate(1.01) contrast(1.005);
+}
+
+@media (min-width: 768px) {
+	.item-card:hover {
+		transform: translateY(-3px);
+		box-shadow: 0 10px 20px rgba(16, 24, 40, 0.06), 0 4px 8px rgba(16, 24, 40, 0.04);
+		filter: saturate(1.02) contrast(1.01);
+	}
 }
 
 .image-wrapper {
-	padding-bottom: 80%;
+	padding-bottom: 65%;
+	/* Giảm từ 75% xuống 65% để ảnh không quá cao */
 	position: relative;
 	overflow: hidden;
 	border-radius: 0.75rem 0.75rem 0 0;
+}
+
+@media (min-width: 480px) {
+	.image-wrapper {
+		padding-bottom: 67%;
+		/* Giảm từ 77% */
+	}
+}
+
+@media (min-width: 768px) {
+	.image-wrapper {
+		padding-bottom: 70%;
+		/* Giảm từ 80% */
+	}
 }
 
 .item-image {
@@ -85,7 +111,8 @@ body {
 	-webkit-text-fill-color: transparent;
 	font-size: 28px;
 	font-weight: 800;
-	background: linear-gradient(90deg, #2563eb, #10b981);
+	background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+	/* Xanh-tím gradient */
 	-webkit-background-clip: text;
 	background-clip: text;
 	color: transparent;
@@ -108,25 +135,67 @@ body {
 
 .card-carousel {
 	display: grid;
-	/* ensure each column is at least 340px so cards will wrap instead of overlapping */
-	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-	justify-content: stretch;
-	gap: 24px;
-	width: 70%;
+	/* Responsive grid columns - giảm minmax để tăng số cột */
+	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+	/* Giảm từ 280px */
+	justify-content: start;
+	justify-items: start;
+	gap: 16px;
+	/* Giảm gap từ 20px */
+	width: 100%;
 	max-width: 1400px;
 	margin-left: auto;
 	margin-right: auto;
+	padding-left: 16px;
+	padding-right: 16px;
 	padding-bottom: 20px;
 	/* allow vertical wrapping; hide horizontal overflow just in case */
 	overflow-x: hidden;
 }
 
-/* On small screens, let the list expand to full width for readability */
-@media (max-width: 768px) {
+/* Mobile - Extra small screens (< 480px) */
+@media (max-width: 479px) {
 	.card-carousel {
-		width: 100%;
+		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+		/* Giảm từ 240px */
+		gap: 10px;
+		/* Giảm gap */
+		padding-left: 8px;
+		padding-right: 8px;
+	}
+}
+
+/* Tablet - Small screens (480px - 768px) */
+@media (min-width: 480px) and (max-width: 768px) {
+	.card-carousel {
+		grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+		/* Giảm từ 250px */
+		gap: 14px;
 		padding-left: 12px;
 		padding-right: 12px;
+	}
+}
+
+/* Tablet - Medium screens (769px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+	.card-carousel {
+		grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+		/* Giảm từ 280px */
+		gap: 16px;
+		padding-left: 16px;
+		padding-right: 16px;
+	}
+}
+
+/* Desktop - Large screens (> 1024px) */
+@media (min-width: 1025px) {
+	.card-carousel {
+		grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+		/* Giảm từ 300px */
+		gap: 18px;
+		/* Giảm gap */
+		padding-left: 20px;
+		padding-right: 20px;
 	}
 }
 
@@ -144,24 +213,42 @@ body {
 	border-radius: 1rem;
 	box-shadow: 0 8px 18px rgba(16, 24, 40, 0.04);
 	transition: box-shadow 240ms ease, transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+	display: flex;
+	flex-direction: column;
+	height: 100%;
 }
 
 .card:hover {
-	transform: translateY(-3px);
-	box-shadow: 0 12px 30px rgba(16, 24, 40, 0.06);
+	transform: translateY(-2px);
+	box-shadow: 0 8px 16px rgba(16, 24, 40, 0.05);
+}
+
+@media (min-width: 768px) {
+	.card:hover {
+		transform: translateY(-3px);
+		box-shadow: 0 12px 30px rgba(16, 24, 40, 0.06);
+	}
 }
 
 .post-type-badge {
 	position: absolute;
-	top: 12px;
-	left: 12px;
+	top: 8px;
+	left: 8px;
 	z-index: 30;
-	padding: 0.35rem 0.9rem;
+	padding: 0.25rem 0.65rem;
 	border-radius: 9999px;
-	font-size: 0.85rem;
+	font-size: 0.7rem;
 	font-weight: 600;
 	color: #fff;
+}
 
+@media (min-width: 640px) {
+	.post-type-badge {
+		top: 12px;
+		left: 12px;
+		padding: 0.35rem 0.9rem;
+		font-size: 0.85rem;
+	}
 }
 
 /* Badge variants (match top-level styles.module.scss) */
@@ -177,7 +264,7 @@ body {
 
 .post-badge-tang {
 	/* TẶNG - softer success green */
-	background: linear-gradient(90deg, #10B981 0%, #059669 100%);
+	background: linear-gradient(90deg, #8b5cf6 0%, #7c3aed 100%);
 }
 
 /* Fallback textual transaction type */
@@ -209,7 +296,7 @@ body {
 
 .quick-action-btn {
 	position: relative;
-	padding: 0.5rem;
+	padding: 0.375rem;
 	background: rgba(255, 255, 255, 0.5);
 	border-radius: 9999px;
 	display: inline-flex;
@@ -218,7 +305,14 @@ body {
 	border: none;
 	cursor: pointer;
 	transition: background-color 0.15s ease, color 0.15s ease;
-	box-shadow: 0 6px 10px -6px rgba(0, 0, 0, 0.1);
+	box-shadow: 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+@media (min-width: 640px) {
+	.quick-action-btn {
+		padding: 0.5rem;
+		box-shadow: 0 6px 10px -6px rgba(0, 0, 0, 0.1);
+	}
 }
 
 .quick-action-btn:focus {
@@ -281,20 +375,14 @@ body {
 	color: #ef4444;
 }
 
-.card-body {
-	padding: 1rem;
-}
-
-.card-body--md {
-	padding: 1.25rem;
-}
-
 .price {
-	font-size: 28px;
+	font-size: 20px;
+	/* Giảm từ 24px */
 	font-weight: 800;
 	display: inline-block;
 	/* ✅ giúp background bọc đúng chữ */
-	background: linear-gradient(90deg, #2563eb, #10b981);
+	background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+	/* Xanh-tím gradient */
 	background-size: 100%;
 	/* có thể điều chỉnh để trải đều màu */
 	-webkit-background-clip: text;
@@ -302,26 +390,79 @@ body {
 	color: transparent;
 }
 
+@media (min-width: 640px) {
+	.price {
+		font-size: 22px;
+		/* Giảm từ 26px */
+	}
+}
+
+@media (min-width: 1024px) {
+	.price {
+		font-size: 24px;
+		/* Giảm từ 28px */
+	}
+}
 
 .price small {
-	font-size: 0.875rem;
+	font-size: 0.75rem;
 	font-weight: 700;
 	margin-left: 0.25rem;
 }
 
+@media (min-width: 640px) {
+	.price small {
+		font-size: 0.875rem;
+	}
+}
+
 .title {
-	font-size: 1.125rem;
+	font-size: 0.9375rem;
+	/* Giảm từ 1rem */
 	font-weight: 700;
 	color: #1f2937;
 	margin: 0.25rem 0;
+	line-height: 1.35;
 	// min-height: 50px;
 }
 
+@media (min-width: 640px) {
+	.title {
+		font-size: 1rem;
+		/* Giảm từ 1.0625rem */
+	}
+}
+
+@media (min-width: 1024px) {
+	.title {
+		font-size: 1.0625rem;
+		/* Giảm từ 1.125rem */
+	}
+}
+
 .description {
-	font-size: 0.875rem;
+	font-size: 0.8125rem;
 	color: #4b5563;
-	min-height: 80px;
-	margin: 0;
+	min-height: 48px;
+	/* Giảm từ 60px */
+	margin: 0.5rem 0 0 0;
+	line-height: 1.4;
+}
+
+@media (min-width: 640px) {
+	.description {
+		font-size: 0.875rem;
+		min-height: 56px;
+		/* Giảm từ 70px */
+	}
+}
+
+@media (min-width: 1024px) {
+	.description {
+		font-size: 0.875rem;
+		min-height: 64px;
+		/* Giảm từ 80px */
+	}
 }
 
 .line-clamp-2,
@@ -344,52 +485,104 @@ body {
 .meta-row {
 	display: flex;
 	align-items: center;
-	gap: 0.75rem;
+	gap: 0.5rem;
 	margin-top: 0.5rem;
 	color: #6b7280;
-	font-size: 0.875rem;
+	font-size: 0.75rem;
+	flex-wrap: wrap;
+}
+
+@media (min-width: 640px) {
+	.meta-row {
+		gap: 0.75rem;
+		font-size: 0.875rem;
+	}
 }
 
 .meta-row .tag {
 	display: flex;
 	align-items: center;
-	gap: 0.5rem;
+	gap: 0.25rem;
+}
+
+@media (min-width: 640px) {
+	.meta-row .tag {
+		gap: 0.5rem;
+	}
 }
 
 .author-row {
-	padding: 0.75rem 1rem;
+	padding: 0.5rem 0.625rem;
+	/* Giảm padding */
 	border-top: 1px solid #f3f4f6;
+}
+
+@media (min-width: 640px) {
+	.author-row {
+		padding: 0.625rem 0.875rem;
+		/* Giảm từ 0.75rem 1rem */
+	}
 }
 
 .author-info {
 	display: flex;
-	gap: 0.75rem;
+	gap: 0.5rem;
 	align-items: center;
 }
 
+@media (min-width: 640px) {
+	.author-info {
+		gap: 0.75rem;
+	}
+}
+
 .avatar {
-	width: 40px;
-	height: 40px;
+	width: 32px;
+	/* Giảm từ 36px */
+	height: 32px;
 	border-radius: 50%;
 	object-fit: cover;
 	border: 2px solid rgba(250, 204, 21, 0.3);
+	flex-shrink: 0;
+}
+
+@media (min-width: 640px) {
+	.avatar {
+		width: 36px;
+		/* Giảm từ 40px */
+		height: 36px;
+	}
 }
 
 .author-name {
-	font-size: 0.875rem;
+	font-size: 0.75rem;
 	font-weight: 600;
 	color: #111827;
 	display: flex;
 	align-items: center;
 	gap: 0.25rem;
+	min-width: 0;
+	flex-wrap: nowrap;
+}
+
+@media (min-width: 640px) {
+	.author-name {
+		font-size: 0.875rem;
+	}
 }
 
 .reputation {
-	font-size: 0.75rem;
+	font-size: 0.65rem;
 	color: #6b7280;
 	display: flex;
 	align-items: center;
 	gap: 0.25rem;
+}
+
+@media (min-width: 640px) {
+	.reputation {
+		font-size: 0.75rem;
+	}
 }
 
 
@@ -501,77 +694,173 @@ body {
 }
 
 .stats-row {
-	margin-top: -1rem;
-	padding: 0.75rem 1rem;
+	margin-top: -0.75rem;
+	padding: 0.5rem 0.75rem;
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	gap: 0.5rem;
+	gap: 0.375rem;
 	border-top: 1px solid transparent;
 	color: #6b7280;
+}
+
+@media (min-width: 640px) {
+	.stats-row {
+		margin-top: -1rem;
+		padding: 0.75rem 1rem;
+		gap: 0.5rem;
+	}
 }
 
 .location {
 	display: flex;
 	align-items: center;
-	gap: 0.375rem;
+	gap: 0.25rem;
 	min-width: 0;
 	flex: 1;
 }
 
+@media (min-width: 640px) {
+	.location {
+		gap: 0.375rem;
+	}
+}
+
 .small-stats {
 	display: flex;
-	gap: 0.75rem;
+	gap: 0.5rem;
 	align-items: center;
 	flex-shrink: 0;
 }
 
+@media (min-width: 640px) {
+	.small-stats {
+		gap: 0.75rem;
+	}
+}
+
 .text-xs {
-	font-size: 0.75rem;
+	font-size: 0.65rem;
+}
+
+@media (min-width: 640px) {
+	.text-xs {
+		font-size: 0.75rem;
+	}
 }
 
 .rounded-full {
 	border-radius: 9999px;
 }
 
+.card-body {
+	padding: 0.625rem;
+	/* Giảm từ 0.75rem */
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+}
+
+.card-body--md {
+	padding: 0.875rem;
+	/* Giảm từ 1rem */
+}
+
+@media (min-width: 480px) {
+	.card-body {
+		padding: 0.75rem;
+		/* Giảm từ 0.875rem */
+	}
+
+	.card-body--md {
+		padding: 1rem;
+		/* Giảm từ 1.125rem */
+	}
+}
+
 @media (min-width: 768px) {
 	.card-body {
+		padding: 0.875rem;
+		/* Giảm từ 1rem */
+	}
+
+	.card-body--md {
+		padding: 1.125rem;
+		/* Giảm từ 1.25rem */
+	}
+}
+
+@media (min-width: 1024px) {
+	.card-body {
+		padding: 1rem;
+		/* Giảm từ 1.25rem */
+	}
+
+	.card-body--md {
 		padding: 1.25rem;
+		/* Giảm từ 1.5rem */
 	}
 }
 
 .quick-actions--absolute {
 	position: absolute;
-	top: 12px;
-	right: 12px;
+	top: 8px;
+	right: 8px;
 	z-index: 10;
 	display: flex;
-	gap: 0.5rem;
+	gap: 0.375rem;
+}
+
+@media (min-width: 640px) {
+	.quick-actions--absolute {
+		top: 12px;
+		right: 12px;
+		gap: 0.5rem;
+	}
 }
 
 .time-badge {
 	position: absolute;
-	left: 12px;
-	bottom: 12px;
+	left: 8px;
+	bottom: 8px;
 	background: rgba(0, 0, 0, 0.5);
 	color: #fff;
-	padding: 0.25rem 0.75rem;
+	padding: 0.25rem 0.5rem;
 	border-radius: 9999px;
-	font-size: 0.75rem;
+	font-size: 0.65rem;
+}
+
+@media (min-width: 640px) {
+	.time-badge {
+		left: 12px;
+		bottom: 12px;
+		padding: 0.25rem 0.75rem;
+		font-size: 0.75rem;
+	}
 }
 
 .image-count-badge {
 	position: absolute;
-	right: 12px;
-	bottom: 12px;
+	right: 8px;
+	bottom: 8px;
 	background: rgba(0, 0, 0, 0.5);
 	color: #fff;
-	padding: 0.25rem 0.75rem;
+	padding: 0.25rem 0.5rem;
 	border-radius: 9999px;
-	font-size: 0.75rem;
+	font-size: 0.65rem;
 	display: flex;
 	align-items: center;
-	gap: 6px;
+	gap: 4px;
+}
+
+@media (min-width: 640px) {
+	.image-count-badge {
+		right: 12px;
+		bottom: 12px;
+		padding: 0.25rem 0.75rem;
+		font-size: 0.75rem;
+		gap: 6px;
+	}
 }
 
 .unavailable-overlay {
@@ -586,20 +875,36 @@ body {
 
 .unavailable-label {
 	color: #fff;
-	font-size: 1.125rem;
+	font-size: 0.875rem;
 	font-weight: 800;
 	background: rgba(220, 38, 38, 0.8);
-	padding: 0.5rem 1rem;
-	border-radius: 8px;
+	padding: 0.375rem 0.75rem;
+	border-radius: 6px;
 	transform: rotate(-15deg);
+}
+
+@media (min-width: 640px) {
+	.unavailable-label {
+		font-size: 1.125rem;
+		padding: 0.5rem 1rem;
+		border-radius: 8px;
+	}
 }
 
 .condition-tag {
 	color: #fff;
-	padding: 0.25rem 0.5rem;
+	padding: 0.2rem 0.4rem;
 	border-radius: 9999px;
 	font-weight: 700;
 	display: inline-block;
+	font-size: 0.65rem;
+}
+
+@media (min-width: 640px) {
+	.condition-tag {
+		padding: 0.25rem 0.5rem;
+		font-size: 0.75rem;
+	}
 }
 
 .condition-new {
@@ -651,10 +956,30 @@ body {
 	display: flex;
 	justify-content: space-around;
 	align-items: center;
-	gap: 4px;
-	font-size: 0.875rem;
+	gap: 2px;
+	font-size: 0.7rem;
 	min-width: 0;
 	flex: 1;
+}
+
+@media (min-width: 480px) {
+	.location-text {
+		gap: 3px;
+		font-size: 0.75rem;
+	}
+}
+
+@media (min-width: 640px) {
+	.location-text {
+		gap: 4px;
+		font-size: 0.8125rem;
+	}
+}
+
+@media (min-width: 1024px) {
+	.location-text {
+		font-size: 0.875rem;
+	}
 }
 
 .location-name {
@@ -663,7 +988,28 @@ body {
 	text-overflow: ellipsis;
 	flex-shrink: 1;
 	min-width: 0;
-	margin-right: 4rem;
+	margin-right: 2rem;
+}
+
+@media (min-width: 480px) {
+	.location-name {
+		margin-right: 2.5rem;
+		max-width: 100px;
+	}
+}
+
+@media (min-width: 640px) {
+	.location-name {
+		margin-right: 3rem;
+		max-width: 120px;
+	}
+}
+
+@media (min-width: 1024px) {
+	.location-name {
+		margin-right: 4rem;
+		max-width: 180px;
+	}
 }
 
 .proximity {
@@ -671,38 +1017,27 @@ body {
 	white-space: nowrap;
 	flex-shrink: 0;
 	font-weight: 450;
-	font-size: 0.875rem;
+	font-size: 0.7rem;
 }
 
-.stat-fav {
-	margin-left: 8px;
-}
-
-// Responsive adjustments
-@media (max-width: 640px) {
-	.location-text {
-		font-size: 0.8125rem;
-	}
-
-	.location-name {
-		max-width: 120px;
-	}
-
+@media (min-width: 480px) {
 	.proximity {
 		font-size: 0.75rem;
 	}
+}
 
-	.small-stats {
-		gap: 0.5rem;
-	}
-
-	.text-xs {
-		font-size: 0.6875rem;
+@media (min-width: 640px) {
+	.proximity {
+		font-size: 0.875rem;
 	}
 }
 
-@media (min-width: 641px) and (max-width: 1024px) {
-	.location-name {
-		max-width: 180px;
+.stat-fav {
+	margin-left: 4px;
+}
+
+@media (min-width: 640px) {
+	.stat-fav {
+		margin-left: 8px;
 	}
 }

@@ -1,5 +1,6 @@
 // Login V2 - Modern gradient design with animations
 // Matches verification-v2, profile-v2, settings-v2, changePassword-v2 design system
+@use '../../abstracts/colors.scss'as colors;
 
 @keyframes bgCircles {
     0% {
@@ -21,7 +22,7 @@
 @keyframes cardSlideUp {
     from {
         opacity: 0;
-        transform: translateY(30px);
+        transform: translateY(20px);
     }
 
     to {
@@ -54,7 +55,7 @@
 
 .container {
     min-height: 100vh;
-    background: linear-gradient(135deg, #bfdbfe 0%, #a7f3d0 100%);
+    background: colors.$ui-header-transparent-015;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -89,10 +90,26 @@
     }
 }
 
+.gradientBorder {
+    padding: 3px;
+    background: colors.$primary-brand;
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(45, 224, 153, 0.3);
+    animation: cardSlideUp 0.6s ease-out;
+    position: relative;
+    z-index: 1;
+    max-width: 480px;
+    width: 100%;
+
+    @media (max-width: 768px) {
+        max-width: 420px;
+    }
+}
+
 .loginCard {
     position: relative;
     z-index: 1;
-    background: rgba(255, 255, 255, 0.95);
+    background: colors.$neutral-white;
     -webkit-backdrop-filter: blur(20px);
     backdrop-filter: blur(20px);
     border-radius: 24px;
@@ -102,11 +119,10 @@
     box-shadow:
         0 20px 60px rgba(0, 0, 0, 0.1),
         0 0 0 1px rgba(255, 255, 255, 0.5) inset;
-    animation: cardSlideUp 0.6s ease-out;
 
     @media (max-width: 768px) {
         padding: 40px 24px;
-        max-width: 420px;
+        // max-width: 420px;
     }
 }
 
@@ -119,7 +135,7 @@
         width: 64px;
         height: 64px;
         margin: 0 auto 20px;
-        background: linear-gradient(90deg, #2de099 0%, #3b82f6 100%);
+        background: colors.$primary-brand;
         border-radius: 16px;
         display: flex;
         align-items: center;
@@ -134,7 +150,7 @@
     h1 {
         font-size: 28px;
         font-weight: 700;
-        background: linear-gradient(90deg, #2de099 0%, #3b82f6 100%);
+        background: colors.$primary-brand;
         -webkit-background-clip: text;
         background-clip: text;
         -webkit-text-fill-color: transparent;
@@ -181,8 +197,7 @@
             outline: none;
             border-color: transparent;
             background: linear-gradient(white, white) padding-box,
-                linear-gradient(90deg, #2de099 0%, #3b82f6 100%) border-box;
-            box-shadow: 0 0 0 4px rgba(45, 224, 153, 0.1);
+                colors.$primary-brand border-box;
         }
 
         &::placeholder {
@@ -248,8 +263,9 @@
     margin-bottom: 24px;
 
     a {
-        color: #3b82f6;
-        font-size: 14px;
+        @include colors.gradient-text(colors.$primary-brand);
+        --webkit-background-clip: text;
+        background-clip: text;
         font-weight: 500;
         text-decoration: none;
         transition: all 0.3s ease;
@@ -262,12 +278,12 @@
             left: 0;
             width: 0;
             height: 2px;
-            background: linear-gradient(90deg, #2de099 0%, #3b82f6 100%);
+            @include colors.gradient-bg(colors.$primary-brand);
             transition: width 0.3s ease;
         }
 
         &:hover {
-            color: #2de099;
+            @include colors.gradient-text(colors.$secondary-main);
 
             &::after {
                 width: 100%;
@@ -279,7 +295,7 @@
 .loginButton {
     width: 100%;
     padding: 16px;
-    background: linear-gradient(90deg, #2de099 0%, #3b82f6 100%);
+    background: colors.$primary-brand;
     color: white;
     border: none;
     border-radius: 12px;
@@ -287,7 +303,7 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 16px rgba(45, 224, 153, 0.3);
+    box-shadow: 0 4px 16px rgba(138, 92, 246, 0.30);
     position: relative;
     overflow: hidden;
 
@@ -304,7 +320,7 @@
 
     &:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(45, 224, 153, 0.4);
+        box-shadow: 0 8px 24px rgba(138, 92, 246, 0.40);
 
         &::before {
             left: 100%;
@@ -323,7 +339,7 @@
 
     &:focus {
         outline: none;
-        box-shadow: 0 0 0 4px rgba(45, 224, 153, 0.3);
+        box-shadow: 0 0 0 4px rgba(138, 92, 246, 0.30);
     }
 }
 
@@ -381,9 +397,9 @@
         &:hover {
             border-color: transparent;
             background: linear-gradient(white, white) padding-box,
-                linear-gradient(90deg, #2de099 0%, #3b82f6 100%) border-box;
+                colors.$primary-brand border-box;
             transform: translateY(-2px);
-            box-shadow: 0 4px 16px rgba(45, 224, 153, 0.2);
+            box-shadow: 0 4px 16px rgba(138, 92, 246, 0.30);
         }
 
         &:active {
@@ -392,7 +408,7 @@
 
         &:focus {
             outline: none;
-            box-shadow: 0 0 0 4px rgba(45, 224, 153, 0.2);
+            box-shadow: 0 0 0 4px rgba(138, 92, 246, 0.30);
         }
     }
 }
@@ -403,14 +419,14 @@
     font-size: 14px;
 
     a {
-        color: #2de099;
+        @include colors.gradient-text(colors.$primary-brand);
         font-weight: 600;
         text-decoration: none;
         transition: color 0.3s ease;
         margin-left: 4px;
 
         &:hover {
-            color: #3b82f6;
+            @include colors.gradient-text(colors.$secondary-main);
         }
     }
 }
