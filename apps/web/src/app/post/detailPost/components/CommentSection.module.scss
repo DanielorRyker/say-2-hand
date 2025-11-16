@@ -1,0 +1,164 @@
+/* Comments */
+.comments-card {
+    background: #ffffff;
+    padding: 16px;
+    border-radius: 24px;
+    margin-top: 16px;
+}
+
+.comments-card h2 {
+    margin: 0 0 12px 0;
+    font-size: 18px;
+}
+
+.skeleton-line {
+    height: 12px;
+    width: 100%;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #f3f4f6 25%, #e9eef3 50%, #f3f4f6 75%);
+    background-size: 200% 100%;
+    animation: dp-loading 1.4s infinite;
+}
+
+@keyframes dp-loading {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.comment-input-row {
+    display: flex;
+    gap: 12px;
+    background: #eff6ff;
+    padding: 12px;
+    border-radius: 12px;
+}
+
+.comment-input-row img {
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    flex-shrink: 0;
+}
+
+.comment-form {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+textarea.comment-input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 12px;
+    border: 2px solid #dbeafe;
+    resize: none;
+    min-height: 48px;
+}
+
+.comment-submit-wrap {
+    text-align: right;
+    margin-top: 8px;
+}
+
+.comment-submit-btn {
+    padding: 8px 14px;
+    background: #2563eb;
+    color: #fff;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+}
+
+.comment-list {
+    margin-top: 12px;
+}
+
+.comment-item {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.comment-item img {
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    flex-shrink: 0;
+}
+
+.comment-content {
+    flex: 1;
+}
+
+.comment-box {
+    background: #f1f5f9;
+    padding: 12px;
+    border-radius: 12px;
+}
+
+.comment-box .author {
+    margin: 0;
+    font-weight: 700;
+}
+
+.comment-box .text {
+    margin: 6px 0 0 0;
+}
+
+.comment-meta {
+    margin-top: 6px;
+    font-size: 12px;
+    color: #64748b;
+}
+
+.meta-action {
+    border: none;
+    background: transparent;
+    color: #2563eb;
+    cursor: pointer;
+}
+
+.reply-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 10px;
+    margin-left: 24px;
+}
+
+.reply-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    flex-shrink: 0;
+}
+
+.reply-content {
+    flex: 1;
+}
+
+.reply-box {
+    background: #e6f2ff;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.reply-box .author {
+    margin: 0;
+    font-weight: 700;
+    color: #0b6ad8;
+}
+
+.reply-box .text {
+    margin: 6px 0 0 0;
+}
+
+.reply-time {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 6px;
+}

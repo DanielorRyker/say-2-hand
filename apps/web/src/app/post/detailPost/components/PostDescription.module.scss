@@ -1,0 +1,46 @@
+/* Description */
+.description-card {
+    background: #fff;
+    padding: 16px;
+    border-radius: 24px;
+    margin-top: 16px;
+}
+
+.description-card h2 {
+    margin: 0 0 12px 0;
+    font-size: 18px;
+}
+
+.description-text {
+    font-size: 14px;
+    color: #334155;
+    white-space: pre-wrap;
+    transition: max-height .3s ease;
+}
+
+.description-text.collapsed {
+    max-height: 160px;
+    overflow: hidden;
+}
+
+.description-text.expanded {
+    max-height: none;
+    overflow: visible;
+}
+
+.read-more-btn {
+    background: none;
+    border: none;
+    color: #2563eb;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 8px;
+}
+
+.relative {
+    position: relative;
+}
+
+.overflow-hidden {
+    overflow: hidden;
+}

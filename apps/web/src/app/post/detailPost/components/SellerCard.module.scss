@@ -1,0 +1,85 @@
+/* Seller card */
+.seller-card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 24px;
+    box-shadow: 0 10px 30px rgba(2, 6, 23, 0.06);
+    border: 1px solid #eef2ff;
+}
+
+.seller-head {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+}
+
+.seller-head img {
+    width: 56px;
+    height: 56px;
+    border-radius: 999px;
+    flex-shrink: 0;
+}
+
+.seller-name {
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.seller-meta {
+    font-size: 14px;
+    color: #64748b;
+}
+
+.seller-rep {
+    margin-top: 6px;
+    font-size: 14px;
+}
+
+.seller-rep-text {
+    color: #64748b;
+}
+
+.profile-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 12px;
+    background: #eef2ff;
+    border-radius: 12px;
+    font-weight: 800;
+    margin-top: 8px;
+    text-decoration: none;
+    color: #0f172a;
+}
+
+.profile-link:hover {
+    background: #e6f4ff;
+}
+
+/* Verified badge */
+.verified-icon {
+    color: #3b82f6;
+    vertical-align: middle;
+    margin-left: 6px;
+}
+
+/* Rating stars */
+.rating-stars {
+    display: inline-flex;
+    gap: 4px;
+    vertical-align: middle;
+}
+
+.rating-star {
+    color: #f59e0b;
+}
+
+.rating-star.empty {
+    color: #e6e6e6;
+}
