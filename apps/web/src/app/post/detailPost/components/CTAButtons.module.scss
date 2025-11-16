@@ -1,0 +1,92 @@
+.cta-box {
+    background: #fff;
+    padding: 16px;
+    border-radius: 20px;
+    box-shadow: 0 8px 24px rgba(2, 6, 23, 0.04);
+    border: 1px solid #eef2ff;
+}
+
+.chat-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: 800;
+    border: none;
+    cursor: pointer;
+    background: linear-gradient(90deg, #10b981, #059669);
+    color: white;
+    margin-bottom: 10px;
+}
+
+.fav-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    background: #f3f4f6;
+    color: #374151;
+}
+
+/* Active favorite state */
+.fav-btn.active {
+    background: linear-gradient(90deg, #3b82f6, #2563eb);
+    color: #fff;
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.18);
+}
+
+.fav-btn:active {
+    transform: translateY(1px);
+}
+
+/* CTA hover states */
+.chat-btn:hover {
+    filter: brightness(.98);
+}
+
+.fav-btn:hover {
+    filter: brightness(.98);
+}
+
+.post-type-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: 800;
+    border: none;
+    cursor: pointer;
+    color: white;
+    margin-bottom: 10px;
+}
+
+/* Badge variants */
+.post-badge-ban {
+    /* BÁN - muted warm orange */
+    background: linear-gradient(90deg, #F59E0B 0%, #D97706 100%)
+}
+
+.post-badge-trao {
+    /* TRAO ĐỔI - muted teal -> soft blue */
+    background: linear-gradient(90deg, #6366F1 0%, #8B5CF6 100%);
+}
+
+.post-badge-tang {
+    /* TẶNG - softer success green */
+    background: linear-gradient(90deg, #10B981 0%, #059669 100%);
+}
+
+.unClick {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
