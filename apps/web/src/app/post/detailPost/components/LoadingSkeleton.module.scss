@@ -1,0 +1,184 @@
+/* Detailed skeleton placeholders (used by LoadingSkeleton.tsx) */
+.loading-skeleton {
+    display: block;
+    padding: 18px;
+}
+
+.skelHeader {
+    height: 36px;
+    border-radius: 10px;
+    margin-bottom: 18px;
+    background: linear-gradient(90deg, #f3f4f6 25%, #e9eef3 50%, #f3f4f6 75%);
+    background-size: 200% 100%;
+    animation: dp-loading 1.4s infinite;
+}
+
+@keyframes dp-loading {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.skelGrid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+    align-items: start;
+}
+
+.skelLeft {
+    display: block;
+}
+
+.skelLargeImage {
+    width: 100%;
+    padding-top: 56.25%;
+    /* 16:9 placeholder */
+    border-radius: 16px;
+    overflow: hidden;
+    background: linear-gradient(90deg, #f3f4f6 25%, #e9eef3 50%, #f3f4f6 75%);
+    background-size: 200% 100%;
+    animation: dp-loading 1.4s infinite;
+}
+
+.skelThumbsGrid {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.skelThumb {
+    width: 84px;
+    height: 56px;
+    border-radius: 8px;
+    background: linear-gradient(90deg, #f3f4f6 25%, #e9eef3 50%, #f3f4f6 75%);
+    background-size: 200% 100%;
+    animation: dp-loading 1.4s infinite;
+}
+
+.skelWide {
+    height: 18px;
+    width: 60%;
+    border-radius: 8px;
+    margin: 14px 0 8px 0;
+    background: linear-gradient(90deg, #f3f4f6 25%, #e9eef3 50%, #f3f4f6 75%);
+    background-size: 200% 100%;
+    animation: dp-loading 1.4s infinite;
+}
+
+.skelMedium {
+    height: 14px;
+    width: 40%;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    background: linear-gradient(90deg, #f3f4f6 25%, #e9eef3 50%, #f3f4f6 75%);
+    background-size: 200% 100%;
+    animation: dp-loading 1.4s infinite;
+}
+
+.skelTextGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.skelTextFull {
+    height: 12px;
+    width: 100%;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #f3f4f6 25%, #e9eef3 50%, #f3f4f6 75%);
+    background-size: 200% 100%;
+    animation: dp-loading 1.4s infinite;
+}
+
+.skelTextLarge {
+    height: 16px;
+    width: 70%;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #f3f4f6 25%, #e9eef3 50%, #f3f4f6 75%);
+    background-size: 200% 100%;
+    animation: dp-loading 1.4s infinite;
+}
+
+.skelTextMedium {
+    height: 12px;
+    width: 45%;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #f3f4f6 25%, #e9eef3 50%, #f3f4f6 75%);
+    background-size: 200% 100%;
+    animation: dp-loading 1.4s infinite;
+}
+
+.skelRight {
+    display: block;
+}
+
+.sellerBox {
+    padding: 12px;
+    border-radius: 12px;
+    background: transparent;
+}
+
+.sellerHead {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.skelAvatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #f3f4f6 25%, #e9eef3 50%, #f3f4f6 75%);
+    background-size: 200% 100%;
+    animation: dp-loading 1.4s infinite;
+}
+
+.sellerMetaLines {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+.skelLineShort {
+    height: 12px;
+    width: 60%;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #f3f4f6 25%, #e9eef3 50%, #f3f4f6 75%);
+    background-size: 200% 100%;
+    animation: dp-loading 1.4s infinite;
+}
+
+.skelLineTiny {
+    height: 10px;
+    width: 35%;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #f3f4f6 25%, #e9eef3 50%, #f3f4f6 75%);
+    background-size: 200% 100%;
+    animation: dp-loading 1.4s infinite;
+}
+
+.skelInput {
+    height: 40px;
+    border-radius: 8px;
+    margin-top: 8px;
+    background: linear-gradient(90deg, #f3f4f6 25%, #e9eef3 50%, #f3f4f6 75%);
+    background-size: 200% 100%;
+    animation: dp-loading 1.4s infinite;
+}
+
+.skelSticky {
+    height: 120px;
+    border-radius: 12px;
+    margin-top: 12px;
+    background: linear-gradient(90deg, #f3f4f6 25%, #e9eef3 50%, #f3f4f6 75%);
+    background-size: 200% 100%;
+    animation: dp-loading 1.4s infinite;
+}

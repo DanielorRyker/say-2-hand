@@ -1,0 +1,46 @@
+.info-card {
+    margin-top: 1.5vh;
+    background: #fff;
+    padding: 2vh;
+    border-radius: 24px;
+    box-shadow: 0 10px 30px rgba(2, 6, 23, 0.06);
+}
+
+.price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.price {
+    font-size: 28px;
+    font-weight: 800;
+    background: linear-gradient(90deg, #2563eb, #10b981);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.status-badge {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid #e6e6e6;
+}
+
+.meta-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.meta-item {
+    font-size: 13px;
+    color: #334155;
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
