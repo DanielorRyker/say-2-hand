@@ -1,0 +1,65 @@
+/* Mobile sticky footer */
+.mobile-footer {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 10px;
+    background: white;
+    box-shadow: 0 -6px 20px rgba(2, 6, 23, 0.08);
+    border-top-left-radius: 18px;
+    border-top-right-radius: 18px;
+    z-index: 50;
+}
+
+.mobile-footer-inner {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.fav-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.fav-btn.active {
+    background: linear-gradient(90deg, #3b82f6, #2563eb);
+    color: #fff;
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.18);
+}
+
+.chat-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: 800;
+    border: none;
+    cursor: pointer;
+    background: linear-gradient(90deg, #10b981, #059669);
+    color: white;
+}
+
+.chat-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .mobile-footer {
+        display: block;
+    }
+}

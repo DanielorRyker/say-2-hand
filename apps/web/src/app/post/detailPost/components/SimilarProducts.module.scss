@@ -1,0 +1,255 @@
+.similar-section {
+    margin-top: 24px;
+}
+
+.heading-pt {
+    margin-top: 24px;
+    margin-bottom: 0;
+    font-size: 24px;
+}
+
+/* Similar products grid */
+.similar-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.similar-product-card {
+    position: relative;
+    display: block;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #f3f4f6;
+    transition: transform .22s ease, box-shadow .22s ease, border-color .18s ease;
+    text-decoration: none;
+    color: inherit;
+}
+
+.similar-product-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 14px 30px rgba(2, 6, 23, 0.08);
+    border-color: #cfe8ff;
+}
+
+.similar-product-card:link,
+.similar-product-card:visited {
+    text-decoration: none;
+}
+
+.similar-product-card:hover,
+.similar-product-card:focus {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Image aspect */
+.product-aspect {
+    width: 100%;
+    aspect-ratio: 16/9;
+    overflow: hidden;
+}
+
+.product-aspect img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform .28s ease;
+}
+
+/* Favorite button overlay on similar product card */
+.sp-fav-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 10;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #f3f4f6a8;
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(2, 6, 23, 0);
+    transition: transform .12s ease, background .12s ease, color .12s ease;
+}
+
+.sp-fav-btn:hover {
+    transform: translateY(-2px);
+    color: #ef4444;
+}
+
+.sp-fav-btn.active {
+    background: linear-gradient(90deg, #3b82f6, #2563eb);
+    color: #fff;
+    box-shadow: 0 10px 26px rgba(37, 99, 235, 0.16);
+}
+
+.similar-product-card:hover .product-aspect img {
+    transform: scale(1.04);
+}
+
+.card-body {
+    padding: 10px;
+}
+
+.sp-title {
+    font-size: 14px;
+    font-weight: 800;
+    margin: 0 0 8px 0;
+    color: #0f172a;
+    line-height: 1.15;
+}
+
+/* Chips */
+.chips {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.chip {
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-weight: 700;
+}
+
+.condition {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.condition-new {
+    background: #fff7ed;
+    color: #9a3412;
+}
+
+.exchange {
+    background: #ecfeff;
+    color: #065f46;
+}
+
+.exchange-free {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.exchange-trade {
+    background: #eef2ff;
+    color: #3730a3;
+}
+
+.exchange-sell {
+    background: #ecfdf5;
+    color: #065f46;
+}
+
+/* Price & seller row */
+.price-seller-col {
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    border-top: 1px solid #f3f4f6;
+    padding-top: 8px;
+}
+
+.price-value {
+    font-size: 14px;
+    font-weight: 800;
+    color: #059669;
+}
+
+.price-free {
+    font-size: 14px;
+    font-weight: 900;
+    color: #2563eb;
+}
+
+.price-trade {
+    font-size: 14px;
+    font-weight: 800;
+    color: #4f46e5;
+}
+
+.seller-small {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #475569;
+    padding-right: 8px;
+    padding-bottom: 6px;
+}
+
+.seller-avatar img {
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    object-fit: cover;
+    border: 1px solid #f3f4f6;
+}
+
+.seller-avatar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.seller-meta-small {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1 1 auto;
+}
+
+.seller-name-small {
+    font-weight: 700;
+    color: #0f172a;
+}
+
+/* distance badge shown bottom-right of the price-seller block */
+.seller-distance {
+    position: absolute;
+    right: 8px;
+    bottom: 6px;
+    background: #eef2ff;
+    color: #0c4a6e;
+    padding: 4px 6px;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 8px;
+}
+
+/* rating badge used next to seller name */
+.seller-rating-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+    font-size: 12px;
+    color: #f59e0b;
+}
+
+.seller-rating-badge svg,
+.seller-rating-badge [stroke],
+.seller-rating-badge [fill] {
+    color: #f59e0b !important;
+    stroke: #f59e0b !important;
+    fill: #f59e0b !important;
+}
+
+.heartIcon svg {
+    transition: fill .2s ease;
+}
+
+.heartIconActive svg {
+    fill: #ef4444;
+}
