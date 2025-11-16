@@ -1,5 +1,5 @@
 import React from "react";
-import DetailPost from "./component/DetailPost";
+import DetailPost from "./DetailPost";
 
 export const metadata = {
   title: "Chi tiết tin đăng",
