@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import cvstStyles from "@/app/conversation/conversation.module.scss";
+import cvstStyles from "./conversation.module.scss";
 import Image from "next/image";
 import axios from "axios";
 import { formatImageUrl } from "@/lib/constants";
@@ -277,32 +277,34 @@ export default function ChatPage() {
     if (!conversation?._id || !currentUser?._id) return;
 
     try {
-            //Kiểm tra postId
-            try {
-              const foundConversation = conversationsData.find(
-                (c) => c._id === conversation?._id
-              );
+      //Kiểm tra postId
+      try {
+        const foundConversation = conversationsData.find(
+          (c) => c._id === conversation?._id
+        );
 
-              if (
-                foundConversation &&
-                foundConversation.post_id?._id !== conversation?.post_id?._id
-              ) {
-                console.log("🔄 Updating conversation:", {
-                  id: foundConversation._id,
-                  post_id: String(conversation.post_id._id),
-                });
+        if (
+          foundConversation &&
+          foundConversation.post_id?._id !== conversation?.post_id?._id
+        ) {
+          console.log("🔄 Updating conversation:", {
+            id: foundConversation._id,
+            post_id: String(conversation.post_id._id),
+          });
 
-                await axios.patch(
-                  `http://localhost:8080/api/conversations/${foundConversation._id}`,
-                  {
-                    post_id: String(conversation.post_id._id),
-                  }
-                );
-              }
-            } catch (err: any) {
-              console.error("❌ Update conversation failed:", err.response?.data || err);
+          await axios.patch(
+            `http://localhost:8080/api/conversations/${foundConversation._id}`,
+            {
+              post_id: String(conversation.post_id._id),
             }
-
+          );
+        }
+      } catch (err: any) {
+        console.error(
+          "❌ Update conversation failed:",
+          err.response?.data || err
+        );
+      }
 
       let finalText = text;
       let type: "text" | "image" = "text";
@@ -346,11 +348,11 @@ export default function ChatPage() {
   const endRef = useRef<HTMLDivElement | null>(null);
 
   // Mỗi khi messagesData thay đổi => cuộn xuống cuối
-useEffect(() => {
-  if (endRef.current) {
-    endRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
-  }
-}, [messagesData]);
+  useEffect(() => {
+    if (endRef.current) {
+      endRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+    }
+  }, [messagesData]);
 
   //Gửi ảnh
   const uploadImage = async (file: File, bucket = "conversation") => {
@@ -398,10 +400,10 @@ useEffect(() => {
   };
 
   const checkTypeLastMessage = (text: string) => {
-    return text.includes('conversation/') ? 'image' : 'text';
-  }
+    return text.includes("conversation/") ? "image" : "text";
+  };
 
-    const formatCurrency = (n: number) =>
+  const formatCurrency = (n: number) =>
     new Intl.NumberFormat("vi-VN", {
       style: "currency",
       currency: "VND",
@@ -432,10 +434,8 @@ useEffect(() => {
                     handleChangeConversation(i._id);
                   }}
                 >
-
-
                   {otherUser && (
-                    <div style={{ width: "100%" }}>                     
+                    <div style={{ width: "100%" }}>
                       <div className={cvstStyles.conversationItemHeader}>
                         <Image
                           src={
@@ -449,15 +449,19 @@ useEffect(() => {
                           width={40}
                           height={40}
                         />
-                         
-                         <div>
-                           <p className={cvstStyles.name}>
-                          {otherUser.full_name || "Người dùng"}
-                        </p>
-                         <div className={cvstStyles.messageLayout}>
+
+                        <div>
+                          <p className={cvstStyles.name}>
+                            {otherUser.full_name || "Người dùng"}
+                          </p>
+                          <div className={cvstStyles.messageLayout}>
                             <p className={cvstStyles.lastMessage}>
                               {i.last_message?.sender_id?.full_name}:{" "}
-                              {checkTypeLastMessage(i.last_message?.text || "") === 'image' ? '[Hình ảnh]' : i.last_message?.text}
+                              {checkTypeLastMessage(
+                                i.last_message?.text || ""
+                              ) === "image"
+                                ? "[Hình ảnh]"
+                                : i.last_message?.text}
                             </p>
                             {i.unreadCount != 0 ? (
                               <p className={cvstStyles.unreadCount}>
@@ -466,11 +470,9 @@ useEffect(() => {
                             ) : (
                               <p></p>
                             )}
+                          </div>
                         </div>
-                         </div>
-                       
                       </div>
-                     
                     </div>
                   )}
                 </div>
@@ -483,63 +485,59 @@ useEffect(() => {
       <main className={cvstStyles.chatArea}>
         {/* Header */}
         <div className={cvstStyles.chatHeader}>
- 
-
           {otherUser && (
             <div>
-               <div className={cvstStyles.userInfo}>
-              <Image
-                src={
-                  otherUser.avatar
-                    ? formatImageUrl(otherUser.avatar) ||
-                      "/image/header/carbon_user-avatar-filled-alt.svg"
-                    : "/image/header/carbon_user-avatar-filled-alt.svg"
-                }
-                alt="Avatar"
-                className={cvstStyles.avatar}
-                width={50}
-                height={50}
-              />
-                <p className={cvstStyles.subtitle}>{otherUser.full_name}</p>         
-            </div>
-                      
-            </div>
-           
-            
-          )}
-          <div className={cvstStyles.borderLine}></div>
-          <div className={cvstStyles.postInfo}>
+              <div className={cvstStyles.userInfo}>
                 <Image
                   src={
-                    conversation?.post_id?.images?.[0]?.url
-                      ? formatImageUrl(conversation.post_id.images[0].url) ||
+                    otherUser.avatar
+                      ? formatImageUrl(otherUser.avatar) ||
                         "/image/header/carbon_user-avatar-filled-alt.svg"
                       : "/image/header/carbon_user-avatar-filled-alt.svg"
                   }
-                  alt="Post"
-                  className={cvstStyles.squareImage}
-                  width={80}
-                  height={80}
-                  onClick={() => {
-                    const postId = conversation?.post_id?._id;
-                    if (!postId) return;
-                    try {
-                      sessionStorage.setItem(
-                        `selectedPost_${postId}`,
-                        JSON.stringify(conversation?.post_id)
-                      );
-                    } catch {}
-                    router.push(
-                      `/post/detailPost?postId=${encodeURIComponent(postId)}`
-                    );
-                  }}
+                  alt="Avatar"
+                  className={cvstStyles.avatar}
+                  width={50}
+                  height={50}
                 />
-                <div className={cvstStyles.postText}>
-                  <p className={cvstStyles.postTitle}>{conversation?.post_id?.title}</p>
-                  <p >{formatCurrency(conversation?.post_id?.price ?? 0)}</p>
-                </div>
-              
+                <p className={cvstStyles.subtitle}>{otherUser.full_name}</p>
               </div>
+            </div>
+          )}
+          <div className={cvstStyles.borderLine}></div>
+          <div className={cvstStyles.postInfo}>
+            <Image
+              src={
+                conversation?.post_id?.images?.[0]?.url
+                  ? formatImageUrl(conversation.post_id.images[0].url) ||
+                    "/image/header/carbon_user-avatar-filled-alt.svg"
+                  : "/image/header/carbon_user-avatar-filled-alt.svg"
+              }
+              alt="Post"
+              className={cvstStyles.squareImage}
+              width={80}
+              height={80}
+              onClick={() => {
+                const postId = conversation?.post_id?._id;
+                if (!postId) return;
+                try {
+                  sessionStorage.setItem(
+                    `selectedPost_${postId}`,
+                    JSON.stringify(conversation?.post_id)
+                  );
+                } catch {}
+                router.push(
+                  `/post/detailPost?postId=${encodeURIComponent(postId)}`
+                );
+              }}
+            />
+            <div className={cvstStyles.postText}>
+              <p className={cvstStyles.postTitle}>
+                {conversation?.post_id?.title}
+              </p>
+              <p>{formatCurrency(conversation?.post_id?.price ?? 0)}</p>
+            </div>
+          </div>
         </div>
 
         {/* Messages */}
@@ -644,11 +642,11 @@ useEffect(() => {
             onClick={() => document.getElementById("fileInput")?.click()}
           >
             <Icon
-                key={`image`}
-                icon="material-symbols:image-outline"
-                width={24}
-                height={24}
-              />
+              key={`image`}
+              icon="material-symbols:image-outline"
+              width={24}
+              height={24}
+            />
           </button>
 
           <button className={cvstStyles.sendBtn} onClick={handleSendMessage}>
