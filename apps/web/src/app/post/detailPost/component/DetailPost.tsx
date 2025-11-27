@@ -50,10 +50,10 @@ type User = {
   user_id?: string;
   avatar_url?: string;
   name: string;
-   reputation?: {
-      total_score: number;
-      total_ratings: number;
-    };
+  reputation?: {
+    total_score: number;
+    total_ratings: number;
+  };
   review_count?: number;
   post_count?: number;
   is_verified?: boolean;
@@ -551,11 +551,13 @@ export const DetailPost: React.FC = () => {
 
   const price = formatCurrency(postData.post.price);
 
-    //Tính điểm đánh giá
+  //Tính điểm đánh giá
   const reputationScore = (data: any) => {
     if (!data.reputation || data.reputation.total_ratings === 0) return 0;
-    return parseFloat((data.reputation.total_score / data.reputation.total_ratings).toFixed(1));
-  }
+    return parseFloat(
+      (data.reputation.total_score / data.reputation.total_ratings).toFixed(1)
+    );
+  };
 
   const renderRating = (score: number) => {
     const full = Math.floor(score);
@@ -616,37 +618,76 @@ export const DetailPost: React.FC = () => {
   };
 
   // --- Conversation ---
+  // Hàm tạo conversation, đảm bảo post_id là chuỗi và lưu post info vào localStorage để truyền context
   const handleCreateConversation = async () => {
-    // if (!post || !currentUser || !user?._id) return;
-
     try {
+      // Đảm bảo post_id là string
+      const postId =
+        typeof postData.post._id === "string"
+          ? postData.post._id
+          : postData.post._id?._id || "";
       const payload = {
-        post_id: postData.post._id,
+        post_id: postId,
         participants: [currentUser._id, postData.user._id],
       };
-      console.log("Creating conversation with payload:", payload);
+      // Lưu thông tin post vào localStorage để truyền sang trang chat
+      // Lấy đúng url ảnh đầu tiên (dù là object hay string)
+      let firstImage = "";
+      if (Array.isArray(postData.post.image_urls)) {
+        if (typeof postData.post.image_urls[0] === "string") {
+          firstImage = postData.post.image_urls[0];
+        } else if (postData.post.image_urls[0]?.url) {
+          firstImage = postData.post.image_urls[0].url;
+        }
+      }
+      const postInfo = {
+        post_id: postId,
+        title: postData.post.title,
+        image: firstImage,
+        price: postData.post.price,
+        author_id: postData.user._id,
+      };
+      localStorage.setItem("chat_post_info", JSON.stringify(postInfo));
+
+      // Tạo conversation
       const res = await axios.post(
         "http://localhost:8080/api/conversations",
         payload
       );
 
+      // Gửi system message chứa thông tin sản phẩm ngay sau khi tạo conversation
+      try {
+        // Xác định vai trò buyer/seller
+        const buyerId = currentUser._id;
+        const sellerId = postData.user._id;
+        // Tạo message object
+        const systemMessage = {
+          conversation_id: res.data._id,
+          sender_id: "system", // Đánh dấu là tin nhắn hệ thống
+          type: "system",
+          content: {
+            post_id: postId,
+            title: postData.post.title,
+            image: firstImage,
+            price: postData.post.price,
+            transaction_type: postData.post.transaction_type,
+            seller_id: sellerId,
+            buyer_id: buyerId,
+            // Có thể bổ sung thêm các trường cần thiết cho UI
+          },
+          created_at: new Date().toISOString(),
+        };
+        // Gửi message lên backend
+        await axios.post("http://localhost:8080/api/messages", systemMessage);
+      } catch (err) {
+        // Nếu gửi message lỗi thì vẫn cho user vào chat, chỉ log cảnh báo
+        console.warn("Không thể gửi system message sản phẩm:", err);
+      }
+
       // Chuẩn hóa dữ liệu conversation trước khi lưu localStorage
       const conversationToSave = {
         ...res.data,
-        post_id: {
-          _id: postData.post._id,
-          title: postData.post.title,
-          images: postData.post.image_urls,
-          author_id: postData.user,
-          category_id: postData.post.category_id?.name || "",
-          price: postData.post.price,
-          description: postData.post.description || "",
-          condition: postData.post.condition,
-          transaction_type: postData.post.transaction_type,
-          status: postData.post.status,
-          createdAt: postData.post.createdAt,
-          updatedAt: postData.post.updatedAt,
-        },
+        post_id: postId, // Lưu post_id là chuỗi
         participants: [
           {
             _id: currentUser._id,
@@ -661,9 +702,7 @@ export const DetailPost: React.FC = () => {
         ],
       };
 
-      console.log("Created conversation:", conversationToSave);
       localStorage.setItem("conversation", JSON.stringify(conversationToSave));
-
       router.push(`/conversation/${res.data._id}`);
     } catch (error) {
       console.error("Error creating conversation:", error);

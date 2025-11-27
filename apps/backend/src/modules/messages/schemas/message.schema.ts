@@ -11,7 +11,12 @@ export class Message {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   sender_id: Types.ObjectId;
 
-  @Prop({ type: String, enum: ['text', 'image', 'file'], default: 'text' })
+  // Thêm 'system' để lưu tin nhắn hệ thống (ví dụ: product info)
+  @Prop({
+    type: String,
+    enum: ['text', 'image', 'file', 'video', 'system'],
+    default: 'text',
+  })
   type: string;
 
   @Prop({ type: String })

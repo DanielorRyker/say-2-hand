@@ -1,0 +1,218 @@
+@use '../../../../styles/abstracts/variables.scss'as vars;
+@use '../../../../styles/abstracts/colors.scss'as colors;
+
+.sidebar {
+    width: 340px;
+    background: colors.$solid-bg-white;
+    border-radius: 20px 20px;
+    box-shadow: 0 8px 32px rgba(59, 130, 246, 0.08);
+    display: flex;
+    flex-direction: column;
+    padding: 28px 18px 18px 18px;
+    min-height: 100vh;
+
+}
+
+.sidebarHeader {
+    font-family: vars.$font-display;
+    font-size: 1.35rem;
+    font-weight: 800;
+    margin-bottom: 18px;
+    color: colors.$solid-primary;
+    letter-spacing: 0.5px;
+}
+
+.searchBox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: colors.$solid-bg-light;
+    margin-bottom: 16px;
+    border: 1.5px solid colors.$solid-border-light;
+}
+
+.searchBox input {
+    border: none;
+    background: transparent;
+    outline: none;
+    width: 100%;
+    font-size: 1rem;
+    color: colors.$solid-text-primary;
+    font-family: vars.$font-primary;
+}
+
+.conversationList {
+    flex: 1;
+    overflow-y: auto;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.conversationList li {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 13px 12px 13px 8px;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
+    margin-bottom: 10px;
+    position: relative;
+    // background: transparent;
+    // border: 1.5px solid transparent;
+    min-height: 64px;
+}
+
+.conversationList li:hover {
+    background: colors.$primary-light;
+}
+
+.conversationList .active {
+    background: colors.$primary-light;
+}
+
+.avatarBox {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #fff;
+    border: 2.5px solid transparent;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: border 0.18s;
+}
+
+.avatarActive {
+    border: 2.5px solid colors.$primary-brand;
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.13);
+}
+
+.onlineDot,
+.offlineDot {
+    position: absolute;
+    right: 4px;
+    bottom: 4px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+}
+
+.onlineDot {
+    background: #22c55e;
+}
+
+.offlineDot {
+    background: #d1d5db;
+}
+
+.info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.nameRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.name {
+    font-weight: 700;
+    font-size: 1.08rem;
+    color: colors.$solid-text-primary;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: 0.1px;
+}
+
+.time {
+    font-size: 0.85rem;
+    color: colors.$solid-text-tertiary;
+    font-weight: 400;
+    min-width: 70px;
+    text-align: right;
+}
+
+.lastMessage {
+    font-size: 0.97rem;
+    color: colors.$solid-text-secondary;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+}
+
+
+.empty {
+    text-align: center;
+    color: colors.$solid-text-tertiary;
+    font-size: 1rem;
+    padding: 32px 0 0 0;
+    font-style: italic;
+}
+
+.avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    background: #fff;
+    flex-shrink: 0;
+}
+
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.info {
+    flex: 1;
+    min-width: 0;
+}
+
+.name {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--primary-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.lastMessage {
+    font-size: 0.9rem;
+    color: var(--secondary-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.unreadBadge {
+    background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 2px 8px;
+    position: absolute;
+    right: 16px;
+    top: 50%;
+}

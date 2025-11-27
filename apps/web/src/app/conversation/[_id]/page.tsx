@@ -1,659 +1,578 @@
+
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import cvstStyles from "./conversation.module.scss";
-import Image from "next/image";
+// Hàm tính tổng số tin nhắn chưa đọc và đồng bộ localStorage + event
+const syncTotalUnread = (convs: any[]) => {
+  const total = convs.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
+  localStorage.setItem("totalUnread", String(total));
+  // Dispatch custom event để Header và các tab khác cập nhật ngay
+  window.dispatchEvent(new Event("unread-message-updated"));
+};
+
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { formatImageUrl } from "@/lib/constants";
 import { io, Socket } from "socket.io-client";
-import { useRouter } from "next/navigation";
-import { Icon } from "@iconify/react";
+import ConversationSidebar from "./components/ConversationSidebar";
+import ConversationHeader from "./components/ConversationHeader";
+import MessageList from "./components/MessageList";
+import MessageInput from "./components/MessageInput";
+import ConversationSkeleton from "./components/ConversationSkeleton";
+import styles from "./conversation.module.scss";
+import { formatImageUrl } from "@/lib/constants";
 
+// Interface dữ liệu hội thoại
+interface IConversation {
+  _id: string;
+  participants: {
+    _id: string;
+    full_name: string;
+    avatar?: string;
+  }[];
+  last_message?: {
+    text: string;
+    sender_id?: {
+      _id: string;
+      full_name: string;
+      avatar: string;
+    };
+    created_at: string;
+  };
+  post_id: any;
+  conversation_key: string;
+  createdAt: string;
+  updatedAt: string;
+  unreadCount: number;
+}
+
+// Interface dữ liệu tin nhắn
+interface IMessage {
+  _id: string;
+  conversation_id: string;
+  sender_id: {
+    _id: string;
+    full_name: string;
+    avatar?: string;
+  };
+  type: "text" | "image" | "file" | "video";
+  text?: string;
+  attachments: string[];
+  read_by: string[];
+  created_at: string;
+}
+
+// Component chính quản lý toàn bộ UI/logic hội thoại
+
+// Component chính quản lý toàn bộ UI/logic hội thoại
+// Tích hợp realtime online/offline cho user và hội thoại
 export default function ChatPage() {
-  const router = useRouter();
-  // user hiện tại
-
+  // State quản lý dữ liệu
+    // State lưu danh sách userId đang online toàn hệ thống
+    const [onlineUserIds, setOnlineUserIds] = useState<string[]>([]);
+    // State lưu danh sách userId online trong hội thoại hiện tại
+    const [onlineInConversation, setOnlineInConversation] = useState<string[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [conversation, setConversation] = useState<IConversation | null>(null);
+  const [conversationsData, setConversationsData] = useState<IConversation[]>(
+    []
+  );
+  const [messagesData, setMessagesData] = useState<IMessage[]>([]);
+  const [text, setText] = useState("");
   const [selectedImage, setSelectedImage] = useState<string | File | null>(
     null
   );
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  // State lưu thông tin post liên quan đến hội thoại (nếu có)
+  const [currentPost, setCurrentPost] = useState<any>(null);
+  // const [previewImage, setPreviewImage] = useState<string | null>(null); // Không dùng nữa
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const endRef = useRef<HTMLDivElement | null>(null);
 
-  // --- cleanup preview
+  // State điều khiển hiển thị sidebar/chat area cho responsive
+  const [showSidebar, setShowSidebar] = useState(true); // true: hiển thị sidebar, false: hiển thị chat
+
+  // Lắng nghe resize để tự động chuyển đổi giao diện
   useEffect(() => {
-    return () => {
-      if (previewImage) URL.revokeObjectURL(previewImage);
+    const handleResize = () => {
+      if (window.innerWidth < 900) {
+        // Trên mobile/tablet: chỉ hiển thị sidebar khi chưa chọn hội thoại
+        setShowSidebar(!conversation);
+      } else {
+        // Desktop: luôn hiển thị cả 2
+        setShowSidebar(true);
+      }
     };
-  }, [previewImage]);
+    window.addEventListener("resize", handleResize);
+    handleResize();
+    return () => window.removeEventListener("resize", handleResize);
+    //
+  }, [conversation]);
 
+  // Lấy user từ localStorage
   useEffect(() => {
     const userData = localStorage.getItem("user");
     setCurrentUser(userData ? JSON.parse(userData) : null);
   }, []);
 
-  interface IConversation {
-    _id: string;
-
-    // post đã populate
-    post_id: {
-      _id: string;
-      author_id: {
-        _id: string;
-        full_name: string;
-        avatar: string;
-      };
-      category_id: string;
-      title: string;
-      price: number;
-      description: string;
-      condition: "new" | "used";
-      transaction_type: "sell" | "buy";
-      status: "active" | "inactive";
-      images: {
-        _id: string;
-        url: string;
-        alt?: string;
-        tags: string[];
-      }[];
-      address: string;
-      createdAt: string;
-      updatedAt: string;
-      __v?: number;
-    };
-
-    // danh sách user tham gia
-    participants: {
-      _id: string;
-      full_name: string;
-      avatar?: string;
-    }[];
-
-    // tin nhắn cuối
-    last_message?: {
-      text: string;
-      sender_id?: {
-        _id: string;
-        full_name: string;
-        avatar: string;
-      };
-      created_at: string;
-    };
-
-    conversation_key: string;
-    createdAt: string;
-    updatedAt: string;
-    unreadCount: number;
-    __v?: number;
-  }
-
-  const [conversation, setConversation] = useState<IConversation | null>(null);
-  const [conversationsData, setConversationsData] = useState<IConversation[]>(
-    []
-  );
-
+  // Lấy danh sách conversation
   useEffect(() => {
-    // chạy ở client sau khi render
-    const conversation = localStorage.getItem("conversation");
-    if (conversation) {
-      setConversation(JSON.parse(conversation));
-    }
-  }, []);
-
-  useEffect(() => {
-    async function fetchPosts() {
+    async function fetchConversations() {
       const userStr = localStorage.getItem("user");
       let user;
-      if (userStr) {
-        user = JSON.parse(userStr); // chuyển string -> object
-      }
+      if (userStr) user = JSON.parse(userStr);
+      if (!user?._id) return;
       const res = await axios.get(
         `http://localhost:8080/api/conversations/conversations/${user._id}`
       );
       setConversationsData(res.data);
+      syncTotalUnread(res.data);
     }
-    fetchPosts();
+    fetchConversations();
   }, []);
 
-  const uniqueUsers = conversationsData.reduce((acc: any[], c) => {
-    const otherUser = c.participants.find(
-      (p: any) => p._id !== currentUser?._id
-    );
-    if (otherUser && !acc.find((u) => u._id === otherUser._id)) {
-      acc.push(otherUser);
-    }
-    return acc;
-  }, []);
-
-  const otherUser = conversation?.participants.find(
-    (p: any) => p._id !== currentUser?._id
-  );
-  //messages
-  interface IMessage {
-    _id: string;
-    conversation_id: string;
-
-    sender_id: {
-      _id: string;
-      full_name: string;
-      avatar?: string;
-    };
-
-    type: "text" | "image" | "file"; // mở rộng nếu có thêm loại message khác
-    text?: string;
-    attachments: string[];
-    read_by: string[];
-
-    created_at: string;
-    createdAt: string;
-    updatedAt: string;
-    __v?: number;
-  }
-  const [messagesData, setMessagesData] = useState<IMessage[]>([]);
-
+  // Lấy conversation hiện tại từ localStorage (nếu có)
   useEffect(() => {
-    async function fetchPostsMessage() {
-      if (!conversation?._id) return; // tránh gọi khi chưa có id
+    const conversation = localStorage.getItem("conversation");
+    if (conversation) setConversation(JSON.parse(conversation));
+    // Lấy post info từ localStorage nếu có (khi vừa chuyển từ DetailPost sang)
+    const postInfo = localStorage.getItem("chat_post_info");
+    if (postInfo) {
+      try {
+        setCurrentPost(JSON.parse(postInfo));
+      } catch {}
+      // Xóa luôn để tránh lặp lại khi chuyển hội thoại khác
+      localStorage.removeItem("chat_post_info");
+    }
+  }, []);
 
+  // Lấy messages của conversation hiện tại
+  useEffect(() => {
+    async function fetchMessages() {
+      if (!conversation?._id) return;
       try {
         const res = await axios.get(
           `http://localhost:8080/api/messages/conversationId/${conversation._id}`
         );
         setMessagesData(res.data);
       } catch (error) {
+        // Log lỗi lấy tin nhắn
         console.error("Error fetching messages:", error);
       }
     }
-
-    fetchPostsMessage();
+    fetchMessages();
   }, [conversation?._id]);
 
-  const handleChangeConversation = (_id: string) => {
-    const selected = conversationsData.find((c) => c._id === _id);
-    if (selected) {
-      setConversation(selected);
-
-      // nếu muốn lưu vào localStorage để khi F5 không mất
-      localStorage.setItem("conversation", JSON.stringify(selected));
-
-      markConversationAsRead(selected);
-    }
-  };
-
-  const [text, setText] = useState("");
-
-  //Socket
-  const [socket, setSocket] = useState<Socket | null>(null);
+  // Kết nối socket
   useEffect(() => {
-    // Kết nối socket.io tới BE (NestJS WebSocketGateway)
     const newSocket = io("http://localhost:8080", {
       transports: ["websocket"],
     });
-
     setSocket(newSocket);
-
-    newSocket.on("connect", () => {
-      console.log("Connected to socket:", newSocket.id);
-    });
-
-    newSocket.on("disconnect", () => {
-      console.log("Disconnected from socket");
-    });
-
-    // cleanup khi unmount
     return () => {
       newSocket.disconnect();
     };
   }, []);
 
+  // Lắng nghe socket events: message, typing, online/offline, danh sách online, online trong hội thoại
   useEffect(() => {
     if (!socket || !conversation?._id || !currentUser?._id) return;
-
-    // Join cả phòng hội thoại và phòng user
-    socket.emit("join_conversation", { conversationId: conversation._id });
+    // Tham gia room hội thoại và user (truyền userId cho join_conversation)
+    socket.emit("join_conversation", { conversationId: conversation._id, userId: currentUser._id });
     socket.emit("join_user", { userId: currentUser._id });
 
-    // Khi nhận tin nhắn trong cuộc trò chuyện đang mở
-    const handleReceiveMessage = (msg: any) => {
-      if (msg.conversation_id === conversation._id) {
-        //Đánh dấu đã đọc
-        axios.patch(
-          `http://localhost:8080/api/messages/mark-as-read/${conversation._id}`,
-          { userId: currentUser._id }
-        );
-        // ✅ Thêm vào danh sách tin nhắn hiện tại
-        setMessagesData((prev) => {
-          if (prev.some((m) => m._id === msg._id)) return prev;
-          return [...prev, msg];
-        });
-
-        // ✅ Cập nhật last_message cho conversation hiện tại
-        setConversationsData((prev) =>
-          prev.map((c) =>
-            c._id === msg.conversation_id ? { ...c, last_message: msg } : c
-          )
+    // Nhận tin nhắn mới trong hội thoại đang mở
+    const handleReceiveMessage = (msg) => {
+      // Nếu tin nhắn đến từ hội thoại đang mở, thêm vào messagesData (không tăng unread)
+      if (msg.conversation_id === conversation?._id) {
+        setMessagesData((prev) =>
+          prev.some((m) => m._id === msg._id) ? prev : [...prev, msg]
         );
       }
-    };
-
-    // Khi có tin nhắn đến cuộc trò chuyện KHÁC (chưa join)
-    const handleConversationUpdated = (data: any) => {
+      // Luôn cập nhật last_message cho sidebar (mọi hội thoại)
+      // Nếu là hội thoại đang mở: unreadCount = 0
+      // Nếu là hội thoại khác: tăng unreadCount lên 1
       setConversationsData((prev) =>
         prev.map((c) => {
-          if (c._id === data.conversationId) {
-            // Nếu conversation đang mở, giữ unreadCount = 0
-            const unread =
-              conversation?._id === data.conversationId
-                ? 0
-                : (c.unreadCount || 0) + (data.unreadIncrement || 1);
-
-            return {
-              ...c,
-              unreadCount: unread,
-              last_message: {
-                text: data.text,
-                created_at: data.createdAt,
-                sender_id: data.sender_id,
-              },
-            };
+          if (c._id === msg.conversation_id) {
+            // Nếu hội thoại này đang mở thì reset unreadCount về 0
+            if (c._id === conversation?._id) {
+              return { ...c, last_message: msg, unreadCount: 0 };
+            } else {
+              // Nếu là hội thoại khác thì tăng unreadCount
+              return { ...c, last_message: msg, unreadCount: (c.unreadCount || 0) + 1 };
+            }
           }
           return c;
         })
       );
     };
 
+    // Nhận event cập nhật hội thoại (last_message) từ socket (dành cho sidebar)
+    const handleConversationUpdated = (data) => {
+      setConversationsData((prev) =>
+        prev.map((c) =>
+          c._id === data.conversationId
+            ? {
+                ...c,
+                last_message: {
+                  text: data.last_Message,
+                  sender_id: { _id: data.sender_id },
+                  created_at: data.createdAt,
+                  type: data.type,
+                },
+              }
+            : c
+        )
+      );
+    };
+    // Lắng nghe user typing
+    const handleUserTyping = (data) => {
+      // TODO: Hiển thị trạng thái "đang nhập..." nếu cần
+    };
+    // Lắng nghe user online/offline toàn hệ thống
+    const handleUserOnline = (data) => {
+      setOnlineUserIds((prev) => Array.from(new Set([...prev, data.userId])));
+    };
+    const handleUserOffline = (data) => {
+      setOnlineUserIds((prev) => prev.filter((id) => id !== data.userId));
+    };
+    // Nhận danh sách user đang online toàn hệ thống
+    const handleOnlineUsers = (data) => {
+      setOnlineUserIds(data.userIds || []);
+    };
+    // Nhận danh sách user online trong hội thoại hiện tại
+    const handleConversationOnlineUsers = (data) => {
+      if (data.conversationId === conversation._id) {
+        setOnlineInConversation(data.userIds || []);
+      }
+    };
+    // Lắng nghe reconnect
+    const handleReconnect = () => {
+      socket.emit("join_conversation", { conversationId: conversation._id, userId: currentUser._id });
+      socket.emit("join_user", { userId: currentUser._id });
+    };
+
     socket.on("receive_message", handleReceiveMessage);
     socket.on("conversation_updated", handleConversationUpdated);
+    socket.on("user_typing", handleUserTyping);
+    socket.on("user_online", handleUserOnline);
+    socket.on("user_offline", handleUserOffline);
+    socket.on("online_users", handleOnlineUsers);
+    socket.on("conversation_online_users", handleConversationOnlineUsers);
+    socket.on("reconnect", handleReconnect);
 
     return () => {
       socket.off("receive_message", handleReceiveMessage);
       socket.off("conversation_updated", handleConversationUpdated);
+      socket.off("user_typing", handleUserTyping);
+      socket.off("user_online", handleUserOnline);
+      socket.off("user_offline", handleUserOffline);
+      socket.off("online_users", handleOnlineUsers);
+      socket.off("conversation_online_users", handleConversationOnlineUsers);
+      socket.off("reconnect", handleReconnect);
     };
   }, [socket, conversation?._id, currentUser?._id]);
 
-  /// Gửi tin nhắn
+  // Scroll xuống cuối khi có tin nhắn mới
+  useEffect(() => {
+    if (endRef.current)
+      endRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [messagesData]);
 
-  const handleSendMessage = async () => {
-    if (!text.trim() && !selectedImage) return;
-    if (!conversation?._id || !currentUser?._id) return;
-
-    try {
-      //Kiểm tra postId
+  // Đổi hội thoại: khi mở hội thoại thì set unreadCount = 0, đồng bộ lại tổng unread
+  const handleChangeConversation = async (_id: string) => {
+    const selected = conversationsData.find((c) => c._id === _id);
+    if (selected && currentUser?._id) {
+      setConversation(selected);
+      localStorage.setItem("conversation", JSON.stringify(selected));
+      // Gọi API mark-as-read để lưu trạng thái đã đọc trên database
       try {
-        const foundConversation = conversationsData.find(
-          (c) => c._id === conversation?._id
-        );
+        await axios.patch(`http://localhost:8080/api/messages/mark-as-read/${_id}`, {
+          userId: currentUser._id,
+        });
+        // Sau khi đánh dấu đã đọc, fetch lại messages để cập nhật trạng thái
+        const res = await axios.get(`http://localhost:8080/api/messages/conversationId/${_id}`);
+        setMessagesData(res.data);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error("Lỗi mark-as-read:", err);
+      }
+      // Đặt unreadCount = 0 cho hội thoại này
+      setConversationsData((prev) =>
+        prev.map((c) =>
+          c._id === _id ? { ...c, unreadCount: 0 } : c
+        )
+      );
+      if (window.innerWidth < 900) {
+        setShowSidebar(false);
+      }
+    }
+  };
+  // Khi conversationsData thay đổi, đồng bộ lại tổng unread (phòng trường hợp cập nhật từ socket hoặc fetch lại)
+  useEffect(() => {
+    syncTotalUnread(conversationsData);
+  }, [conversationsData]);
 
-        if (
-          foundConversation &&
-          foundConversation.post_id?._id !== conversation?.post_id?._id
-        ) {
-          console.log("🔄 Updating conversation:", {
-            id: foundConversation._id,
-            post_id: String(conversation.post_id._id),
+  // Quay lại sidebar trên mobile/tablet
+  const handleBackSidebar = () => {
+    setShowSidebar(true);
+  };
+
+  // Gửi tin nhắn (text + nhiều ảnh + video)
+  // Chỉ cập nhật tin nhắn khi nhận qua socket, không tự push sau khi gửi API
+  const handleSendMessage = async ({ text, images = [], videos = [] }) => {
+    if ((!text || !text.trim()) && images.length === 0 && videos.length === 0) return;
+    if (!conversation?._id || !currentUser?._id) return;
+    let attachments: string[] = [];
+    let type: 'text' | 'image' | 'video' = 'text';
+
+    // Upload tất cả video trước (nếu có)
+    if (videos && videos.length > 0) {
+      try {
+        const uploadPromises = videos.map((file) => {
+          const formData = new FormData();
+          formData.append("file", file);
+          formData.append("bucket", "conversation/videos");
+          return axios.post("http://localhost:8080/api/upload/video", formData, {
+            headers: { "Content-Type": "multipart/form-data" },
           });
-
-          await axios.patch(
-            `http://localhost:8080/api/conversations/${foundConversation._id}`,
-            {
-              post_id: String(conversation.post_id._id),
-            }
-          );
-        }
-      } catch (err: any) {
-        console.error(
-          "❌ Update conversation failed:",
-          err.response?.data || err
-        );
+        });
+        const results = await Promise.all(uploadPromises);
+        attachments = attachments.concat(results.map((res) => res.data.filename));
+        type = 'video';
+      } catch (err) {
+        alert("Lỗi upload video. Vui lòng thử lại!");
+        return;
       }
-
-      let finalText = text;
-      let type: "text" | "image" = "text";
-
-      // Nếu có ảnh thì upload
-      if (selectedImage && selectedImage instanceof File) {
-        const filename = await uploadImage(selectedImage);
-        finalText = filename; // BE trả về filename
-        type = "image";
+    }
+    // Upload tất cả ảnh (nếu có)
+    if (images && images.length > 0) {
+      try {
+        const uploadPromises = images.map((file) => {
+          const formData = new FormData();
+          formData.append("file", file);
+          formData.append("bucket", "conversation");
+          return axios.post("http://localhost:8080/api/upload/img", formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+          });
+        });
+        const results = await Promise.all(uploadPromises);
+        attachments = attachments.concat(results.map((res) => res.data.filename));
+        if (type !== 'video') type = 'image';
+      } catch (err) {
+        alert("Lỗi upload ảnh. Vui lòng thử lại!");
+        return;
       }
-
-      const payload = {
-        conversation_id: conversation._id,
-        sender_id: currentUser._id,
-        type,
-        text: finalText,
-      };
-
+    }
+    // Gửi message với text và attachments (có thể cả ảnh + video + text)
+    const payload = {
+      conversation_id: conversation._id,
+      sender_id: currentUser._id,
+      type: attachments.length > 0 ? type : "text",
+      text: text || "",
+      attachments,
+    };
+    try {
       const res = await axios.post(
         "http://localhost:8080/api/messages",
         payload
       );
-
-      // chỉ emit socket, không setMessagesData nữa
       if (socket) {
         socket.emit("send_message", {
           conversationId: conversation._id,
-          receiverId: otherUser?._id,
-          unreadIncrement: 1,
+          receiverId: conversation.participants.find(
+            (p) => p._id !== currentUser._id
+          )?._id,
           ...res.data,
         });
       }
-
-      setSelectedImage(null);
-      setText("");
-    } catch (error) {
-      console.error("Error sending message:", error);
+      // KHÔNG setMessagesData ở đây, chỉ cập nhật khi nhận receive_message qua socket
+    } catch (err) {
+      alert("Gửi tin nhắn thất bại. Vui lòng thử lại!");
     }
   };
 
-  const endRef = useRef<HTMLDivElement | null>(null);
-
-  // Mỗi khi messagesData thay đổi => cuộn xuống cuối
-  useEffect(() => {
-    if (endRef.current) {
-      endRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
-    }
-  }, [messagesData]);
-
-  //Gửi ảnh
+  // Upload ảnh
   const uploadImage = async (file: File, bucket = "conversation") => {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("bucket", bucket);
-
     const res = await axios.post(
       "http://localhost:8080/api/upload/img",
       formData,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
+      { headers: { "Content-Type": "multipart/form-data" } }
     );
-
-    return res.data.filename; // BE trả về filename
+    return res.data.filename;
   };
 
-  useEffect(() => {
-    if (!conversation || !currentUser?._id || !socket) return;
-    // Tự động mark-as-read khi load conversation đầu tiên
-    markConversationAsRead(conversation);
-  }, [conversation?._id, currentUser?._id, socket]);
+  // Loading skeleton nếu chưa có dữ liệu user hoặc conversations
+  if (!currentUser || conversationsData.length === 0) {
+    return <ConversationSkeleton />;
+  }
 
-  const markConversationAsRead = async (conv: IConversation) => {
-    if (!conv?._id || !currentUser?._id || !socket) return;
+  // Lấy user còn lại trong cuộc trò chuyện (không phải currentUser)
+  const otherUser = conversation?.participants.find(
+    (p) => p._id !== currentUser?._id
+  );
+  // Trạng thái online của user còn lại (dựa vào onlineUserIds hoặc onlineInConversation)
+  const isOtherUserOnline = otherUser ? onlineUserIds.includes(otherUser._id) : false;
 
-    try {
-      await axios.patch(
-        `http://localhost:8080/api/messages/mark-as-read/${conv._id}`,
-        { userId: currentUser._id }
-      );
-
-      socket.emit("send_message", {
-        receiverId: currentUser?._id,
-      });
-
-      setConversationsData((prev) =>
-        prev.map((c) => (c._id === conv._id ? { ...c, unreadCount: 0 } : c))
-      );
-      setConversation((prev) => (prev ? { ...prev, unreadCount: 0 } : prev));
-    } catch (err) {
-      console.error("Error marking messages as read:", err);
-    }
-  };
-
-  const checkTypeLastMessage = (text: string) => {
-    return text.includes("conversation/") ? "image" : "text";
-  };
-
-  const formatCurrency = (n: number) =>
-    new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(n);
-
+  // Responsive layout: mobile/tablet chỉ hiển thị sidebar hoặc chat area
   return (
-    <div className={cvstStyles.container}>
+    <div className={styles.container}>
       {/* Sidebar */}
-      <aside className={cvstStyles.sidebar}>
-        <div className={cvstStyles.sidebarHeader}>Tất cả tin nhắn</div>
-        <div className={cvstStyles.conversationList}>
-          {conversationsData
-            .filter((i) => i.last_message) // ✅ Chỉ lấy conversation có last_message
-            .map((i) => {
-              const otherUser = i.participants.find(
-                (p) => p._id !== currentUser?._id
-              );
-
-              return (
-                <div
-                  key={i._id}
-                  className={`${cvstStyles.conversationItem} ${
-                    conversation?._id === i._id
-                      ? cvstStyles.conversationItemActive
-                      : ""
-                  }`}
-                  onClick={() => {
-                    handleChangeConversation(i._id);
-                  }}
-                >
-                  {otherUser && (
-                    <div style={{ width: "100%" }}>
-                      <div className={cvstStyles.conversationItemHeader}>
-                        <Image
-                          src={
-                            otherUser.avatar
-                              ? formatImageUrl(otherUser.avatar) ||
-                                "/image/header/carbon_user-avatar-filled-alt.svg"
-                              : "/image/header/carbon_user-avatar-filled-alt.svg"
-                          }
-                          alt="Avatar"
-                          className={cvstStyles.avatar}
-                          width={40}
-                          height={40}
-                        />
-
-                        <div>
-                          <p className={cvstStyles.name}>
-                            {otherUser.full_name || "Người dùng"}
-                          </p>
-                          <div className={cvstStyles.messageLayout}>
-                            <p className={cvstStyles.lastMessage}>
-                              {i.last_message?.sender_id?.full_name}:{" "}
-                              {checkTypeLastMessage(
-                                i.last_message?.text || ""
-                              ) === "image"
-                                ? "[Hình ảnh]"
-                                : i.last_message?.text}
-                            </p>
-                            {i.unreadCount != 0 ? (
-                              <p className={cvstStyles.unreadCount}>
-                                {i.unreadCount}
-                              </p>
-                            ) : (
-                              <p></p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-        </div>
-      </aside>
+      {showSidebar && (
+        <ConversationSidebar
+          conversations={
+            [...conversationsData]
+              .sort((a, b) => {
+                // Sắp xếp theo last_message.created_at giảm dần
+                const aTime = a.last_message?.created_at ? new Date(a.last_message.created_at).getTime() : 0;
+                const bTime = b.last_message?.created_at ? new Date(b.last_message.created_at).getTime() : 0;
+                return bTime - aTime;
+              })
+              .map((conv) => {
+                const other = conv.participants.find(
+                  (p) => p._id !== currentUser._id
+                );
+                let lastMessageType = undefined;
+                if (conv.last_message) {
+                  if ((conv as any).last_message?.type) {
+                    lastMessageType = (conv as any).last_message.type;
+                  } else {
+                    const text = conv.last_message.text || "";
+                    const isImage = /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(
+                      text
+                    );
+                    if (isImage) lastMessageType = "image";
+                  }
+                }
+                // Trạng thái online của user còn lại trong hội thoại
+                const isOnline = other ? onlineUserIds.includes(other._id) : false;
+                return {
+                  _id: conv._id,
+                  name: other ? other.full_name : "Nhóm",
+                  avatarUrl:
+                    other && other.avatar
+                      ? formatImageUrl(other.avatar) || "/default-avatar.png"
+                      : "/default-avatar.png",
+                  last_message: conv.last_message
+                    ? {
+                        text: conv.last_message.text,
+                        created_at: conv.last_message.created_at,
+                        type: lastMessageType,
+                      }
+                    : undefined,
+                  unreadCount: conv.unreadCount || 0,
+                  isOnline,
+                };
+              })
+          }
+          currentConversationId={conversation?._id || ""}
+          onSelectConversation={handleChangeConversation}
+        />
+      )}
 
       {/* Chat area */}
-      <main className={cvstStyles.chatArea}>
-        {/* Header */}
-        <div className={cvstStyles.chatHeader}>
+      {!showSidebar && conversation && (
+        <main className={styles.chatArea}>
+          {/* Header tích hợp nút back */}
           {otherUser && (
-            <div>
-              <div className={cvstStyles.userInfo}>
-                <Image
-                  src={
-                    otherUser.avatar
-                      ? formatImageUrl(otherUser.avatar) ||
-                        "/image/header/carbon_user-avatar-filled-alt.svg"
-                      : "/image/header/carbon_user-avatar-filled-alt.svg"
-                  }
-                  alt="Avatar"
-                  className={cvstStyles.avatar}
-                  width={50}
-                  height={50}
-                />
-                <p className={cvstStyles.subtitle}>{otherUser.full_name}</p>
-              </div>
-            </div>
-          )}
-          <div className={cvstStyles.borderLine}></div>
-          <div className={cvstStyles.postInfo}>
-            <Image
-              src={
-                conversation?.post_id?.images?.[0]?.url
-                  ? formatImageUrl(conversation.post_id.images[0].url) ||
-                    "/image/header/carbon_user-avatar-filled-alt.svg"
-                  : "/image/header/carbon_user-avatar-filled-alt.svg"
-              }
-              alt="Post"
-              className={cvstStyles.squareImage}
-              width={80}
-              height={80}
-              onClick={() => {
-                const postId = conversation?.post_id?._id;
-                if (!postId) return;
-                try {
-                  sessionStorage.setItem(
-                    `selectedPost_${postId}`,
-                    JSON.stringify(conversation?.post_id)
-                  );
-                } catch {}
-                router.push(
-                  `/post/detailPost?postId=${encodeURIComponent(postId)}`
-                );
+            <ConversationHeader
+              user={{
+                name: otherUser.full_name,
+                avatarUrl: otherUser.avatar
+                  ? formatImageUrl(otherUser.avatar) || "/default-avatar.png"
+                  : "/default-avatar.png",
               }}
+              status={isOtherUserOnline ? "online" : "offline"}
+              onBack={handleBackSidebar}
+              isShowBack={true}
             />
-            <div className={cvstStyles.postText}>
-              <p className={cvstStyles.postTitle}>
-                {conversation?.post_id?.title}
-              </p>
-              <p>{formatCurrency(conversation?.post_id?.price ?? 0)}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Messages */}
-        <div className={cvstStyles.messages}>
-          {messagesData.map((msg) => {
-            const isMe =
-              msg?.sender_id?._id && currentUser?._id
-                ? msg.sender_id._id === currentUser._id
-                : false;
-            if (msg.type !== "text" && msg.type !== "image") return null;
-            return (
-              <div
-                key={msg._id}
-                className={`${cvstStyles.message} ${
-                  isMe
-                    ? msg.type === "text"
-                      ? cvstStyles.meText
-                      : cvstStyles.meImage
-                    : msg.type === "text"
-                      ? cvstStyles.otherText
-                      : cvstStyles.otherImage
-                }`}
-              >
-                {msg.type === "text" ? (
-                  msg.text
-                ) : (
-                  <Image
-                    width={200}
-                    height={200}
-                    src={msg.text ? formatImageUrl(msg.text) || "" : ""}
-                    alt="message"
-                    className={cvstStyles.messageImage}
-                  />
-                )}
-              </div>
-            );
-          })}
-
-          {/* ref để scroll xuống cuối */}
-          <div ref={endRef} />
-        </div>
-
-        {/* Input */}
-        <div className={cvstStyles.chatInput}>
-          {/* Nếu chưa có ảnh thì hiển thị input chữ */}
-          {!previewImage ? (
-            <input
-              type="text"
-              placeholder="Type a message..."
-              className={cvstStyles.input}
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleSendMessage();
-              }}
-            />
-          ) : (
-            <div className={cvstStyles.previewWrapper}>
-              <img
-                src={previewImage}
-                alt="Preview"
-                className={cvstStyles.previewImage}
-              />
-              <button
-                className={cvstStyles.removeBtn}
-                onClick={() => {
-                  URL.revokeObjectURL(previewImage);
-                  setSelectedImage(null);
-                  setPreviewImage(null);
-                }}
-              >
-                ✕
-              </button>
-            </div>
           )}
-
-          {/* input file ẩn */}
-          <input
-            type="file"
-            accept="image/*"
-            hidden
-            id="fileInput"
-            title="Attach image"
-            placeholder="Attach image"
-            aria-label="Attach image"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                if (previewImage) URL.revokeObjectURL(previewImage);
-                const url = URL.createObjectURL(file);
-                setSelectedImage(file);
-                setPreviewImage(url);
+          {/* Messages */}
+          <MessageList
+            messages={messagesData.map((msg) => {
+              let attachments = msg.attachments;
+              let text = msg.text;
+              if (msg.type === "image") {
+                if ((!attachments || attachments.length === 0) && text) {
+                  attachments = [text];
+                  text = undefined;
+                }
               }
-            }}
+              return {
+                _id: msg._id,
+                sender_id: msg.sender_id._id,
+                senderName: msg.sender_id.full_name,
+                senderAvatar: msg.sender_id.avatar
+                  ? formatImageUrl(msg.sender_id.avatar)
+                  : undefined,
+                type: msg.type,
+                text,
+                attachments,
+                created_at: msg.created_at,
+              };
+            })}
+            currentUserId={currentUser._id}
+            currentPost={currentPost}
+            sellerId={
+              conversation?.participants.find((p) => p._id !== currentUser._id)
+                ?._id
+            }
           />
-
-          {/* Nút camera */}
-          <button
-            className={cvstStyles.sendImgBtn}
-            title="Attach image"
-            aria-label="Attach image"
-            onClick={() => document.getElementById("fileInput")?.click()}
-          >
-            <Icon
-              key={`image`}
-              icon="material-symbols:image-outline"
-              width={24}
-              height={24}
+          <div ref={endRef} />
+          <MessageInput onSend={handleSendMessage} loading={false} />
+        </main>
+      )}
+      {/* Desktop: luôn hiển thị cả 2 */}
+      {window.innerWidth >= 900 && conversation && (
+        <main className={styles.chatArea}>
+          {/* Header */}
+          {otherUser && (
+            <ConversationHeader
+              user={{
+                name: otherUser.full_name,
+                avatarUrl: otherUser.avatar
+                  ? formatImageUrl(otherUser.avatar) || "/default-avatar.png"
+                  : "/default-avatar.png",
+              }}
+              status={isOtherUserOnline ? "online" : "offline"}
             />
-          </button>
-
-          <button className={cvstStyles.sendBtn} onClick={handleSendMessage}>
-            Gửi
-          </button>
-        </div>
-      </main>
+          )}
+          {/* Messages */}
+          <MessageList
+            messages={messagesData.map((msg) => {
+              let attachments = msg.attachments;
+              let text = msg.text;
+              if (msg.type === "image") {
+                if ((!attachments || attachments.length === 0) && text) {
+                  attachments = [text];
+                  text = undefined;
+                }
+              }
+              return {
+                _id: msg._id,
+                sender_id: msg.sender_id._id,
+                senderName: msg.sender_id.full_name,
+                senderAvatar: msg.sender_id.avatar
+                  ? formatImageUrl(msg.sender_id.avatar)
+                  : undefined,
+                type: msg.type,
+                text,
+                attachments,
+                created_at: msg.created_at,
+              };
+            })}
+            currentUserId={currentUser._id}
+            currentPost={currentPost}
+            sellerId={
+              conversation?.participants.find((p) => p._id !== currentUser._id)
+                ?._id
+            }
+          />
+          <div ref={endRef} />
+          <MessageInput onSend={handleSendMessage} loading={false} />
+        </main>
+      )}
     </div>
   );
-}
+

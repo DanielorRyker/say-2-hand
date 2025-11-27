@@ -122,45 +122,45 @@ export default function NotificationPopup() {
   };
 
   //Socket
-  
+
   const [socket, setSocket] = useState<Socket | null>(null);
 
-useEffect(() => {
-  const newSocket = io("http://localhost:8080", {
-    transports: ["websocket"],
-  });
-  setSocket(newSocket);
+  useEffect(() => {
+    const newSocket = io("http://localhost:8080", {
+      transports: ["websocket"],
+    });
+    setSocket(newSocket);
 
-  newSocket.on("connect", () => {
-    console.log("Connected to socket:", newSocket.id);
-  });
+    newSocket.on("connect", () => {
+      console.log("Connected to socket:", newSocket.id);
+    });
 
-  newSocket.on("disconnect", () => {
-    console.log("Disconnected from socket");
-  });
+    newSocket.on("disconnect", () => {
+      console.log("Disconnected from socket");
+    });
 
-  return () => {
-    newSocket.disconnect();
-  };
-}, []);
+    return () => {
+      newSocket.disconnect();
+    };
+  }, []);
 
-// Join user khi đã có socket và user
-useEffect(() => {
-  if (!socket || !currentUser?._id) return;
+  // Join user khi đã có socket và user
+  useEffect(() => {
+    if (!socket || !currentUser?._id) return;
 
-  console.log("Joining user room:", currentUser._id);
-  socket.emit("join_user", { userId: currentUser._id });
-
-  // Optional: gửi lại khi socket reconnect
-  socket.on("connect", () => {
-    console.log("Reconnect detected, rejoining user room:", currentUser._id);
+    console.log("Joining user room:", currentUser._id);
     socket.emit("join_user", { userId: currentUser._id });
-  });
 
-  return () => {
-    socket.off("connect");
-  };
-}, [socket, currentUser?._id]);
+    // Optional: gửi lại khi socket reconnect
+    socket.on("connect", () => {
+      console.log("Reconnect detected, rejoining user room:", currentUser._id);
+      socket.emit("join_user", { userId: currentUser._id });
+    });
+
+    return () => {
+      socket.off("connect");
+    };
+  }, [socket, currentUser?._id]);
 
   // Lắng nghe receive_message => reload API
   useEffect(() => {
@@ -315,7 +315,9 @@ useEffect(() => {
                           <div></div>
                         )}
                       </div>
-                      <div className={styles.body}><p className={styles.white_space}>{n.body}</p></div>
+                      <div className={styles.body}>
+                        <p className={styles.white_space}>{n.body}</p>
+                      </div>
                       <div className={styles.time}>
                         {getRelativeTime(n.createdAt)}
                       </div>
@@ -360,7 +362,7 @@ useEffect(() => {
                         height={48}
                       />
                     ) : (
-                      <div ></div>
+                      <div></div>
                     )}
                   </div>
                 </div>

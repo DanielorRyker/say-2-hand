@@ -1,6 +1,25 @@
 @use '../../../styles/abstracts/variables.scss'as vars;
 @use '../../../styles/abstracts/colors.scss'as colors;
 
+// Nút back trên mobile/tablet
+.backButton {
+  display: none;
+  margin-bottom: 12px;
+  background: none;
+  border: none;
+  color: #3b82f6;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0;
+}
+
+@media (max-width: 900px) {
+  .backButton {
+    display: block;
+  }
+}
+
 //background: var(--background-light);
 /* Design tokens */
 :root {
@@ -20,7 +39,7 @@
 .container {
   display: flex;
   gap: 20px;
-  height: calc(100vh);
+  height: calc(88vh);
   padding: 20px;
   background: linear-gradient(180deg, var(--bg), #fff);
   box-sizing: border-box;

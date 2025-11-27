@@ -1,0 +1,101 @@
+@use '../../../../styles/abstracts/variables.scss'as vars;
+@use '../../../../styles/abstracts/colors.scss'as colors;
+
+.productInfoMeta {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #666;
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.productInfoMetaItem {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.productInfoDetailBtn {
+    margin-top: 10px;
+
+    background: #6366f1;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.18s;
+}
+
+.productInfoDetailBtn:hover {
+    background: #4338ca;
+}
+
+// Block sản phẩm trong chat
+.productInfoBlock {
+    border: 1.5px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+    margin: 16px 0;
+    background: #f8fafc;
+    max-width: 340px;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+}
+
+.productInfoLabel {
+    font-weight: 700;
+    color: #6366f1;
+    margin-bottom: 4px;
+}
+
+.productInfoRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.productInfoImg {
+    width: 56px;
+    height: 56px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 1px solid #e5e7eb;
+}
+
+.productInfoTitle {
+    font-weight: 700;
+    font-size: 16px;
+    color: #222;
+}
+
+.productInfoPrice {
+    color: #06b6d4;
+    font-weight: 600;
+    font-size: 15px;
+}
+
+.messageList {
+    flex: 1;
+    overflow-y: auto;
+    padding: vars.$spacing-xl vars.$spacing-lg vars.$spacing-lg vars.$spacing-lg;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    background: #f8fafc;
+    min-height: 0;
+    scrollbar-width: thin;
+    scrollbar-color: #e5e7eb #f8fafc;
+}
+
+// Responsive
+@media (max-width: 600px) {
+    .messageList {
+        padding: vars.$spacing-md vars.$spacing-xs;
+        background: #fff;
+    }
+}

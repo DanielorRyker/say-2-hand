@@ -17,7 +17,7 @@ export class CreateMessageDto {
   sender_id: string;
 
   @IsString()
-  @IsIn(['text', 'image', 'file'])
+  @IsIn(['text', 'image', 'file', 'video', 'system']) // Thêm 'system' cho tin nhắn hệ thống
   @IsOptional()
   type?: string = 'text';
 

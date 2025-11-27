@@ -1,0 +1,64 @@
+@use '../../../../styles/abstracts/variables.scss'as vars;
+
+.skeletonWrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebarSkeleton {
+    width: 320px;
+    background: #f3f4f6;
+    border-radius: 20px 0 0 20px;
+    margin-right: 2px;
+    animation: skeleton 1.2s infinite linear alternate;
+}
+
+.mainSkeleton {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #f9fafb;
+    border-radius: 0 20px 20px 0;
+    padding: vars.$spacing-lg;
+}
+
+.headerSkeleton {
+    height: 60px;
+    background: #e5e7eb;
+    border-radius: 16px;
+    margin-bottom: vars.$spacing-md;
+    animation: skeleton 1.2s infinite linear alternate;
+}
+
+.messagesSkeleton {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: vars.$spacing-md;
+    margin-bottom: vars.$spacing-md;
+}
+
+.messageSkeleton {
+    height: 40px;
+    width: 60%;
+    background: #e5e7eb;
+    border-radius: 12px;
+    animation: skeleton 1.2s infinite linear alternate;
+}
+
+.inputSkeleton {
+    height: 48px;
+    background: #e5e7eb;
+    border-radius: 12px;
+    animation: skeleton 1.2s infinite linear alternate;
+}
+
+@keyframes skeleton {
+    0% {
+        opacity: 0.7;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}

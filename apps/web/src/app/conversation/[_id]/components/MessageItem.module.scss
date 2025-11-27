@@ -1,0 +1,147 @@
+@use '../../../../styles/abstracts/variables.scss'as vars;
+@use '../../../../styles/abstracts/colors.scss'as colors;
+
+
+// Bong bóng chat hiện đại
+.message,
+.ownMessage {
+    display: flex;
+    align-items: flex-end;
+    gap: vars.$spacing-sm;
+    margin-bottom: vars.$spacing-md;
+    width: 100%;
+}
+
+.ownMessage {
+    flex-direction: row-reverse;
+    text-align: right;
+}
+
+.avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.10);
+    transition: box-shadow 0.18s;
+    cursor: pointer;
+
+    &:hover {
+        box-shadow: 0 4px 16px rgba(139, 92, 246, 0.13);
+    }
+}
+
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.contentBox {
+    max-width: 340px;
+    min-width: 0;
+    border-radius: 18px;
+    padding: vars.$spacing-sm vars.$spacing-md;
+    position: relative;
+    box-shadow: 0 2px 12px rgba(59, 130, 246, 0.06);
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    color: #222; // Bubble của người khác: chữ màu tối để dễ đọc
+
+    // Đảm bảo các thành phần con cũng tối
+    a,
+    span,
+    strong,
+    em,
+    b,
+    i {
+        color: #222;
+    }
+}
+
+.ownMessage .contentBox {
+    // Bubble tin nhắn của mình: dùng gradient đậm, nổi bật theo brand
+    // Sử dụng biến $primary-brand từ colors.scss
+    background: colors.$primary-brand;
+    color: #fff !important; // Giữ màu chữ trắng để nổi bật
+    box-shadow: 0 4px 16px rgba(139, 92, 246, 0.10);
+
+    // Đảm bảo các thành phần con cũng trắng
+    a,
+    span,
+    strong,
+    em,
+    b,
+    i {
+        color: #fff !important;
+    }
+
+    // Chỉnh màu thời gian trong bubble của mình cho dễ đọc
+    .time {
+        color: #fff !important; // Thời gian cũng trắng, không bị chìm
+        text-shadow: 0 1px 2px rgba(59, 130, 246, 0.18); // Thêm bóng nhẹ cho nổi bật
+    }
+}
+
+.text {
+    font-size: 1.04rem;
+    color: inherit;
+    word-break: break-word;
+    line-height: 1.5;
+    font-family: vars.$font-primary;
+}
+
+.images {
+    display: flex;
+    gap: 8px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+}
+
+.image {
+    // Hình ảnh trong tin nhắn: tăng kích thước cho rõ nét hơn
+    width: 220px;
+    height: 220px;
+    object-fit: cover;
+    border-radius: 16px;
+    background: #f3f4f6;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.10);
+    transition: transform 0.18s, box-shadow 0.18s;
+    cursor: pointer;
+
+    &:hover {
+        transform: scale(1.04);
+        box-shadow: 0 6px 24px rgba(59, 130, 246, 0.18);
+    }
+}
+
+.time {
+    font-size: 0.82rem;
+    color: #a1a1aa;
+    margin-top: 6px;
+    text-align: right;
+    font-weight: 500;
+    opacity: 0.85;
+}
+
+// Responsive
+@media (max-width: 600px) {
+    .contentBox {
+        max-width: 90vw;
+        padding: vars.$spacing-xs vars.$spacing-sm;
+    }
+
+    .image {
+        // Trên mobile: hình lớn hơn mặc định cũ nhưng vẫn vừa màn hình
+        width: 140px;
+        height: 140px;
+    }
+
+    .avatar {
+        width: 26px;
+        height: 26px;
+    }
+}

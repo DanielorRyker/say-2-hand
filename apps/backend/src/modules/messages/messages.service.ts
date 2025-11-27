@@ -50,11 +50,14 @@ export class MessagesService {
       .exec();
   }
 
+  // Lấy danh sách tin nhắn, không tự động tạo/cập nhật system message
   async findByConversation(conversationId: string) {
+    const convObjId = new Types.ObjectId(conversationId);
     return this.messageModel
-      .find({ conversation_id: new Types.ObjectId(conversationId) })
-      .populate('sender_id', 'full_name avatar') // lấy thêm tên & avatar người gửi
-      .sort({ created_at: 1 }) // sort tăng dần theo thời gian
+      .find({ conversation_id: convObjId })
+      .populate('sender_id', 'full_name avatar')
+      .sort({ created_at: 1 })
+      .lean()
       .exec();
   }
 
@@ -84,7 +87,9 @@ export class MessagesService {
   }
 
   async removeByConversationIds(conversationIds: Types.ObjectId[]) {
-  return this.messageModel.deleteMany({ conversation_id: { $in: conversationIds } }).exec();
+    return this.messageModel
+      .deleteMany({ conversation_id: { $in: conversationIds } })
+      .exec();
   }
 
   // Đánh dấu đã đọc tất cả tin nhắn trong conversation
@@ -92,7 +97,6 @@ export class MessagesService {
     const convObjId = new Types.ObjectId(conversationId);
     const userObjId = new Types.ObjectId(userId);
 
-    
     const result = await this.messageModel.updateMany(
       {
         conversation_id: convObjId,

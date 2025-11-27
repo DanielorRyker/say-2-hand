@@ -488,15 +488,32 @@ const Header = () => {
     };
   }, [socket, user?._id, fetchConversations]);
 
-  //tổng tin chưa đọc
+  // Tổng số tin nhắn chưa đọc, đồng bộ với localStorage (để nhận realtime từ page.tsx)
   const [totalUnread, setTotalUnread] = useState(0);
-
+  // Hàm lấy số chưa đọc từ localStorage
+  const getTotalUnread = () => {
+    const val = localStorage.getItem("totalUnread");
+    return val ? parseInt(val, 10) : 0;
+  };
   useEffect(() => {
-    const count = conversationsData.reduce(
-      (acc, conv) => acc + (conv.unreadCount ?? 0),
-      0
-    );
-    setTotalUnread(count);
+    setTotalUnread(getTotalUnread());
+    // Lắng nghe cả sự kiện storage (đa tab) và custom event (cùng tab)
+    const handleStorage = () => {
+      setTotalUnread(getTotalUnread());
+    };
+    const handleCustom = () => {
+      setTotalUnread(getTotalUnread());
+    };
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener("unread-message-updated", handleCustom);
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("unread-message-updated", handleCustom);
+    };
+  }, []);
+  // Khi conversationsData thay đổi (nếu có fetch lại), cũng cập nhật lại
+  useEffect(() => {
+    setTotalUnread(getTotalUnread());
   }, [conversationsData]);
 
   //Đăng xuất

@@ -15,7 +15,6 @@ import { UploadService } from './upload.service';
 export class UploadController {
   constructor(private readonly uploadService: UploadService) {}
 
-
   @Post('avatar')
   @UseInterceptors(FileInterceptor('file'))
   async uploadAvatar(
@@ -33,6 +32,7 @@ export class UploadController {
     return { filename };
   }
 
+  // API upload ảnh
   @Post('img')
   @UseInterceptors(FileInterceptor('file'))
   async uploadImage(
@@ -43,7 +43,22 @@ export class UploadController {
     return { filename };
   }
 
-   @Post('imgs')
+  // API upload video
+  @Post('video')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadVideo(
+    @UploadedFile() file: Express.Multer.File,
+    @Body('bucket') bucket: string,
+  ) {
+    // Upload video vào folder "videos/" hoặc bucket chỉ định
+    const filename = await this.uploadService.uploadVideo(
+      file,
+      bucket || 'videos',
+    );
+    return { filename };
+  }
+
+  @Post('imgs')
   @UseInterceptors(FilesInterceptor('files')) // <-- 'files' là tên field trong FormData
   async uploadImages(
     @UploadedFiles() files: Express.Multer.File[],
@@ -53,14 +68,10 @@ export class UploadController {
     return { filenames };
   }
 
-   @Post('deleteIMG')
-    async deleteIMG(@Body('bucket') bucket: string) {
-      console.log('🪣 Bucket cần xóa:', bucket);
-      const result = await this.uploadService.deleteFileOrFolder(bucket);
-      return result;
-    }
-
-
-
-  
+  @Post('deleteIMG')
+  async deleteIMG(@Body('bucket') bucket: string) {
+    console.log('🪣 Bucket cần xóa:', bucket);
+    const result = await this.uploadService.deleteFileOrFolder(bucket);
+    return result;
+  }
 }
