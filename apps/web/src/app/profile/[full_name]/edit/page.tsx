@@ -444,6 +444,23 @@ const EditProfilePage = () => {
     }
   };
 
+   const validatePersonName = (name: string): boolean => {
+    // Must have at least 2 words
+    const words = name.trim().split(/\s+/);
+    if (words.length < 2) {
+      return false;
+    }
+
+    // Each word must start with uppercase letter
+    // Allow Vietnamese diacritics and foreign characters
+    const namePattern =
+      /^[A-ZÀÁẠẢÃÂẦẤẬẨẪĂẰẮẶẲẴÈÉẸẺẼÊỀẾỆỂỄÌÍỊỈĨÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠÙÚỤỦŨƯỪỨỰỬỮỲÝỴỶỸĐ][a-zàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđA-ZÀÁẠẢÃÂẦẤẬẨẪĂẰẮẶẲẴÈÉẸẺẼÊỀẾỆỂỄÌÍỊỈĨÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠÙÚỤỦŨƯỪỨỰỬỮỲÝỴỶỸĐ]*$/;
+
+    return words.every((word) => namePattern.test(word));
+  };
+
+  
+
   const handleSubmit = async () => {
     // Run client-side validation
     const errors: Record<string, string> = {};
@@ -451,15 +468,20 @@ const EditProfilePage = () => {
       errors.full_name = "Họ và tên là bắt buộc.";
     } else if (form.full_name.trim().length < 2) {
       errors.full_name = "Họ và tên quá ngắn.";
+    } else if (!validatePersonName(form.full_name.trim())) {
+      errors.full_name = "Họ tên phải có ít nhất 2 từ, mỗi từ viết hoa chữ cái đầu và chỉ chứa chữ cái";
     }
 
     // phone number optional but if present must be valid VN format
+    if(!form.phone_number){
+      errors.phone_number = "Số điện thoại là bắt buộc.";
+    }
     if (form.phone_number && form.phone_number.trim()) {
       const phone = form.phone_number.replace(/\s+/g, "");
       const vnPhone = /^(?:\+?84|0)(?:3|5|7|8|9)\d{8}$/;
       if (!vnPhone.test(phone)) {
         errors.phone_number = "Số điện thoại không hợp lệ.";
-      }
+      } 
     }
 
     // date_of_birth: not future and reasonable age (>= 13)

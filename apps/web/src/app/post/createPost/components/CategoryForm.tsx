@@ -130,6 +130,8 @@ export default function CategoryForm({
         e.preventDefault();
         if (!formData.category_id)
           return showMessage("Vui lòng chọn danh mục.");
+        if (!formData.location.address)
+          return showMessage("Vui lòng chọn địa chỉ.");
         onSubmit();
       }}
     >

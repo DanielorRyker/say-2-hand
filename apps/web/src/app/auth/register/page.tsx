@@ -236,7 +236,7 @@ const RegisterPage = () => {
       case "full_name":
         if (!value.trim()) return "Họ và tên không được để trống";
         if (!validatePersonName(value)) {
-          return "Họ tên phải có ít nhất 2 từ, mỗi từ viết hoa chữ cái đầu";
+          return "Họ tên phải có ít nhất 2 từ, mỗi từ viết hoa chữ cái đầu và chỉ chứa chữ cái";
         }
         return "";
       case "email":
@@ -312,6 +312,10 @@ const RegisterPage = () => {
     const rePasswordError = validateField("re_password", rePassword);
     if (rePasswordError) newErrors.re_password = rePasswordError;
 
+    const pattern = /^[a-zA-Z0-9À-ỹ\s]+$/;
+    if (!pattern.test(streetAddress)) {
+      newErrors.address = "Địa chỉ chỉ được chứa chữ cái, số và dấu cách";
+    }
     // Validate address
     if (useApiV2) {
       // API v2 (2025): Mô hình 2 cấp - không cần District

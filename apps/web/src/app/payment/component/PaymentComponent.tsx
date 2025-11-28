@@ -32,7 +32,7 @@ const PAYMENT_METHODS: PaymentMethod[] = [
   {
     id: "momo",
     name: "Momo",
-    icon: "simple-icons:momo",
+    icon: "arcticons:momo",
     color: "#a50064",
     description: "Ví điện tử Momo - Thanh toán nhanh chóng",
   },
@@ -46,8 +46,8 @@ const PAYMENT_METHODS: PaymentMethod[] = [
   {
     id: "vnpay",
     name: "VNPay",
-    icon: "material-symbols:payment",
-    color: "#0066b2",
+    icon: "arcticons:v-vnpay",
+    color: "#da251d",
     description: "VNPay - Cổng thanh toán quốc gia",
   },
   {
