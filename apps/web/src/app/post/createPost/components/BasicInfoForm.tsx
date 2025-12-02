@@ -298,12 +298,14 @@ export default function BasicInfoForm({
   // returns an object with validity and the collected errors so callers can
   // immediately inspect which field failed (avoids relying on async setState)
   function validate() {
+    const regex = /^[a-zA-Z0-9À-ỹ\s_-]+$/;
     const e: { title?: string; description?: string; price?: string } = {};
     if (!formData.title || !formData.title.trim())
       e.title = "Tiêu đề là bắt buộc";
     if (!formData.description || !formData.description.trim())
       e.description = "Mô tả là bắt buộc";
-
+    if(!regex.test(formData.title))
+      e.title = "Tiêu đề chỉ được chứa chữ cái, số, dấu cách, gạch dưới hoặc gạch ngang";
     // price validation only when selling
     if (formData.transaction_type === "sell") {
       const price = formData.price;
