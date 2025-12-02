@@ -1,0 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+// ==========================================
+// CATEGORY BREADCRUMB COMPONENT
+// ==========================================
+// Hiển thị category hierarchy: Parent > Child > Grandchild
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: #6b7280;
+    padding: 8px 0;
+    flex-wrap: wrap;
+}
+
+.separator {
+    color: #9ca3af;
+    flex-shrink: 0;
+}
+
+.categoryLink {
+    background: none;
+    border: none;
+    color: #3b82f6;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+    font-weight: 500;
+
+    &:hover {
+        background: #eff6ff;
+        color: #2563eb;
+    }
+
+    &:active {
+        transform: scale(0.98);
+    }
+}
+
+.currentCategory {
+    color: #111827;
+    font-weight: 600;
+    padding: 2px 4px;
+}
+
+.categoryName {
+    color: #111827;
+    font-weight: 600;
+    padding: 2px 4px;
+}
+
+// ==========================================
+// RESPONSIVE
+// ==========================================
+@media (max-width: 640px) {
+    .breadcrumb {
+        font-size: 12px;
+    }
+
+    .separator {
+        width: 14px;
+        height: 14px;
+    }
+}

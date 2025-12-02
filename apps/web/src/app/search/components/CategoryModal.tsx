@@ -2,8 +2,10 @@
 
 import React, { useEffect, useState, useMemo } from "react";
 import { Icon } from "@iconify/react";
+import Image from "next/image";
 import styles from "./CategoryModal.module.scss";
-import axios from "axios";
+import { apiClient } from "@/lib/api-client";
+import { formatImageUrl } from "@/lib/constants";
 
 interface CategoryModalProps {
   isOpen: boolean;
@@ -17,6 +19,7 @@ interface Category {
   name: string;
   slug: string;
   icon?: string;
+  image?: string;
   parent_id?: string | null;
 }
 
@@ -40,10 +43,13 @@ export default function CategoryModal({
 
   const fetchCategories = async () => {
     try {
-      const res = await axios.get("http://localhost:8080/api/categories");
+      // Sử dụng apiClient thay vì axios với hardcoded URL
+      const res = await apiClient.get("/categories");
       setCategories(res.data);
     } catch (error) {
       console.error("Error fetching categories:", error);
+      // Set empty array để tránh crash UI
+      setCategories([]);
     }
   };
 
@@ -201,10 +207,25 @@ export default function CategoryModal({
                     title={parent.name}
                   >
                     <span className={styles.navLabel}>
-                      {parent.icon && (
-                        <Icon icon={parent.icon} width={16} height={16} />
-                      )}{" "}
-                      {parent.name}
+                      {/* Hiển thị icon hoặc image */}
+                      {parent.icon ? (
+                        <Icon icon={parent.icon} width={18} height={18} />
+                      ) : parent.image ? (
+                        <Image
+                          src={
+                            formatImageUrl(parent.image) ||
+                            "/image/category/default.svg"
+                          }
+                          alt={parent.name}
+                          width={18}
+                          height={18}
+                          className={styles.categoryIcon}
+                          unoptimized
+                        />
+                      ) : (
+                        <Icon icon="mdi:shape" width={18} height={18} />
+                      )}
+                      <span>{parent.name}</span>
                     </span>
                     {isSelected && (
                       <Icon icon="mdi:check" width={14} height={14} />

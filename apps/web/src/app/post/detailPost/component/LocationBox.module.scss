@@ -7,6 +7,7 @@
     box-shadow: vars.$shadow-lg;
     border: 1px solid #eef2ff;
     transition: all vars.$transition-base;
+    // width: 100%;
 
     &:hover {
         box-shadow: vars.$shadow-xl;

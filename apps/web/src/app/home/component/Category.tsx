@@ -1,7 +1,7 @@
 "use client";
 import styles from "./category.module.scss";
-import axios from "axios";
-import { API_BASE, formatImageUrl } from "@/lib/constants";
+import { apiClient } from "@/lib/api-client";
+import { formatImageUrl } from "@/lib/constants";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -23,10 +23,13 @@ export default function Category() {
   useEffect(() => {
     async function fetchCategories() {
       try {
-        const res = await axios.get(`${API_BASE}/api/categories/`);
+        // Sử dụng apiClient thay vì axios với hardcoded URL
+        const res = await apiClient.get("/categories");
         setCategoriesData(res.data);
       } catch (error) {
         console.error("Lỗi khi tải danh mục:", error);
+        // Set empty array để tránh crash UI
+        setCategoriesData([]);
       } finally {
         setLoading(false);
       }
@@ -34,9 +37,10 @@ export default function Category() {
     fetchCategories();
   }, []);
 
-  const handleCategoryClick = (categorySlug?: string) => {
-    if (categorySlug) {
-      router.push(`/search?category=${categorySlug}`);
+  // Sử dụng category ID thay vì slug để navigate, đồng nhất với search page
+  const handleCategoryClick = (categoryId?: string) => {
+    if (categoryId) {
+      router.push(`/search?category=${categoryId}`);
     }
   };
 
@@ -60,7 +64,7 @@ export default function Category() {
             key={index}
             type="button"
             className={styles.categoryItem}
-            onClick={() => handleCategoryClick(category.slug)}
+            onClick={() => handleCategoryClick(category._id)}
           >
             <div className={styles.image}>
               <Image

@@ -218,11 +218,31 @@
     }
 }
 
-.left-col,
+.left-col {
+    display: flex;
+    flex-direction: column;
+    gap: vars.$spacing-lg;
+}
+
 .right-col {
     display: flex;
     flex-direction: column;
     gap: vars.$spacing-lg;
+
+    @include vars.respond-to('lg') {
+        position: sticky;
+        top: vars.$spacing-xl;
+        align-self: flex-start;
+        max-height: calc(100vh - vars.$spacing-2xl);
+
+        // Ẩn scrollbar nhưng vẫn cho phép scroll
+        scrollbar-width: none; // Firefox
+        -ms-overflow-style: none; // IE và Edge
+
+        &::-webkit-scrollbar {
+            display: none; // Chrome, Safari, Opera
+        }
+    }
 }
 
 // ==========================================
@@ -301,10 +321,13 @@ h1.title {
 // STICKY SIDEBAR
 // ==========================================
 
-@include vars.respond-to('lg') {
-    .desktop-sticky-sidebar {
-        position: sticky;
-        top: vars.$spacing-xl;
+.desktop-sticky-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: vars.$spacing-md;
+    // width: 100%;
+
+    @include vars.respond-to('lg') {
         animation: fadeInRight 0.6s ease-out;
     }
 }
@@ -421,7 +444,7 @@ h1.title {
 }
 
 .spacer-sm {
-    height: vars.$spacing-md;
+    height: vars.$spacing-xs;
 }
 
 .spacer-md {

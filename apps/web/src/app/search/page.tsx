@@ -96,9 +96,18 @@ function SearchPageContent() {
   const [postsData, setPostsData] = useState<Post[]>([]);
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [categories, setCategories] = useState<{ _id: string; name: string }[]>(
-    []
-  );
+
+  // ✅ Enhanced category type với parent_id để support hierarchy
+  interface CategoryData {
+    _id: string;
+    name: string;
+    parent_id?: string | null;
+    slug?: string;
+    icon?: string;
+    image?: string;
+  }
+
+  const [categories, setCategories] = useState<CategoryData[]>([]);
 
   // Filter states - lấy từ URL params
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
@@ -129,10 +138,17 @@ function SearchPageContent() {
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [showPriceModal, setShowPriceModal] = useState(false);
 
-  // Sync search query từ URL
+  // Sync search query và category từ URL
   useEffect(() => {
     const query = searchParams.get("q") || "";
     setSearchQuery(query);
+
+    // ✅ Đồng bộ category từ URL parameter
+    const categoryParam = searchParams.get("category");
+    if (categoryParam) {
+      setSelectedCategories([categoryParam]);
+    }
+
     const prov = searchParams.get("province");
     setFilterProvinceParam(prov);
 
@@ -307,13 +323,32 @@ function SearchPageContent() {
       );
     }
 
-    // Categories
+    // ==========================================
+    // FILTER BY CATEGORIES (Parent & Child support)
+    // ==========================================
     if (selectedCategories.length > 0) {
-      filtered = filtered.filter((post) =>
-        post.category_id?._id
-          ? selectedCategories.includes(post.category_id._id)
-          : false
-      );
+      filtered = filtered.filter((post) => {
+        if (!post.category_id?._id) return false;
+
+        const postCategoryId = post.category_id._id;
+
+        // Kiểm tra xem post category có trong danh sách selected không
+        if (selectedCategories.includes(postCategoryId)) {
+          return true;
+        }
+
+        // Kiểm tra xem post category có phải là child của category đã chọn không
+        // Find category info từ categories state
+        const postCategory = categories.find((c) => c._id === postCategoryId);
+        if (postCategory && "parent_id" in postCategory) {
+          const parent_id = (postCategory as any).parent_id;
+          if (parent_id && selectedCategories.includes(parent_id)) {
+            return true;
+          }
+        }
+
+        return false;
+      });
     }
 
     // Price range

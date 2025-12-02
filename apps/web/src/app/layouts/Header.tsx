@@ -583,50 +583,99 @@ const Header = () => {
           <NavDropdown
             className={headerStyles.dropDownCar}
             title={
-              <Image
-                src="/image/header/pajamas_hamburger.svg"
-                alt="Menu"
-                width={32}
-                height={32}
-                className={headerStyles.img}
-              />
+              <div className={headerStyles.menuButton}>
+                <Icon icon="mdi:menu" width={24} height={24} />
+              </div>
             }
-            id="basic-nav-dropdown"
+            id="category-dropdown"
           >
             <NavDropdown.Header className={headerStyles.categoryHeader}>
-              <Icon icon="mdi:view-dashboard" width={20} height={20} />
-              <h5>Danh mục</h5>
+              <Icon icon="mdi:shape-outline" width={22} height={22} />
+              <h5>Danh mục sản phẩm</h5>
             </NavDropdown.Header>
             <NavDropdown.Divider />
-            {/* Categories loaded from backend; show first 11 */}
-            {/** Categories state and loader are added near other hooks above (see useEffect added) */}
-            {/** Render loading / empty / first 11 categories */}
+
+            {/* Loading state */}
             {categoriesLoading && (
-              <NavDropdown.Item disabled>Đang tải...</NavDropdown.Item>
+              <NavDropdown.Item disabled>
+                <Icon
+                  icon="mdi:loading"
+                  width={20}
+                  height={20}
+                  className="rotating"
+                />
+                Đang tải danh mục...
+              </NavDropdown.Item>
             )}
+
+            {/* Error state */}
             {!categoriesLoading && categoriesError && (
-              <NavDropdown.Item disabled>Lỗi tải danh mục</NavDropdown.Item>
+              <NavDropdown.Item disabled>
+                <Icon icon="mdi:alert-circle" width={20} height={20} />
+                Không thể tải danh mục
+              </NavDropdown.Item>
             )}
+
+            {/* Empty state */}
             {!categoriesLoading &&
               !categoriesError &&
               categories.length === 0 && (
-                <NavDropdown.Item disabled>Không có dữ liệu</NavDropdown.Item>
+                <NavDropdown.Item disabled>
+                  <Icon icon="mdi:inbox" width={20} height={20} />
+                  Chưa có danh mục nào
+                </NavDropdown.Item>
               )}
-            {categories.slice(0, 11).map((cate) => (
-              <NavDropdown.Item
-                key={cate._id}
-                onClick={() => {
-                  const params = new URLSearchParams();
-                  // navigate to search page filtered by category id
-                  params.set("category", cate._id);
-                  if (cate.name) params.set("categoryName", cate.name);
-                  router.push(`/search?${params.toString()}`);
-                }}
-              >
-                <Icon icon="mdi:tag" width={20} height={20} />
-                {cate.name}
-              </NavDropdown.Item>
-            ))}
+
+            {/* Category list - only show parent categories (first level) */}
+            {!categoriesLoading &&
+              !categoriesError &&
+              categories
+                .filter((cat) => !cat.parent_id) // Chỉ hiển thị parent categories
+                .slice(0, 12)
+                .map((cate) => (
+                  <NavDropdown.Item
+                    key={cate._id}
+                    onClick={() => {
+                      // Navigate to search page với category filter
+                      router.push(`/search?category=${cate._id}`);
+                    }}
+                  >
+                    {cate.image ? (
+                      <Image
+                        src={
+                          formatImageUrl(cate.image) ||
+                          "/image/category/default.svg"
+                        }
+                        alt={cate.name || "Category"}
+                        width={20}
+                        height={20}
+                        style={{ objectFit: "cover", borderRadius: "4px" }}
+                        unoptimized
+                      />
+                    ) : (
+                      <Icon icon="mdi:shape" width={20} height={20} />
+                    )}
+                    {cate.name}
+                  </NavDropdown.Item>
+                ))}
+
+            {/* View all categories link */}
+            {!categoriesLoading && categories.length > 12 && (
+              <>
+                <NavDropdown.Divider />
+                <NavDropdown.Item
+                  onClick={() => router.push("/search")}
+                  style={{
+                    fontWeight: 600,
+                    color: "#3b82f6",
+                    textAlign: "center",
+                  }}
+                >
+                  <Icon icon="mdi:arrow-right-circle" width={20} height={20} />
+                  Xem tất cả danh mục
+                </NavDropdown.Item>
+              </>
+            )}
           </NavDropdown>
           <button
             onClick={() => router.push("/home")}

@@ -602,10 +602,14 @@ const DetailPostPage: React.FC = () => {
           <div id="main-content">
             {/* Breadcrumb điều hướng */}
             <Breadcrumb
-              categoryName={postData.post?.category_id?.name || ""}
+              categoryName={postData.post?.category_id?.name}
+              categorySlug={postData.post?.category_id?.slug}
+              categoryId={postData.post?.category_id?._id}
               address={extractStringAfterLastComma(
                 postData.location?.address_text
               )}
+              postTitle={postData.post?.title}
+              showIcons={true}
             />
             <article className={styles["main-article"]}>
               <div className={styles["left-col"]}>
