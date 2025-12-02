@@ -1,0 +1,188 @@
+@use '../../../../styles/abstracts/variables'as vars;
+@use '../../../../styles/abstracts/colors'as colors;
+
+.seller-card {
+    background: #fff;
+    padding: vars.$spacing-lg;
+    border-radius: vars.$radius-2xl;
+    box-shadow: vars.$shadow-xl;
+    border: 1px solid #eef2ff;
+    transition: all vars.$transition-base;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: colors.$primary-brand;
+        transform: scaleX(0);
+        transition: transform vars.$transition-base;
+    }
+
+    &:hover {
+        box-shadow: vars.$shadow-2xl;
+        border-color: #dbeafe;
+
+        &::before {
+            transform: scaleX(1);
+        }
+    }
+
+    @include vars.respond-below('lg') {
+        padding: vars.$spacing-md;
+        border-radius: vars.$radius-xl;
+    }
+}
+
+.seller-head {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+}
+
+.seller-head img {
+    width: 56px;
+    height: 56px;
+    border-radius: 999px;
+    flex-shrink: 0;
+}
+
+.seller-name {
+    @include vars.flex-center;
+    justify-content: flex-start;
+    gap: vars.$spacing-sm;
+    font-size: vars.$font-size-xl;
+    font-weight: vars.$font-weight-extrabold;
+    color: #0f172a;
+    line-height: vars.$line-height-tight;
+
+    @include vars.respond-below('lg') {
+        font-size: vars.$font-size-lg;
+    }
+}
+
+.seller-meta {
+    font-size: 14px;
+    color: #64748b;
+}
+
+.seller-rep {
+    margin-top: 6px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.seller-rep-text {
+    font-size: 14px;
+    color: #64748b;
+    margin-left: 6px;
+}
+
+// Badge xác thực
+.verified-icon {
+    color: var(--color-primary);
+    vertical-align: middle;
+    margin-left: 6px;
+}
+
+// Rating stars
+.rating-stars {
+    display: inline-flex;
+    gap: 4px;
+    vertical-align: middle;
+}
+
+.rating-star {
+    color: #f59e0b;
+}
+
+.rating-star.empty {
+    color: #e6e6e6;
+}
+
+
+.profile-link {
+    @include vars.flex-center;
+    gap: vars.$spacing-sm;
+    text-align: center;
+    padding: vars.$spacing-md;
+    background: linear-gradient(135deg, #eff6ff 0%, #eef2ff 100%);
+    border-radius: vars.$radius-lg;
+    font-weight: vars.$font-weight-extrabold;
+    font-size: vars.$font-size-base;
+    margin-top: vars.$spacing-md;
+    text-decoration: none;
+    color: #0f172a;
+    transition: all vars.$transition-base;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: colors.$primary-brand;
+        opacity: 0;
+        transition: opacity vars.$transition-base;
+    }
+
+    &:hover {
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: vars.$shadow-primary;
+
+        &::before {
+            opacity: 1;
+        }
+
+        span {
+            position: relative;
+            z-index: 1;
+        }
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+
+    @include vars.respond-below('lg') {
+        padding: vars.$spacing-sm;
+        font-size: vars.$font-size-sm;
+    }
+}
+
+// Ripple effect cho nút
+.ripple-target {
+    position: relative;
+    overflow: hidden;
+}
+
+.ripple-span {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.12);
+    transform: scale(0);
+    animation: ripple 600ms linear;
+    pointer-events: none;
+}
+
+@keyframes ripple {
+    to {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+
+.detail-post .profile-link:hover {
+    background: #e6f4ff;
+    color: var(--color-primary);
+}

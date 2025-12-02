@@ -1,0 +1,99 @@
+@use '../../../../styles/abstracts/variables'as vars;
+@use '../../../../styles/abstracts/colors'as colors;
+
+.info-card {
+    margin-top: vars.$spacing-lg;
+    background: #fff;
+    padding: vars.$spacing-lg;
+    border-radius: vars.$radius-2xl;
+    box-shadow: vars.$shadow-xl;
+    transition: all vars.$transition-base;
+    border: 1px solid #f1f5f9;
+
+    @include vars.respond-below('lg') {
+        margin-top: vars.$spacing-md;
+        padding: vars.$spacing-md;
+        border-radius: vars.$radius-xl;
+    }
+}
+
+.price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.price {
+    font-size: vars.$font-size-3xl;
+    font-weight: vars.$font-weight-extrabold;
+    background: colors.$primary-brand;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    line-height: vars.$line-height-tight;
+    animation: priceShimmer 3s ease-in-out infinite;
+
+    @include vars.respond-below('lg') {
+        font-size: vars.$font-size-2xl;
+    }
+}
+
+@keyframes priceShimmer {
+
+    0%,
+    100% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+.status-badge {
+    font-size: vars.$font-size-xs;
+    font-weight: vars.$font-weight-semibold;
+    padding: vars.$spacing-sm vars.$spacing-md;
+    border-radius: vars.$radius-full;
+    border: 1px solid #e5e7eb;
+    background: #f9fafb;
+    transition: all vars.$transition-fast;
+
+    &:hover {
+        border-color: #3b82f6;
+        background: #eff6ff;
+        transform: scale(1.05);
+    }
+}
+
+.meta-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.meta-item {
+    font-size: 13px;
+    color: #334155;
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+// Responsive cho InfoCard
+@media (max-width: 1024px) {
+    .info-card {
+        border-radius: 12px;
+        padding: 10px;
+    }
+
+    .price {
+        font-size: 20px;
+    }
+
+    .meta-item {
+        font-size: 12px;
+    }
+}

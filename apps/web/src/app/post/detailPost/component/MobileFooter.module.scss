@@ -1,0 +1,102 @@
+@use '../../../../styles/abstracts/variables'as vars;
+@use '../../../../styles/abstracts/colors'as colors;
+
+// Footer cố định dưới cùng màn hình mobile
+.mobile-footer {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: vars.$spacing-md;
+    background: #fff;
+    box-shadow: 0 -6px 20px rgba(2, 6, 23, 0.08);
+    border-top-left-radius: vars.$radius-xl;
+    border-top-right-radius: vars.$radius-xl;
+    z-index: vars.$z-sticky;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    animation: slideUp vars.$transition-base vars.$ease-out;
+
+    @include vars.respond-below('lg') {
+        display: block;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+// Inner layout cho nút
+.mobile-footer-inner {
+    display: flex;
+    gap: 12px;
+}
+
+// Nút yêu thích
+.fav-btn {
+    flex: 1 1 0;
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    background: #f3f4f6;
+    color: #374151;
+    transition: background .18s, color .18s;
+}
+
+.fav-btn.active {
+    background: linear-gradient(90deg, var(--color-primary, #3b82f6), #2563eb);
+    color: #fff;
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.18);
+}
+
+.fav-btn:active {
+    transform: translateY(1px);
+}
+
+// Nút chat/mua
+.chat-btn {
+    flex: 2 1 0;
+    padding: vars.$spacing-md;
+    border-radius: vars.$radius-lg;
+    font-weight: vars.$font-weight-extrabold;
+    font-size: vars.$font-size-base;
+    border: none;
+    cursor: pointer;
+    background: colors.$status-success;
+    color: #fff;
+    transition: all vars.$transition-base;
+    box-shadow: vars.$shadow-success;
+
+    &:hover {
+        transform: scale(1.02);
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    }
+
+    &:active {
+        transform: scale(0.98);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+}
+
+
+
+
+@media (max-width: 1024px) {
+    .mobile-footer {
+        display: block;
+    }
+}

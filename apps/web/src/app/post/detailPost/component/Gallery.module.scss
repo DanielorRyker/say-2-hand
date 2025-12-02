@@ -1,0 +1,215 @@
+@use '../../../../styles/abstracts/variables'as vars;
+
+.gallery-card {
+    background: #fff;
+    padding: vars.$spacing-md;
+    border-radius: vars.$radius-2xl;
+    box-shadow: vars.$shadow-xl;
+    overflow: hidden;
+    transition: all vars.$transition-base;
+
+
+
+    @include vars.respond-below('lg') {
+        border-radius: vars.$radius-xl;
+        padding: vars.$spacing-sm;
+    }
+}
+
+.main-image-container {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%;
+    border-radius: vars.$radius-lg;
+    overflow: hidden;
+    cursor: pointer;
+    background: #f8fafc;
+
+
+    @include vars.respond-below('lg') {
+        border-radius: vars.$radius-md;
+    }
+}
+
+.main-image-container img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    transition: transform vars.$transition-slow vars.$ease-out;
+}
+
+.image-count {
+    position: absolute;
+    right: vars.$spacing-md;
+    bottom: vars.$spacing-md;
+    background: rgba(0, 0, 0, 0.6);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    color: #fff;
+    padding: vars.$spacing-sm vars.$spacing-md;
+    border-radius: vars.$radius-full;
+    font-size: vars.$font-size-xs;
+    font-weight: vars.$font-weight-semibold;
+    box-shadow: vars.$shadow-lg;
+    transition: all vars.$transition-fast;
+
+    &:hover {
+        background: rgba(0, 0, 0, 0.8);
+        transform: scale(1.05);
+    }
+
+    @include vars.respond-below('lg') {
+        right: vars.$spacing-sm;
+        bottom: vars.$spacing-sm;
+        font-size: 10px;
+        padding: 4px vars.$spacing-sm;
+    }
+}
+
+.thumbs {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    overflow: auto;
+}
+
+.thumb {
+    flex: 0 0 auto;
+    width: 96px;
+    height: 64px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid transparent;
+    cursor: pointer;
+}
+
+.thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.thumb.active {
+    border-color: #3b82f6;
+    box-shadow: 0 6px 18px rgba(59, 130, 246, 0.18);
+}
+
+// Custom scrollbar cho thumbnail gallery
+.thumbs::-webkit-scrollbar {
+    height: 8px;
+}
+
+.thumbs::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+}
+
+.thumbs::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+.thumbs::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.nav-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0.9;
+    transition: opacity .2s ease;
+}
+
+.nav-arrow.left {
+    left: 8px;
+}
+
+.nav-arrow.right {
+    right: 8px;
+}
+
+.main-image-container:hover .nav-arrow {
+    opacity: 1;
+}
+
+// Responsive cho gallery
+@media (max-width: 1024px) {
+    .gallery-card {
+        padding: 6px;
+        border-radius: 12px;
+    }
+
+    .main-image-container {
+        border-radius: 8px;
+    }
+
+    .thumb {
+        width: 64px;
+        height: 44px;
+        border-radius: 6px;
+    }
+}
+
+.detail-post .nav-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0.9;
+    transition: opacity .2s ease;
+}
+
+.detail-post .nav-arrow.left {
+    left: 8px;
+}
+
+.detail-post .nav-arrow.right {
+    right: 8px;
+}
+
+.detail-post .main-image-container:hover .nav-arrow {
+    opacity: 1;
+}
+
+/* Custom scrollbar for thumbnail gallery */
+.detail-post .thumbs::-webkit-scrollbar {
+    height: 8px;
+}
+
+.detail-post .thumbs::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+}
+
+.detail-post .thumbs::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+.detail-post .thumbs::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}

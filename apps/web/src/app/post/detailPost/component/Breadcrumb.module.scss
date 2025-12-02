@@ -1,0 +1,26 @@
+@use '../../../../styles/abstracts/variables'as vars;
+
+// Breadcrumb hiển thị đường dẫn điều hướng
+.breadcrumb {
+    font-size: vars.$font-size-sm;
+    color: #64748b;
+    margin-bottom: vars.$spacing-md;
+    font-weight: vars.$font-weight-medium;
+
+    // Hiệu ứng hover cho breadcrumb links
+    a {
+        color: #3b82f6;
+        text-decoration: none;
+        transition: color vars.$transition-fast;
+
+        &:hover {
+            color: #2563eb;
+            text-decoration: underline;
+        }
+    }
+
+    @include vars.respond-below('lg') {
+        font-size: vars.$font-size-xs;
+        margin-bottom: vars.$spacing-sm;
+    }
+}

@@ -1,0 +1,105 @@
+@use '../../../../styles/abstracts/variables'as vars;
+
+.cta-box {
+    background: #fff;
+    padding: vars.$spacing-lg;
+    border-radius: vars.$radius-2xl;
+    box-shadow: vars.$shadow-lg;
+    border: 1px solid #eef2ff;
+    transition: all vars.$transition-base;
+
+    &:hover {
+        box-shadow: vars.$shadow-xl;
+        border-color: #dbeafe;
+    }
+
+    @include vars.respond-below('lg') {
+        padding: vars.$spacing-md;
+        border-radius: vars.$radius-xl;
+    }
+}
+
+.cta-box .location-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cta-box .location-header p {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+    padding: 0;
+}
+
+.muted-text {
+    color: #334155;
+    margin: 8px 0;
+}
+
+.detail-post .map-mock {
+    width: 100%;
+    height: 220px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #e6f4ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0c4a6e;
+    font-weight: 700;
+    transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+}
+
+.map-mock {
+    width: 100%;
+    height: 220px;
+    border-radius: vars.$radius-lg;
+    overflow: hidden;
+    background: linear-gradient(135deg, #dbeafe 0%, #e0f2fe 100%);
+    @include vars.flex-center;
+    color: #0c4a6e;
+    font-weight: vars.$font-weight-bold;
+    font-size: vars.$font-size-base;
+    transition: all vars.$transition-base;
+    cursor: pointer;
+    position: relative;
+
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(14, 165, 233, 0.1) 100%);
+        opacity: 0;
+        transition: opacity vars.$transition-base;
+    }
+
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: vars.$shadow-lg;
+
+        &::before {
+            opacity: 1;
+        }
+    }
+
+    &:active {
+        transform: translateY(-2px);
+    }
+
+    @include vars.respond-below('lg') {
+        height: 150px;
+        font-size: vars.$font-size-sm;
+    }
+}
+
+@media (max-width: 1024px) {
+    .cta-box {
+        border-radius: 12px;
+        padding: 10px;
+    }
+
+    .map-mock {
+        height: 120px;
+    }
+}

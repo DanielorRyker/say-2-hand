@@ -1,0 +1,95 @@
+@use '../../../../styles/abstracts/variables'as vars;
+
+.description-card {
+    background: #fff;
+    padding: vars.$spacing-lg;
+    border-radius: vars.$radius-2xl;
+    margin-top: vars.$spacing-md;
+    box-shadow: vars.$shadow-md;
+    transition: all vars.$transition-base;
+
+
+    @include vars.respond-below('lg') {
+        border-radius: vars.$radius-xl;
+        padding: vars.$spacing-md;
+    }
+
+}
+
+.description-card h2 {
+    margin: 0 0 vars.$spacing-md 0;
+    font-size: vars.$font-size-xl;
+    font-weight: vars.$font-weight-bold;
+    color: #0f172a;
+
+    @include vars.respond-below('lg') {
+        font-size: vars.$font-size-lg;
+    }
+}
+
+.description-text {
+    font-size: vars.$font-size-base;
+    line-height: vars.$line-height-relaxed;
+    color: #334155;
+    white-space: pre-wrap;
+    transition: all vars.$transition-slow;
+    word-wrap: break-word;
+
+    @include vars.respond-below('lg') {
+        font-size: vars.$font-size-sm;
+    }
+}
+
+.description-text.collapsed {
+    max-height: 320px;
+    overflow: hidden;
+    position: relative;
+
+    &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 60px;
+    }
+}
+
+.description-text.expanded {
+    max-height: none;
+    overflow: visible;
+}
+
+.read-more-btn {
+    background: none;
+    border: none;
+    color: #2563eb;
+    font-weight: vars.$font-weight-bold;
+    font-size: vars.$font-size-sm;
+    cursor: pointer;
+    margin-top: vars.$spacing-sm;
+    padding: vars.$spacing-sm vars.$spacing-md;
+    border-radius: vars.$radius-md;
+    transition: all vars.$transition-fast;
+
+    &:hover {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    &:active {
+        transform: scale(0.95);
+    }
+}
+
+// Responsive cho DescriptionCard
+@media (max-width: 1024px) {
+    .description-card {
+        border-radius: 12px;
+        padding: 10px;
+    }
+
+    .description-text {
+        font-size: 13px;
+    }
+}

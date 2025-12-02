@@ -1,0 +1,61 @@
+@use '../../../../styles/abstracts/variables'as vars;
+
+// Lightbox hiển thị ảnh lớn khi click vào ảnh trong gallery
+.lightbox {
+    position: fixed;
+    inset: 0;
+    @include vars.flex-center;
+    display: none;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: vars.$z-modal;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    animation: fadeIn vars.$transition-base;
+
+    @include vars.respond-below('lg') {
+        -webkit-backdrop-filter: blur(5px);
+        backdrop-filter: blur(5px);
+    }
+}
+
+// Khi lightbox được bật
+.lightbox.visible {
+    display: flex;
+}
+
+// Ảnh trong lightbox
+.lightbox img {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: vars.$radius-xl;
+    box-shadow: vars.$shadow-2xl;
+    animation: zoomIn vars.$transition-slow vars.$ease-out;
+
+    @include vars.respond-below('lg') {
+        max-width: 95%;
+        max-height: 95%;
+        border-radius: vars.$radius-lg;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes zoomIn {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
