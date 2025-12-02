@@ -1,5 +1,5 @@
-@use '../../../styles/abstracts/variables' as vars;
-@use '../../../styles/abstracts/colors' as colors;
+@use '../../../styles/abstracts/variables'as vars;
+@use '../../../styles/abstracts/colors'as colors;
 
 // ==========================================
 // DETAIL POST PAGE - MAIN LAYOUT
@@ -14,7 +14,7 @@
     color: #0f172a;
     min-height: 100vh;
     padding-bottom: vars.$spacing-3xl;
-    
+
     @include vars.respond-below('lg') {
         padding-bottom: 80px; // Để tránh bị mobile footer che
     }
@@ -23,7 +23,7 @@
 .container {
     @include vars.container(vars.$container-xl);
     padding-top: vars.$spacing-xl;
-    
+
     @include vars.respond-below('lg') {
         padding-top: vars.$spacing-lg;
     }
@@ -34,13 +34,11 @@
 // ==========================================
 
 .skeleton {
-    background: linear-gradient(
-        90deg,
-        #f0f0f0 0%,
-        #e6e6e6 20%,
-        #f0f0f0 40%,
-        #f0f0f0 100%
-    );
+    background: linear-gradient(90deg,
+            #f0f0f0 0%,
+            #e6e6e6 20%,
+            #f0f0f0 40%,
+            #f0f0f0 100%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite linear;
     border-radius: vars.$radius-lg;
@@ -50,6 +48,7 @@
     0% {
         background-position: -200% 0;
     }
+
     100% {
         background-position: 200% 0;
     }
@@ -72,7 +71,7 @@
     grid-template-columns: 2fr 1fr;
     gap: vars.$spacing-xl;
     align-items: start;
-    
+
     @include vars.respond-below('lg') {
         grid-template-columns: 1fr;
         gap: vars.$spacing-lg;
@@ -212,7 +211,7 @@
     grid-template-columns: 2fr 1fr;
     gap: vars.$spacing-2xl;
     align-items: start;
-    
+
     @include vars.respond-below('lg') {
         grid-template-columns: 1fr;
         gap: vars.$spacing-lg;
@@ -235,7 +234,7 @@
     gap: vars.$spacing-md;
     margin-bottom: vars.$spacing-lg;
     animation: fadeInDown 0.5s ease-out;
-    
+
     @include vars.respond-below('lg') {
         flex-direction: column;
         align-items: flex-start;
@@ -247,6 +246,7 @@
         opacity: 0;
         transform: translateY(-20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -263,7 +263,7 @@ h1.title {
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    
+
     @include vars.respond-below('lg') {
         font-size: vars.$font-size-2xl;
     }
@@ -273,7 +273,7 @@ h1.title {
     display: flex;
     gap: vars.$spacing-sm;
     align-items: center;
-    
+
     button {
         @include vars.flex-center;
         background: #fff;
@@ -283,14 +283,14 @@ h1.title {
         cursor: pointer;
         transition: all vars.$transition-fast;
         box-shadow: vars.$shadow-sm;
-        
+
         &:hover {
             background: #f9fafb;
             border-color: #3b82f6;
             transform: scale(1.1);
             box-shadow: vars.$shadow-md;
         }
-        
+
         &:active {
             transform: scale(0.95);
         }
@@ -314,11 +314,13 @@ h1.title {
         opacity: 0;
         transform: translateX(20px);
     }
+
     to {
         opacity: 1;
         transform: translateX(0);
     }
 }
+
 // ==========================================
 // VERIFIED BADGE & RATING STARS
 // ==========================================
@@ -331,10 +333,13 @@ h1.title {
 }
 
 @keyframes pulse {
-    0%, 100% {
+
+    0%,
+    100% {
         opacity: 1;
         transform: scale(1);
     }
+
     50% {
         opacity: 0.8;
         transform: scale(1.1);
@@ -350,11 +355,11 @@ h1.title {
 .rating-star {
     color: #f59e0b;
     transition: transform vars.$transition-fast;
-    
+
     &:hover {
         transform: scale(1.2) rotate(10deg);
     }
-    
+
     &.empty {
         color: #e5e7eb;
     }
@@ -456,13 +461,13 @@ h1.title {
     .detail-post {
         background: #fff;
     }
-    
+
     .action-buttons,
     .mobile-footer,
     .desktop-sticky-sidebar {
         display: none !important;
     }
-    
+
     .main-article {
         grid-template-columns: 1fr;
     }
