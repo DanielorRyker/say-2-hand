@@ -683,7 +683,7 @@ const Header = () => {
             title="Về trang chủ"
           >
             <Image
-              src="/image/header/Say2Hand.svg"
+              src="/image/header/Logo.svg"
               alt="Logo"
               width={200}
               height={45}

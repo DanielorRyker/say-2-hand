@@ -137,6 +137,8 @@ function SearchPageContent() {
   const [showConditionModal, setShowConditionModal] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [showPriceModal, setShowPriceModal] = useState(false);
+  const [showMobileBottomSheet, setShowMobileBottomSheet] = useState(false);
+  const [showMobileSortMenu, setShowMobileSortMenu] = useState(false);
 
   // Sync search query và category từ URL
   useEffect(() => {
@@ -408,6 +410,7 @@ function SearchPageContent() {
     selectedWardName,
     selectedLocation,
     distance,
+    categories,
   ]);
 
   useEffect(() => {
@@ -474,7 +477,39 @@ function SearchPageContent() {
 
   return (
     <div className={styles.searchPage}>
-      {/* Quick Filters Bar - Sticky */}
+      {/* Mobile Search Header - Chỉ hiện trên mobile */}
+      <div className={styles.mobileSearchHeader}>
+        <div className={styles.mobileSearchBox}>
+          <Icon icon="mdi:magnify" width={20} height={20} color="#9ca3af" />
+          <input
+            type="text"
+            placeholder="Tìm kiếm sản phẩm..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          {searchQuery && (
+            <button
+              className={styles.clearSearchIconBtn}
+              onClick={() => setSearchQuery("")}
+            >
+              <Icon icon="mdi:close" width={18} height={18} />
+            </button>
+          )}
+        </div>
+        <button
+          className={styles.mobileFilterToggle}
+          onClick={() => setShowMobileBottomSheet(true)}
+        >
+          <Icon icon="mdi:filter-variant" width={20} height={20} />
+          {activeFilterCount > 0 && (
+            <span className={styles.filterBadgeMobile}>
+              {activeFilterCount}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {/* Quick Filters Bar - Desktop/Tablet only */}
       <div className={styles.quickFiltersBar}>
         <div className={styles.quickFilters}>
           <button
@@ -760,6 +795,138 @@ function SearchPageContent() {
       ) : (
         <div ref={listRef}>
           <ListPost posts={filteredPosts} isLoading={isLoading} />
+        </div>
+      )}
+
+      {/* Mobile Floating Sort Button - Chỉ hiện trên mobile */}
+      <div className={styles.mobileFloatingButtons}>
+        <button
+          className={styles.floatingSortBtn}
+          onClick={() => setShowMobileSortMenu(true)}
+        >
+          <Icon icon="mdi:sort" width={20} height={20} />
+          Sắp xếp
+        </button>
+      </div>
+
+      {/* Mobile Bottom Sheet for Filters */}
+      <div
+        className={`${styles.mobileBottomSheet} ${showMobileBottomSheet ? styles.open : ""}`}
+      >
+        <div className={styles.bottomSheetHandle} />
+        <div className={styles.bottomSheetHeader}>
+          <h3>Bộ lọc</h3>
+          <button
+            className={styles.bottomSheetClose}
+            onClick={() => setShowMobileBottomSheet(false)}
+          >
+            <Icon icon="mdi:close" width={20} height={20} />
+          </button>
+        </div>
+        <div className={styles.bottomSheetContent}>
+          {/* Reuse existing filter chips/options */}
+          <div className={styles.mobileFilterBtnGroup}>
+            <button
+              className={styles.mobileFilterBtn}
+              onClick={() => {
+                setShowMobileBottomSheet(false);
+                setShowCategoryModal(true);
+              }}
+            >
+              <Icon icon="mdi:shape" width={20} height={20} />
+              Danh mục{" "}
+              {selectedCategories.length > 0 &&
+                `(${selectedCategories.length})`}
+            </button>
+            <button
+              className={styles.mobileFilterBtn}
+              onClick={() => {
+                setShowMobileBottomSheet(false);
+                setShowConditionModal(true);
+              }}
+            >
+              <Icon icon="mdi:check-circle" width={20} height={20} />
+              Tình trạng{" "}
+              {selectedConditions.length > 0 &&
+                `(${selectedConditions.length})`}
+            </button>
+            <button
+              className={styles.mobileFilterBtn}
+              onClick={() => {
+                setShowMobileBottomSheet(false);
+                setShowLocationModal(true);
+              }}
+            >
+              <Icon icon="mdi:map-marker" width={20} height={20} />
+              Vị trí
+            </button>
+            <button
+              className={styles.mobileFilterBtn}
+              onClick={() => {
+                setShowMobileBottomSheet(false);
+                setShowPriceModal(true);
+              }}
+            >
+              <Icon icon="mdi:currency-usd" width={20} height={20} />
+              Khoảng giá
+            </button>
+          </div>
+        </div>
+        <div className={styles.bottomSheetFooter}>
+          <button
+            className={styles.bottomSheetClearBtn}
+            onClick={clearAllFilters}
+          >
+            Xóa tất cả
+          </button>
+          <button
+            className={styles.bottomSheetApplyBtn}
+            onClick={() => setShowMobileBottomSheet(false)}
+          >
+            Áp dụng
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Sort Menu */}
+      {showMobileSortMenu && (
+        <div
+          className={`${styles.mobileBottomSheet} ${styles.mobileSortMenuWrapper}`}
+          onClick={() => setShowMobileSortMenu(false)}
+        >
+          <div className={styles.bottomSheetHandle} />
+          <div className={styles.bottomSheetHeader}>
+            <h3>Sắp xếp theo</h3>
+            <button
+              className={styles.bottomSheetClose}
+              onClick={() => setShowMobileSortMenu(false)}
+            >
+              <Icon icon="mdi:close" width={20} height={20} />
+            </button>
+          </div>
+          <div className={styles.bottomSheetContent}>
+            {SORT_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                className={`${styles.mobileSortOption} ${sortBy === option.value ? styles.active : ""}`}
+                onClick={() => {
+                  setSortBy(option.value);
+                  setShowMobileSortMenu(false);
+                }}
+              >
+                <Icon icon={option.icon} width={20} height={20} />
+                {option.label}
+                {sortBy === option.value && (
+                  <Icon
+                    icon="mdi:check"
+                    width={20}
+                    height={20}
+                    className={styles.checkIcon}
+                  />
+                )}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 

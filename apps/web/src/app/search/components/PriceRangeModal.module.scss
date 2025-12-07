@@ -39,13 +39,13 @@
 
 @keyframes slideUp {
     from {
-        transform: translateY(20px);
         opacity: 0;
+        transform: translateY(20px);
     }
 
     to {
-        transform: translateY(0);
         opacity: 1;
+        transform: translateY(0);
     }
 }
 
@@ -59,10 +59,10 @@
     h2 {
         display: flex;
         align-items: center;
-        gap: 12px;
-        font-size: 24px;
+        gap: 10px;
+        font-size: 22px;
         font-weight: 700;
-        color: #1f2937;
+        color: #111827;
         margin: 0;
     }
 }
@@ -82,22 +82,21 @@
 
     &:hover {
         background: #e5e7eb;
-        color: #1f2937;
         transform: rotate(90deg);
     }
 }
 
 .modalBody {
-    padding: 24px;
+    padding: 32px 24px;
     overflow-y: auto;
     flex: 1;
 
     &::-webkit-scrollbar {
-        width: 8px;
+        width: 6px;
     }
 
     &::-webkit-scrollbar-track {
-        background: #f3f4f6;
+        background: #f9fafb;
         border-radius: 4px;
     }
 
@@ -114,166 +113,251 @@
 .section {
     margin-bottom: 32px;
 
-    &:last-child {
-        margin-bottom: 0;
-    }
-
     h3 {
+        font-size: 16px;
+        font-weight: 600;
+        color: #111827;
+        margin: 0 0 16px 0;
         display: flex;
         align-items: center;
         gap: 8px;
-        font-size: 16px;
-        font-weight: 700;
-        color: #374151;
-        margin-bottom: 16px;
     }
 }
 
-.quickRangeGrid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+/* ==========================================
+   DUAL RANGE SLIDER - MODERN DESIGN
+   ========================================== */
+.rangeSliderContainer {
+    padding: 20px 0;
 }
 
-.quickRangeBtn {
-    padding: 16px 20px;
-    background: #f9fafb;
-    border: 2px solid #e5e7eb;
-    border-radius: 16px;
-    font-size: 14px;
-    font-weight: 600;
-    color: #374151;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-align: center;
-
-    &:hover {
-        border-color: #667eea;
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
-    }
-
-    &.active {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-color: #667eea;
-        color: white;
-        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
-    }
+.sliderTrack {
+    position: relative;
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    margin: 30px 0;
 }
 
-.priceInputs {
-    display: flex;
-    align-items: center;
-    gap: 16px;
+.sliderRange {
+    position: absolute;
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    border-radius: 3px;
+    transition: all 0.1s ease;
+    left: var(--min-percent, 0%);
+    width: var(--range-width, 100%);
 }
 
-.inputGroup {
-    flex: 1;
+.sliderInputs {
+    position: relative;
+}
 
-    label {
-        display: block;
-        font-size: 14px;
-        font-weight: 600;
-        color: #6b7280;
-        margin-bottom: 8px;
-    }
+.sliderInput {
+    position: absolute;
+    width: 100%;
+    height: 6px;
+    background: transparent;
+    pointer-events: none;
+    -webkit-appearance: none;
+    appearance: none;
 
-    input {
-        width: 100%;
-        padding: 12px;
-        border: 2px solid #e5e7eb;
-        border-radius: 12px;
-        font-size: 16px;
-        outline: none;
+    &::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: white;
+        border: 3px solid #667eea;
+        cursor: pointer;
+        pointer-events: all;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
         transition: all 0.2s ease;
 
-        &:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        &:hover {
+            transform: scale(1.2);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
+        }
+
+        &:active {
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.6);
+        }
+    }
+
+    &::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: white;
+        border: 3px solid #667eea;
+        cursor: pointer;
+        pointer-events: all;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        transition: all 0.2s ease;
+
+        &:hover {
+            transform: scale(1.2);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
+        }
+
+        &:active {
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.6);
         }
     }
 }
 
-.currencyLabel {
-    display: block;
-    margin-top: 8px;
-    font-size: 12px;
-    color: #667eea;
-    font-weight: 600;
-}
-
-.separator {
+.rangeLabels {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 28px;
-    color: #9ca3af;
-}
-
-.rangePreview {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 16px;
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-    border-radius: 12px;
-    font-size: 14px;
-    color: #374151;
-
-    strong {
-        color: #667eea;
-        font-weight: 700;
-    }
-}
-
-.modalFooter {
-    display: flex;
-    align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    padding: 20px 24px;
-    border-top: 2px solid #f3f4f6;
+    margin-top: 8px;
+    font-size: 13px;
+    color: #6b7280;
 }
 
-.clearBtn {
-    display: flex;
+/* ==========================================
+   PRICE DISPLAY BOXES
+   ========================================== */
+.priceDisplay {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 16px;
     align-items: center;
-    gap: 8px;
-    padding: 12px 24px;
-    background: #f3f4f6;
-    border: none;
+    margin-top: 24px;
+}
+
+.priceBox {
+    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+    border: 2px solid #e5e7eb;
     border-radius: 12px;
-    font-size: 14px;
-    font-weight: 600;
-    color: #6b7280;
-    cursor: pointer;
+    padding: 16px;
+    text-align: center;
     transition: all 0.2s ease;
 
     &:hover {
-        background: #e5e7eb;
+        border-color: #667eea;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+    }
+
+    label {
+        display: block;
+        font-size: 12px;
+        color: #6b7280;
+        margin-bottom: 6px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .price {
+        font-size: 20px;
+        font-weight: 700;
+        color: #111827;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .currency {
+        font-size: 14px;
+        color: #6b7280;
+        margin-left: 4px;
+    }
+}
+
+.separator {
+    color: #9ca3af;
+    font-size: 20px;
+    font-weight: 300;
+}
+
+/* ==========================================
+   QUICK RANGES - PILL BUTTONS
+   ========================================== */
+.quickRangeGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.quickRangeBtn {
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: center;
+
+    &:hover {
+        border-color: #667eea;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        color: #667eea;
+        transform: translateY(-1px);
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+}
+
+/* ==========================================
+   FOOTER BUTTONS
+   ========================================== */
+.modalFooter {
+    display: flex;
+    gap: 12px;
+    padding: 20px 24px;
+    border-top: 2px solid #f3f4f6;
+    background: #f9fafb;
+}
+
+.clearBtn {
+    flex: 1;
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 14px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+        border-color: #9ca3af;
         color: #374151;
-        transform: translateY(-2px);
+        background: #f9fafb;
+    }
+
+    &:active {
+        transform: scale(0.98);
     }
 }
 
 .applyBtn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 24px;
+    flex: 2;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border: none;
     border-radius: 12px;
-    font-size: 14px;
+    padding: 14px 24px;
+    font-size: 15px;
     font-weight: 600;
     color: white;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 
     &:hover {
-        transform: translateY(-2px);
+        transform: translateY(-1px);
         box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+    }
+
+    &:active {
+        transform: translateY(0);
     }
 }
 
@@ -281,32 +365,40 @@
 @media (max-width: 768px) {
     .modalContent {
         max-width: 100%;
-        max-height: 95vh;
+        max-height: 100%;
         border-radius: 20px 20px 0 0;
         margin-top: auto;
     }
 
+    .modalHeader {
+        padding: 16px 20px;
+
+        h2 {
+            font-size: 18px;
+        }
+    }
+
+    .modalBody {
+        padding: 24px 20px;
+    }
+
     .quickRangeGrid {
         grid-template-columns: 1fr;
+        gap: 8px;
     }
 
-    .priceInputs {
-        flex-direction: column;
+    .priceDisplay {
+        grid-template-columns: 1fr;
         gap: 12px;
+
+        .separator {
+            display: none;
+        }
     }
 
-    .separator {
-        margin: 0;
-        transform: rotate(90deg);
-    }
-
-    .modalFooter {
-        flex-direction: column;
-    }
-
-    .clearBtn,
-    .applyBtn {
-        width: 100%;
-        justify-content: center;
+    .priceBox {
+        .price {
+            font-size: 18px;
+        }
     }
 }

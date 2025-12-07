@@ -141,6 +141,8 @@ export default function CategoryForm({
         type="button"
         className={styles.aiButton}
         onClick={() => {
+          console.log("🔘 AI Button clicked!");
+          console.log("onAnalyzeImages exists?", typeof onAnalyzeImages);
           // Gọi phân tích AI
           onAnalyzeImages?.();
         }}
@@ -363,7 +365,26 @@ export default function CategoryForm({
         </div>
 
         {/* Hiển thị lỗi AI nếu có */}
-        {aiError && <div className={styles.aiError}>{aiError}</div>}
+        {aiError && (
+          <div className={styles.aiError}>
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className={styles.aiErrorIcon}
+            >
+              <path
+                fillRule="evenodd"
+                clipRule="evenodd"
+                d="M10 18C14.4183 18 18 14.4183 18 10C18 5.58172 14.4183 2 10 2C5.58172 2 2 5.58172 2 10C2 14.4183 5.58172 18 10 18ZM11 13C11 13.5523 10.5523 14 10 14C9.44772 14 9 13.5523 9 13C9 12.4477 9.44772 12 10 12C10.5523 12 11 12.4477 11 13ZM10 5C9.44772 5 9 5.44772 9 6V10C9 10.5523 9.44772 11 10 11C10.5523 11 11 10.5523 11 10V6C11 5.44772 10.5523 5 10 5Z"
+                fill="#DC2626"
+              />
+            </svg>
+            <span>{aiError}</span>
+          </div>
+        )}
 
         <div className={styles.tagList}>
           {(formData.tags || []).map((t: string, i: number) => (
