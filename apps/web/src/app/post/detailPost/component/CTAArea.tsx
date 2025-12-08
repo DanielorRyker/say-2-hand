@@ -44,7 +44,7 @@ const CTAArea: React.FC<CTAAreaProps> = ({
             className={`${styles["post-type-badge"]} ${styles["ripple-target"]} ${badgeClassFor(post.transaction_type)}`}
             onClick={(e) => {
               createRipple(e as any);
-              if (post.transaction_type === "sell") {
+              if (post.transaction_type === "sell" ||  post.transaction_type === "give away") {
                 if (!post._id || !post.title) {
                   alert(
                     "Dữ liệu sản phẩm không hợp lệ. Vui lòng tải lại trang."
@@ -53,8 +53,7 @@ const CTAArea: React.FC<CTAAreaProps> = ({
                 }
                 router.push(`/payment?postId=${post._id}`);
               } else if (
-                post.transaction_type === "exchange" ||
-                post.transaction_type === "give away"
+                post.transaction_type === "exchange" 
               ) {
                 handleCreateConversation();
               }

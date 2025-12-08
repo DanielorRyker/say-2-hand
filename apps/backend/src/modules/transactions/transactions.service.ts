@@ -35,12 +35,21 @@ export class TransactionsService {
       );
     }
     try {
+       let ref='';
+      if(createTransactionDto.payment_method==="free"){
+       ref=`FREE${Date.now()}${Math.floor(Math.random() * 1000)}`;
+      }
+      else{
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        ref=`VNPAY${Date.now()}${Math.floor(Math.random() * 1000)}`;
+      }
+
       const newTransaction = new this.transactionModel({
         ...createTransactionDto,
         post_id: new Types.ObjectId(createTransactionDto.post_id),
         seller_id: new Types.ObjectId(createTransactionDto.seller_id),
         buyer_id: new Types.ObjectId(createTransactionDto.buyer_id),
-        transaction_ref: `VNPAY${Date.now()}${Math.floor(Math.random() * 1000)}`,
+        transaction_ref: ref,
         paid_at: new Date(), // Assume payment is made on creation
       });
       const savedTransaction = await newTransaction.save();

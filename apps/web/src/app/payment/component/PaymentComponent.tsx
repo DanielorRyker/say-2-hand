@@ -135,6 +135,12 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
     else document.body.style.overflow = "auto";
   }, [qrModalOpen]);
 
+  useEffect(() => {
+    if(normalizedPost?.transaction_type== "give away" ){
+      setSelectedMethod('free')
+    }
+  }, []);
+
   //countdown
   const [countdown, setCountdown] = useState(60);
 
@@ -272,15 +278,22 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
         "lastTransaction",
         JSON.stringify(transactionData)
       );
+
+      let titleNotification = "";
+      let bodyNotification = "";
+      if(selectedMethod=="free"){
+        titleNotification = "Có người nhận món đồ của bạn";
+        bodyNotification = currentUser.full_name +" đã nhận món đồ "+normalizedPost.title+" của bạn. Vui lòng xác nhận.";
+      }else{
+         titleNotification = "Bạn có đơn hàng mới";
+         bodyNotification = currentUser.full_name + " đã nhận sản phẩm " + normalizedPost.title + " từ bạn.";
+      }
+
       await axios.post("http://localhost:8080/api/notifications", {
         receiver_id: normalizedPost.author_id?._id || normalizedPost.author_id,
         sender_id: currentUser._id,
-        title: "Bạn có đơn hàng mới",
-        body:
-          currentUser.full_name +
-          " đã đặt mua sản phẩm " +
-          normalizedPost.title +
-          " của bạn.",
+        title: titleNotification,
+        body: bodyNotification,
         type: "transaction",
         related_id: res.data.data._id,
         related_model: "Transaction",
@@ -288,6 +301,7 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
         channel: "in_app",
         is_read: false,
       });
+
       await axios.post("http://localhost:8080/api/notifications", {
         receiver_id: currentUser._id,
         sender_id: normalizedPost.author_id?._id || normalizedPost.author_id,
@@ -490,6 +504,7 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
           </section>
 
           {/* Payment Method Selection */}
+          {normalizedPost.transaction_type== "sell" ?
           <section className={styles["payment-method-section"]}>
             <h2 className={styles["section-title"]}>
               <Icon icon="mdi:credit-card" width={20} />
@@ -529,6 +544,9 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
               ))}
             </div>
           </section>
+          :
+           <div></div>
+        }
 
           {/* Shipping Address Selection */}
           <section className={styles["address-section"]}>
@@ -859,9 +877,15 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
                     if (!ok) alert("Không thể lưu địa chỉ. Vui lòng thử lại.");
                   }
                   handleQR();
-                  setQrModalOpen(true);
-                  // handlePayment();
-                }}
+                  // setQrModalOpen(true);
+                  if(normalizedPost.transaction_type== "sell" ){
+                   setQrModalOpen(true)
+                    }
+                    else if (normalizedPost.transaction_type == "give away"){
+                      handlePayment();
+                    }
+                      // handlePayment();
+                    }}
                 disabled={!selectedMethod || !agreeTerms || processing}
               >
                 {processing ? (
