@@ -26,6 +26,25 @@ function useGeminiSuggestion() {
     Map<string, { suggestions: string[]; suggestedCategory: any }>
   >(new Map());
 
+  // Helper function to create a simple hash from string
+  const simpleHash = (str: string): string => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return hash.toString(36);
+  };
+
+  // Function to clear cache (called when images change)
+  const clearCache = () => {
+    cacheRef.current.clear();
+    setSuggestions([]);
+    setSuggestedCategory(null);
+    setError(null);
+  };
+
   const analyzeImage = async (
     base64: string,
     mimeType: string = "image/jpeg"
@@ -51,27 +70,39 @@ function useGeminiSuggestion() {
   };
 
   const analyzeMultipleImages = async (
-    images: Array<{ base64: string; mimeType: string }>
+    images: Array<{ base64: string; mimeType: string }>,
+    forceRefresh: boolean = false
   ) => {
     setLoading(true);
     setError(null);
     try {
-      // simple cache key from start of each base64 payload + mimeType
+      // Create cache key from hash of all base64 data
       const key = images
-        .map((i) => `${i.mimeType}:${i.base64.slice(0, 64)}`)
+        .map((i) => `${i.mimeType}:${simpleHash(i.base64)}`)
         .join("|");
-      const cached = cacheRef.current.get(key);
-      if (cached) {
-        setSuggestions(cached.suggestions || []);
-        setSuggestedCategory(cached.suggestedCategory || null);
-        setLoading(false);
-        return;
+
+      // Skip cache if forceRefresh is true
+      if (!forceRefresh) {
+        const cached = cacheRef.current.get(key);
+        if (cached) {
+          console.log("Using cached AI analysis result");
+          setSuggestions(cached.suggestions || []);
+          setSuggestedCategory(cached.suggestedCategory || null);
+          setLoading(false);
+          return;
+        }
+      } else {
+        console.log("Force refresh requested, skipping cache");
       }
 
+      console.log(
+        "Performing new AI analysis (no cache found or force refresh)"
+      );
       const response = await axios.post(
         "http://localhost:8080/api/gemini/analyze-multiple-images",
         {
           images,
+          forceRefresh, // Pass forceRefresh to backend
         }
       );
       console.log("Gemini FE multiple images response:", response.data);
@@ -87,7 +118,22 @@ function useGeminiSuggestion() {
         });
       } catch {}
     } catch (err: any) {
-      setError(err?.response?.data?.message || "AI suggestion failed");
+      console.error("Gemini API error:", err);
+
+      // Xử lý các loại lỗi khác nhau
+      let errorMessage = "Không thể phân tích ảnh. Vui lòng thử lại sau.";
+
+      if (err?.response?.status === 429) {
+        errorMessage =
+          err?.response?.data?.message ||
+          "Đã vượt quá giới hạn API (20 requests/ngày). Vui lòng thử lại sau hoặc nâng cấp gói.";
+      } else if (err?.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err?.message) {
+        errorMessage = err.message;
+      }
+
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -100,6 +146,7 @@ function useGeminiSuggestion() {
     error,
     analyzeImage,
     analyzeMultipleImages,
+    clearCache,
   };
 }
 
@@ -187,6 +234,25 @@ export default function Page() {
     }
   }, []);
 
+  // Clear AI cache when images change (not just reorder)
+  // Track previous images hash to detect actual content changes
+  const prevImagesHashRef = React.useRef<string>("");
+  useEffect(() => {
+    // Create a simple hash of all images to detect content changes
+    const currentHash = images.map((img) => img.slice(0, 100)).join("|");
+    if (
+      currentHash !== prevImagesHashRef.current &&
+      prevImagesHashRef.current !== ""
+    ) {
+      console.log("Images content changed, clearing AI cache");
+      gemini.clearCache();
+      prevImagesHashRef.current = currentHash;
+    } else if (prevImagesHashRef.current === "") {
+      // First time initialization
+      prevImagesHashRef.current = currentHash;
+    }
+  }, [images, gemini]);
+
   // Đồng bộ images → selectedFiles
   useEffect(() => {
     if (!images || images.length === 0) {
@@ -233,6 +299,8 @@ export default function Page() {
 
   // Function to manually trigger AI analysis (optimized: resize, limit, strip prefix)
   const handleAnalyzeImagesOptimized = async () => {
+    console.log("🔍 handleAnalyzeImages called, images count:", images.length);
+
     if (images.length === 0) {
       showMessage("Vui lòng tải ảnh lên trước khi dùng AI.");
       return;
@@ -240,6 +308,7 @@ export default function Page() {
 
     // limit to first 10 images to reduce payload
     const toProcess = images.slice(0, 10);
+    console.log("📸 Processing", toProcess.length, "images for AI analysis");
     const processed: Array<{ base64: string; mimeType: string }> = [];
 
     for (const img of toProcess) {
@@ -280,11 +349,16 @@ export default function Page() {
       }
     }
 
-    gemini.analyzeMultipleImages(processed);
+    console.log("✅ Processed images ready:", processed.length);
+    console.log(
+      "🤖 Calling gemini.analyzeMultipleImages with forceRefresh=true..."
+    );
+    gemini.analyzeMultipleImages(processed, true); // Force refresh when user clicks button
   };
 
   // wire original handler to optimized one for compatibility
   const handleAnalyzeImages = () => {
+    console.log("🎯 handleAnalyzeImages wrapper called");
     void handleAnalyzeImagesOptimized();
   };
 

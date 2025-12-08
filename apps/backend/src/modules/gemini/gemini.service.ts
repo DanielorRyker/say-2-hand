@@ -296,20 +296,46 @@ Output:
     }
   }
 
+  /**
+   * Helper function để tạo hash từ string (giống frontend)
+   */
+  private simpleHash(str: string): string {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return hash.toString(36);
+  }
+
   async analyzeMultipleImages(
     images: Array<{ base64: string; mimeType: string }>,
+    forceRefresh: boolean = false,
   ): Promise<ImageAnalysisResult> {
     try {
-      // Create a cache key from the beginning of each image payload to avoid storing full base64 as key
+      // Create cache key từ hash toàn bộ base64 để đảm bảo ảnh khác nhau có key khác nhau
       const keyParts = images.map(
-        (img) => `${img.mimeType}:${img.base64.slice(0, 64)}`,
+        (img) => `${img.mimeType}:${this.simpleHash(img.base64)}`,
       );
       const cacheKey = `img:${keyParts.join('|')}`;
-      const cached = this.imageAnalysisCache.get(cacheKey);
-      if (cached && Date.now() - cached.ts < this.CACHE_TTL) {
-        this.logger.debug(`Image analysis cache hit for key=${cacheKey}`);
-        return cached.result;
+
+      // Skip cache if forceRefresh is true
+      if (!forceRefresh) {
+        const cached = this.imageAnalysisCache.get(cacheKey);
+        if (cached && Date.now() - cached.ts < this.CACHE_TTL) {
+          this.logger.debug(
+            `Image analysis cache hit for key=${cacheKey.slice(0, 50)}...`,
+          );
+          return cached.result;
+        }
+      } else {
+        this.logger.debug('Force refresh requested, skipping cache');
       }
+
+      this.logger.debug(
+        `No cache found or force refresh, performing new AI analysis for key=${cacheKey.slice(0, 50)}...`,
+      );
       const categories = await this.categoryModel
         .find()
         .populate('parent_id', 'name icon')
@@ -392,14 +418,39 @@ Output:
         // ignore cache set failures
       }
       return result;
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(
-        `Error analyzing multiple images: ${error.message}`,
-        error.stack,
+        `Error analyzing multiple images: ${JSON.stringify(error)}`,
       );
-      return {
-        suggestedCategory: null,
-        suggestedTags: [],
+
+      // Xử lý lỗi quota exceeded
+      if (
+        error.message?.includes('quota') ||
+        error.message?.includes('RESOURCE_EXHAUSTED')
+      ) {
+        throw {
+          statusCode: 429,
+          message:
+            'Đã vượt quá giới hạn API Gemini (20 requests/ngày). Vui lòng thử lại sau hoặc nâng cấp gói.',
+          error: 'QUOTA_EXCEEDED',
+        };
+      }
+
+      // Xử lý lỗi rate limit
+      if (error.message?.includes('rate limit')) {
+        throw {
+          statusCode: 429,
+          message:
+            'Đang gửi yêu cầu quá nhanh. Vui lòng đợi 1 phút và thử lại.',
+          error: 'RATE_LIMIT',
+        };
+      }
+
+      // Lỗi khác
+      throw {
+        statusCode: 500,
+        message: 'Không thể phân tích ảnh. Vui lòng thử lại sau.',
+        error: error.message || 'UNKNOWN_ERROR',
       };
     }
   }

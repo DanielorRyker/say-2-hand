@@ -1,0 +1,429 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+// ==========================================
+// MOBILE SEARCH VIEW - Styles riêng cho mobile
+// ==========================================
+
+.mobileSearchView {
+    min-height: 100vh;
+    background: #f8f9fa;
+    padding-bottom: 80px; // Space for floating buttons
+    font-family: 'Inter', sans-serif;
+}
+
+// ==========================================
+// STICKY TOP BAR - Sort & Filter
+// ==========================================
+.mobileTopBar {
+    position: sticky;
+    top: 60px; // Dưới mobile header
+    z-index: 100;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    gap: 12px;
+}
+
+.sortSection {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    background: #f3f4f6;
+    padding: 8px 12px;
+    border-radius: 12px;
+
+    svg {
+        color: #6b7280;
+        flex-shrink: 0;
+    }
+}
+
+.sortSelect {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+    outline: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+
+    &:focus {
+        outline: none;
+    }
+}
+
+.filterButton {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    transition: all 0.2s ease;
+
+    &:active {
+        transform: scale(0.95);
+    }
+
+    svg {
+        flex-shrink: 0;
+    }
+}
+
+.filterBadge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #ef4444;
+    color: white;
+    border-radius: 10px;
+    padding: 2px 6px;
+    font-size: 11px;
+    font-weight: 700;
+    min-width: 18px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+// ==========================================
+// RESULTS COUNT
+// ==========================================
+.resultsCount {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #6b7280;
+    font-weight: 500;
+
+    svg {
+        color: #9ca3af;
+    }
+}
+
+// ==========================================
+// LOADING STATE
+// ==========================================
+.loadingContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    gap: 16px;
+
+    p {
+        font-size: 14px;
+        color: #6b7280;
+        margin: 0;
+    }
+}
+
+.spinner {
+    color: #667eea;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+// ==========================================
+// EMPTY STATE
+// ==========================================
+.emptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+
+    svg {
+        color: #d1d5db;
+        margin-bottom: 16px;
+    }
+
+    h3 {
+        font-size: 18px;
+        font-weight: 700;
+        color: #111827;
+        margin: 0 0 8px 0;
+    }
+
+    p {
+        font-size: 14px;
+        color: #6b7280;
+        margin: 0;
+    }
+}
+
+// ==========================================
+// MOBILE CARD GRID - 2 cột trên mobile
+// ==========================================
+.mobileCardGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 0 12px 20px 12px;
+}
+
+// ==========================================
+// MOBILE CARD - Compact & Modern
+// ==========================================
+.mobileCard {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+
+    &:active {
+        transform: scale(0.98);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    }
+}
+
+// Card Image Section
+.cardImage {
+    position: relative;
+    width: 100%;
+    padding-top: 100%; // Square aspect ratio
+    background: #f3f4f6;
+    overflow: hidden;
+
+    // Next.js Image component support
+    img {
+        transition: transform 0.3s ease;
+    }
+
+    .mobileCard:active & img {
+        transform: scale(1.05);
+    }
+}
+
+.noImage {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+
+    svg {
+        color: #9ca3af;
+    }
+}
+
+// Transaction Type Badge
+.transactionBadge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+    &.sell {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+    }
+
+    &.exchange {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+    }
+
+    &.give_away,
+    &.give-away {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
+}
+
+// Condition Badge
+.conditionBadge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    color: white;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+
+    // Condition colors based on data attribute
+    &[data-condition="new"] {
+        background: #10b981;
+    }
+
+    &[data-condition="like_new"] {
+        background: #06b6d4;
+    }
+
+    &[data-condition="used"] {
+        background: #3b82f6;
+    }
+
+    &[data-condition="minor_flaw"] {
+        background: #f97316;
+    }
+
+    &[data-condition="for_repair"] {
+        background: #8b5cf6;
+    }
+
+    &[data-condition="for_parts"] {
+        background: #ef4444;
+    }
+}
+
+// Card Content Section
+.cardContent {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+}
+
+.cardTitle {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 38px; // 2 lines min
+}
+
+// Price Styles
+.cardPrice {
+    font-size: 16px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.cardExchange {
+    font-size: 14px;
+    font-weight: 700;
+    color: #3b82f6;
+}
+
+.cardGiveaway {
+    font-size: 14px;
+    font-weight: 700;
+    color: #10b981;
+}
+
+// Card Meta Info
+.cardMeta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.metaItem {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: #6b7280;
+
+    svg {
+        color: #9ca3af;
+        flex-shrink: 0;
+    }
+
+    span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+// Card Stats
+.cardStats {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-top: 8px;
+    border-top: 1px solid #f3f4f6;
+    margin-top: auto;
+}
+
+.statItem {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: #6b7280;
+
+    svg {
+        color: #9ca3af;
+    }
+}
+
+// ==========================================
+// RESPONSIVE - Tablets & Larger Phones
+// ==========================================
+@media (min-width: 480px) {
+    .mobileCardGrid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        padding: 0 16px 24px 16px;
+    }
+
+    .cardTitle {
+        font-size: 15px;
+    }
+
+    .cardPrice {
+        font-size: 17px;
+    }
+}
+
+@media (min-width: 640px) {
+    .mobileCardGrid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}

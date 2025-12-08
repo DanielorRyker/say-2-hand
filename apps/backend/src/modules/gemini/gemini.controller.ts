@@ -17,17 +17,29 @@ export class GeminiController {
 
   @Post('analyze-multiple-images')
   async analyzeMultipleImages(
-    @Body() body: { images: Array<{ base64: string; mimeType?: string }> },
+    @Body()
+    body: {
+      images: Array<{ base64: string; mimeType?: string }>;
+      forceRefresh?: boolean;
+    },
   ) {
-    // Validate và chuẩn hóa mimeType cho mỗi ảnh
-    const images = body.images.map((img) => {
-      let mimeType = img.mimeType || 'image/jpeg';
-      if (!/^image\/(jpeg|png|webp|gif)$/.test(mimeType)) {
-        mimeType = 'image/jpeg';
-      }
-      return { base64: img.base64, mimeType };
-    });
-    return await this.geminiService.analyzeMultipleImages(images);
+    try {
+      // Validate và chuẩn hóa mimeType cho mỗi ảnh
+      const images = body.images.map((img) => {
+        let mimeType = img.mimeType || 'image/jpeg';
+        if (!/^image\/(jpeg|png|webp|gif)$/.test(mimeType)) {
+          mimeType = 'image/jpeg';
+        }
+        return { base64: img.base64, mimeType };
+      });
+      return await this.geminiService.analyzeMultipleImages(
+        images,
+        body.forceRefresh || false,
+      );
+    } catch (error: any) {
+      // Re-throw với format chuẩn NestJS
+      throw error;
+    }
   }
 
   @Post('normalize-address')
