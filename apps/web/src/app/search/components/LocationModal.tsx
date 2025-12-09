@@ -67,12 +67,9 @@ export default function LocationModal({
         if (!mounted) return;
         setProvinces(res.data || []);
 
-        // ✅ Chỉ auto-detect khi KHÔNG có initialProvinceCode (chưa chọn từ URL)
-        if (res.data && res.data.length > 0 && !initialProvinceCode) {
-          // Try to get current location
-          detectCurrentLocation(res.data);
-        } else if (initialProvinceCode) {
-          // ✅ Đã có province từ URL → Đồng bộ chip ngay
+        // ✅ KHÔNG tự động detect GPS khi vào modal nữa
+        // Chỉ đồng bộ tên tỉnh nếu có initialProvinceCode
+        if (initialProvinceCode) {
           const initialProvince = res.data.find(
             (p) => p.code === initialProvinceCode
           );
@@ -179,239 +176,6 @@ export default function LocationModal({
   };
 
   // Auto-detect current location
-  const detectCurrentLocation = async (provincesList: Province[]) => {
-    if (!navigator.geolocation) {
-      // Fallback to first province if geolocation not available
-      if (provincesList.length > 0) {
-        setSelectedProvinceCode(provincesList[0].code);
-      }
-      return;
-    }
-
-    setAutoDetecting(true);
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          const { latitude, longitude } = position.coords;
-
-          // Reverse geocoding using Nominatim with higher zoom
-          const response = await axios.get(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
-          );
-
-          const data = response.data;
-          const address = data.address || {};
-
-          // SAU SÁP NHẬP 07/2025: Việt Nam chỉ còn 2 cấp (Tỉnh/TP → Phường/Xã)
-          // Nominatim vẫn dùng cấu trúc cũ (city, district, county...)
-          // → PHẢI DỰA HOÀN TOÀN VÀO AI để chuẩn hóa theo cấu trúc mới
-
-          const rawAddress = data.display_name || "";
-
-          // Xây dựng địa chỉ tiếng Việt từ các trường Nominatim để AI dễ hiểu hơn
-          const vietnameseAddressParts = [
-            address.road,
-            address.suburb || address.neighbourhood || address.quarter,
-            address.city || address.town || address.village,
-            address.county,
-            address.state || address.province,
-            address.country === "Việt Nam" ? "Việt Nam" : address.country,
-          ].filter(Boolean);
-
-          const enhancedAddress =
-            vietnameseAddressParts.length > 0
-              ? vietnameseAddressParts.join(", ")
-              : rawAddress;
-
-          const aiResult = await normalizeAddressWithAI(
-            enhancedAddress,
-            latitude,
-            longitude
-          );
-
-          console.log("🤖 AI normalization result:", aiResult);
-
-          // LUÔN ƯU TIÊN AI vì chỉ AI mới hiểu cấu trúc VN sau 07/2025
-          let detectedProvinceName = "";
-          let detectedWard = "";
-
-          if (aiResult && aiResult.province) {
-            // ✅ Dùng kết quả từ AI (cấu trúc 2025: chỉ Tỉnh và Phường/Xã)
-            detectedProvinceName = aiResult.province;
-            detectedWard = aiResult.ward || "";
-          } else {
-            // ⚠️ AI thất bại - Dùng Nominatim nhưng CẨN THẬN vì cấu trúc cũ
-            console.warn(
-              "⚠️ AI failed! Using Nominatim (old structure, may be inaccurate)"
-            );
-
-            // Nominatim trả về cấu trúc cũ với city/district/county
-            // Cố gắng map sang cấu trúc mới nhưng không đảm bảo chính xác
-            detectedProvinceName =
-              address.state || // Có thể là tỉnh
-              address.province || // Hoặc province
-              address.county || // Hoặc county (cũ)
-              address.city || // city có thể là tỉnh HOẶC thành phố thuộc tỉnh (SAI!)
-              "";
-
-            detectedWard =
-              address.suburb || // Thường là phường/xã
-              address.neighbourhood ||
-              address.quarter ||
-              address.village ||
-              address.hamlet ||
-              "";
-
-            console.warn("⚠️ Nominatim fallback (unreliable):", {
-              detectedProvinceName,
-              detectedWard,
-            });
-          }
-
-          if (detectedProvinceName) {
-            // Improved matching: exact match first, then fuzzy
-            let matchedProvince = provincesList.find((p) => {
-              const normalizedProvince = normalizeVietnameseText(p.name);
-              const normalizedDetected =
-                normalizeVietnameseText(detectedProvinceName);
-              return normalizedProvince === normalizedDetected;
-            });
-
-            if (!matchedProvince) {
-              matchedProvince = provincesList.find((p) => {
-                const normalizedProvince = normalizeVietnameseText(p.name);
-                const normalizedDetected =
-                  normalizeVietnameseText(detectedProvinceName);
-                return (
-                  normalizedProvince.includes(normalizedDetected) ||
-                  normalizedDetected.includes(normalizedProvince)
-                );
-              });
-            }
-
-            console.log("Matched province:", matchedProvince?.name);
-
-            if (matchedProvince) {
-              setSelectedProvinceCode(matchedProvince.code);
-
-              // ✅ Cập nhật chip bên ngoài ngay lập tức
-              if (setSelectedProvinceName) {
-                setSelectedProvinceName(matchedProvince.name);
-              }
-
-              // Try to match ward/commune
-              if (detectedWard) {
-                // Fetch wards for this province
-                try {
-                  const wardsRes = await axios.get<{ wards: Ward[] }>(
-                    `https://provinces.open-api.vn/api/v2/p/${matchedProvince.code}?depth=2`
-                  );
-
-                  const wardsList = wardsRes.data.wards || [];
-
-                  // Try exact match first
-                  let matchedWard = wardsList.find((w) => {
-                    const normalizedWard = normalizeVietnameseText(w.name);
-                    const normalizedDetected =
-                      normalizeVietnameseText(detectedWard);
-                    return normalizedWard === normalizedDetected;
-                  });
-
-                  // If no exact match, try contains
-                  if (!matchedWard) {
-                    matchedWard = wardsList.find((w) => {
-                      const normalizedWard = normalizeVietnameseText(w.name);
-                      const normalizedDetected =
-                        normalizeVietnameseText(detectedWard);
-                      return (
-                        normalizedWard.includes(normalizedDetected) ||
-                        normalizedDetected.includes(normalizedWard)
-                      );
-                    });
-                  }
-
-                  if (matchedWard) {
-                    setSelectedWardCode(matchedWard.code);
-                    setSelectedLocation(
-                      `${matchedWard.name}, ${matchedProvince.name}`
-                    );
-                    // ✅ Cập nhật chip ward bên ngoài
-                    if (setSelectedWardName) {
-                      setSelectedWardName(matchedWard.name);
-                    }
-                  } else {
-                    setSelectedLocation(matchedProvince.name);
-                    // Không có ward → chỉ hiển thị province chip
-                  }
-                } catch (err) {
-                  console.error("Error fetching wards for auto-detect:", err);
-                  setSelectedLocation(matchedProvince.name);
-                }
-              } else {
-                setSelectedLocation(matchedProvince.name);
-                // Không có ward → chỉ hiển thị province chip
-              }
-            } else {
-              // No match found, use first province
-              console.log("No province matched, using first");
-              setSelectedProvinceCode(provincesList[0].code);
-            }
-          } else {
-            // No province detected, use first province
-            console.log("No province detected, using first");
-            setSelectedProvinceCode(provincesList[0].code);
-          }
-        } catch (error) {
-          console.error("Error in auto-detection:", error);
-          // Fallback to first province
-          if (provincesList.length > 0) {
-            setSelectedProvinceCode(provincesList[0].code);
-          }
-        } finally {
-          setAutoDetecting(false);
-        }
-      },
-      (error) => {
-        // Xử lý các loại lỗi geolocation (silent, không làm phiền user khi auto-detect)
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            console.warn(
-              "⚠️ Geolocation permission denied, using first province"
-            );
-            break;
-          case error.POSITION_UNAVAILABLE:
-            console.warn(
-              "⚠️ Geolocation position unavailable, using first province"
-            );
-            break;
-          case error.TIMEOUT:
-            console.warn("⚠️ Geolocation timeout, using first province");
-            break;
-          default:
-            console.warn(
-              "⚠️ Geolocation unknown error:",
-              error.message || error
-            );
-            break;
-        }
-
-        // Fallback to first province (không hiển thị alert để không làm phiền user)
-        if (provincesList.length > 0) {
-          setSelectedProvinceCode(provincesList[0].code);
-          // Set province name cho chip (nếu user đã cho phép callback)
-          if (setSelectedProvinceName) {
-            setSelectedProvinceName(provincesList[0].name);
-          }
-        }
-        setAutoDetecting(false);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
-      }
-    );
-  };
 
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
@@ -671,81 +435,22 @@ export default function LocationModal({
 
           {/* Province & Ward selects (Vietnam post-merge structure) */}
           <div className={styles.section}>
-            <h3>
-              <Icon icon="mdi:city" width={18} height={18} />
-              Chọn Tỉnh/Thành phố và Phường/Xã/Đặc khu
-            </h3>
-
-            {/* Chips hiển thị đã chọn */}
-            {(selectedProvinceCode > 0 || selectedWardCode > 0) && (
-              <div
-                style={{
-                  display: "flex",
-                  gap: "8px",
-                  marginBottom: "12px",
-                  flexWrap: "wrap",
-                }}
-              >
-                {selectedProvinceCode > 0 && (
-                  <div
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      padding: "6px 12px",
-                      backgroundColor: "#EEF2FF",
-                      border: "1px solid #C7D2FE",
-                      borderRadius: "16px",
-                      fontSize: "14px",
-                      color: "#4F46E5",
-                    }}
-                  >
-                    <Icon icon="mdi:map-marker" width={16} height={16} />
-                    <span>
-                      {provinces.find((p) => p.code === selectedProvinceCode)
-                        ?.name || "Tất cả tỉnh"}
-                    </span>
-                  </div>
-                )}
-                {selectedWardCode > 0 && (
-                  <div
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      padding: "6px 12px",
-                      backgroundColor: "#ECFDF5",
-                      border: "1px solid #A7F3D0",
-                      borderRadius: "16px",
-                      fontSize: "14px",
-                      color: "#059669",
-                    }}
-                  >
-                    <Icon icon="mdi:home-city" width={16} height={16} />
-                    <span>
-                      {wards.find((w) => w.code === selectedWardCode)?.name ||
-                        "Tất cả phường"}
-                    </span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            <div className={styles.locationSelects}>
+            {/* Hàng 1: Chọn tỉnh/thành */}
+            <div className={styles.provinceRow}>
+              <span>Chọn tỉnh/thành</span>
               <select
                 value={selectedProvinceCode}
                 onChange={(e) => {
                   const code = Number(e.target.value);
                   setSelectedProvinceCode(code);
-                  // Update province name for external chips
+                  // Cập nhật tên tỉnh cho chip bên ngoài
                   const province = provinces.find((p) => p.code === code);
                   if (setSelectedProvinceName) {
-                    // If "Tất cả" (code 0) is selected, clear the name
                     setSelectedProvinceName(
                       code === 0 ? "" : province?.name || ""
                     );
                   }
-                  // Clear ward when province changes
+                  // Reset phường khi đổi tỉnh
                   setSelectedWardCode(0);
                   if (setSelectedWardName) {
                     setSelectedWardName("");
@@ -767,16 +472,18 @@ export default function LocationModal({
                   ))
                 )}
               </select>
-
+            </div>
+            {/* Hàng 2: Chọn phường/xã */}
+            <div className={styles.wardRow}>
+              <span>Chọn phường/xã</span>
               <select
                 value={selectedWardCode}
                 onChange={(e) => {
                   const code = Number(e.target.value);
                   setSelectedWardCode(code);
-                  // Update ward name for external chips
+                  // Cập nhật tên phường cho chip bên ngoài
                   const ward = wards.find((w) => w.code === code);
                   if (setSelectedWardName) {
-                    // If "Tất cả" (code 0) is selected, clear the name
                     setSelectedWardName(code === 0 ? "" : ward?.name || "");
                   }
                 }}
@@ -825,14 +532,7 @@ export default function LocationModal({
             </div>
           </div>
 
-          {selectedLocation && (
-            <div className={styles.selectedInfo}>
-              <Icon icon="mdi:information" width={20} height={20} />
-              <span>
-                Vị trí đã chọn: <strong>{selectedLocation}</strong>
-              </span>
-            </div>
-          )}
+          {/* Đã xoá phần hiển thị thông tin 'Vị trí đã chọn' */}
         </div>
 
         <div className={styles.modalFooter}>

@@ -140,12 +140,10 @@ function SearchPageContent() {
   const [showMobileBottomSheet, setShowMobileBottomSheet] = useState(false);
   const [showMobileSortMenu, setShowMobileSortMenu] = useState(false);
 
-  // Sync search query và category từ URL
   useEffect(() => {
     const query = searchParams.get("q") || "";
     setSearchQuery(query);
 
-    // ✅ Đồng bộ category từ URL parameter
     const categoryParam = searchParams.get("category");
     if (categoryParam) {
       setSelectedCategories([categoryParam]);
@@ -154,9 +152,7 @@ function SearchPageContent() {
     const prov = searchParams.get("province");
     setFilterProvinceParam(prov);
 
-    // if province param present, reflect it in selectedLocation so UI shows active location chip
     if (prov) {
-      // clean common prefixes like "tỉnh", "thành phố", "tp" so it matches parsed addresses
       const cleaned = prov
         .replace(/t[h|h\u00E0]nh\s*ph[o|ố]\s*/i, "")
         .replace(/tinh\s*/i, "")
@@ -164,12 +160,9 @@ function SearchPageContent() {
         .trim();
       setSelectedLocation(cleaned || prov);
 
-      // ✅ Đồng bộ với chip bên ngoài (từ Header hoặc URL)
       setSelectedProvinceName(prov);
 
-      // ensure list view is visible and scroll to it
       setShowListView(true);
-      // scroll after a tick so DOM exists
       setTimeout(() => {
         if (listRef.current)
           listRef.current.scrollIntoView({
@@ -230,7 +223,6 @@ function SearchPageContent() {
   const applyFilters = React.useCallback(() => {
     let filtered = [...postsData];
 
-    // Helper function for Vietnamese text normalization
     const normalizeForCompare = (s: string) =>
       s
         ? s
@@ -241,9 +233,6 @@ function SearchPageContent() {
             .trim()
         : "";
 
-    // ==========================================
-    // FILTER BY PROVINCE (Tỉnh/Thành phố) - SAU SÁP NHẬP 07/2025
-    // ==========================================
     if (selectedProvinceName) {
       const provinceNorm = normalizeForCompare(selectedProvinceName);
       filtered = filtered.filter((post) => {
@@ -251,9 +240,7 @@ function SearchPageContent() {
         const provNorm = normalizeForCompare(parsed.province || "");
         return provNorm && provNorm === provinceNorm;
       });
-    }
-    // Legacy province filter from URL (for backward compatibility)
-    else if (filterProvinceParam) {
+    } else if (filterProvinceParam) {
       const provinceParam = filterProvinceParam.trim();
       const provinceParamClean = provinceParam
         .replace(/t[h|h\u00E0]nh\s*ph[o|ố]\s*/i, "")
@@ -272,9 +259,6 @@ function SearchPageContent() {
       }
     }
 
-    // ==========================================
-    // FILTER BY WARD (Phường/Xã/Đặc khu) - SAU SÁP NHẬP 07/2025
-    // ==========================================
     if (selectedWardName) {
       const wardNorm = normalizeForCompare(selectedWardName);
       filtered = filtered.filter((post) => {
@@ -284,18 +268,9 @@ function SearchPageContent() {
       });
     }
 
-    // ==========================================
-    // FILTER BY DISTANCE (if selectedLocation is set with coordinates)
-    // ==========================================
-    // Note: distance filter currently depends on selectedLocation with lat/lon
-    // This will need geolocation coordinates to work properly
-    // For now, we'll keep it as is for backward compatibility
     if (selectedLocation && distance > 0) {
-      // Distance filtering requires coordinates in post data
-      // This is placeholder logic - adjust based on your coordinate storage
       filtered = filtered.filter((post) => {
-        if (!post.location?.geo?.coordinates) return true; // Keep posts without coordinates
-        // Add distance calculation logic here if needed
+        if (!post.location?.geo?.coordinates) return true;
         return true;
       });
     }
@@ -325,9 +300,6 @@ function SearchPageContent() {
       );
     }
 
-    // ==========================================
-    // FILTER BY CATEGORIES (Parent & Child support)
-    // ==========================================
     if (selectedCategories.length > 0) {
       filtered = filtered.filter((post) => {
         if (!post.category_id?._id) return false;
@@ -477,39 +449,6 @@ function SearchPageContent() {
 
   return (
     <div className={styles.searchPage}>
-      {/* Mobile Search Header - Chỉ hiện trên mobile */}
-      <div className={styles.mobileSearchHeader}>
-        <div className={styles.mobileSearchBox}>
-          <Icon icon="mdi:magnify" width={20} height={20} color="#9ca3af" />
-          <input
-            type="text"
-            placeholder="Tìm kiếm sản phẩm..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          {searchQuery && (
-            <button
-              className={styles.clearSearchIconBtn}
-              onClick={() => setSearchQuery("")}
-            >
-              <Icon icon="mdi:close" width={18} height={18} />
-            </button>
-          )}
-        </div>
-        <button
-          className={styles.mobileFilterToggle}
-          onClick={() => setShowMobileBottomSheet(true)}
-        >
-          <Icon icon="mdi:filter-variant" width={20} height={20} />
-          {activeFilterCount > 0 && (
-            <span className={styles.filterBadgeMobile}>
-              {activeFilterCount}
-            </span>
-          )}
-        </button>
-      </div>
-
-      {/* Quick Filters Bar - Desktop/Tablet only */}
       <div className={styles.quickFiltersBar}>
         <div className={styles.quickFilters}>
           <button
@@ -596,6 +535,18 @@ function SearchPageContent() {
           </button>
         )}
       </div>
+
+      {/* Mobile Filter Button - Floating button cho mobile */}
+      <button
+        className={styles.mobileFilterButton}
+        onClick={() => setShowMobileBottomSheet(true)}
+        aria-label="Mở bộ lọc"
+      >
+        <Icon icon="mdi:filter-variant" width={24} height={24} />
+        {activeFilterCount > 0 && (
+          <span className={styles.mobileFilterBadge}>{activeFilterCount}</span>
+        )}
+      </button>
 
       {/* Active Filters Chips */}
       {activeFilterCount > 0 && (
@@ -805,7 +756,6 @@ function SearchPageContent() {
           onClick={() => setShowMobileSortMenu(true)}
         >
           <Icon icon="mdi:sort" width={20} height={20} />
-          Sắp xếp
         </button>
       </div>
 

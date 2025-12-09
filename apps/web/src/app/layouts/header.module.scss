@@ -52,6 +52,15 @@
       height: 40px;
       padding: 0 vars.$spacing-md;
     }
+
+    // Mobile: Compact hơn khi scroll
+    @include vars.respond-below('sm') {
+      min-height: 110px; // Giảm chiều cao khi scroll
+
+      .mobileSearchRow {
+        padding: 8px 12px;
+      }
+    }
   }
 }
 
@@ -126,8 +135,28 @@
   }
 
   @include vars.respond-below('sm') {
-    display: none; // Ẩn hoàn toàn trên mobile (< 640px)
+    display: none; // Ẩn hoàn toàn trên mobile (< 640px) - sẽ hiển thị ở row riêng
   }
+}
+
+/* ==========================================
+   MOBILE SEARCH ROW - Hiển thị ở hàng riêng trên mobile
+   ========================================== */
+.mobileSearchRow {
+  display: none;
+
+  @include vars.respond-below('sm') {
+    display: flex;
+    width: 100%;
+    padding: 12px 16px 16px;
+    background: colors.$ui-header;
+  }
+}
+
+.mobileSearchContainer {
+  width: 100%;
+  display: flex;
+  align-items: center;
 }
 
 .searchInputGroup {
@@ -140,15 +169,20 @@
   padding: 0 8px 0 20px;
   gap: vars.$spacing-sm;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:focus-within {
-    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.2), 0 0 0 2px rgba(59, 130, 246, 0.3);
-
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.18);
   }
 
   &:hover {
     box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.06);
+  }
+
+  // Mobile: Điều chỉnh cho phù hợp
+  @include vars.respond-below('sm') {
+    height: 44px;
+    padding: 0 6px 0 14px;
+    gap: 6px;
   }
 }
 
@@ -187,6 +221,11 @@
   &:focus::placeholder {
     color: #d1d5db;
   }
+
+  // Mobile: Font size nhỏ hơn
+  @include vars.respond-below('sm') {
+    font-size: vars.$font-size-sm;
+  }
 }
 
 .clearSearchBtn {
@@ -211,6 +250,12 @@
 
   &:active {
     transform: scale(0.95);
+  }
+
+  // Mobile: Nhỏ hơn một chút
+  @include vars.respond-below('sm') {
+    width: 28px;
+    height: 28px;
   }
 }
 
@@ -500,6 +545,14 @@
   @include vars.respond-below('lg') {
     padding: 0 vars.$spacing-md;
     gap: 4px;
+  }
+
+  // Mobile: Chỉ hiển thị icon, nhỏ gọn hơn
+  @include vars.respond-below('sm') {
+    height: 40px;
+    width: 40px;
+    padding: 0;
+    justify-content: center;
   }
 }
 

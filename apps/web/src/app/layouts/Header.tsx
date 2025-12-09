@@ -947,6 +947,49 @@ const Header = () => {
           </NavDropdown>
         </div>
       </div>
+
+      {/* Mobile Search Row - Hiển thị ở hàng riêng trên mobile */}
+      <div className={headerStyles.mobileSearchRow}>
+        <div className={headerStyles.mobileSearchContainer}>
+          <div className={headerStyles.searchInputGroup}>
+            <Icon
+              icon="mdi:magnify"
+              width={20}
+              height={20}
+              className={headerStyles.searchIcon}
+            />
+            <form onSubmit={handleSearch} className={headerStyles.searchForm}>
+              <input
+                type="text"
+                className={headerStyles.inputSearch}
+                placeholder="Tìm kiếm sản phẩm..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </form>
+            {searchQuery && (
+              <button
+                type="button"
+                className={headerStyles.clearSearchBtn}
+                onClick={() => setSearchQuery("")}
+                title="Xóa tìm kiếm"
+                aria-label="Xóa tìm kiếm"
+              >
+                <Icon icon="mdi:close-circle" width={18} height={18} />
+              </button>
+            )}
+            <button
+              className={headerStyles.searchButton}
+              onClick={handleSearch}
+              type="button"
+              title="Tìm kiếm"
+              aria-label="Tìm kiếm"
+            >
+              <Icon icon="mdi:magnify" width={22} height={22} />
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

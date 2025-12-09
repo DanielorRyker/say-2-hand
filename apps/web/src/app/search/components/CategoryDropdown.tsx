@@ -46,7 +46,6 @@ export default function CategoryDropdown({
   const flattened = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) {
-      // list parents then children (children follow their parent in list)
       const out: Category[] = [];
       parents.forEach((p) => {
         out.push(p);

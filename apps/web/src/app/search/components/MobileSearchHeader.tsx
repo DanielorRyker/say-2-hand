@@ -12,13 +12,6 @@ interface MobileSearchHeaderProps {
   resultCount: number;
 }
 
-/**
- * Header tìm kiếm dành riêng cho mobile
- * - Sticky top với search bar
- * - Back button để quay lại trang trước
- * - Clear search button
- * - Result count display
- */
 export default function MobileSearchHeader({
   searchQuery,
   onSearchChange,

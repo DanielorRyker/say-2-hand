@@ -98,6 +98,75 @@
     }
 }
 
+// ==========================================
+// MOBILE FILTER BUTTON (Chỉ áp dụng mobile)
+// ==========================================
+
+
+// Nút bộ lọc mobile nổi, đồng bộ màu, tránh đè nút sort
+.mobileFilterButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    bottom: 32px;
+    right: 20px;
+    z-index: 1300;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: 0 4px 24px rgba(102, 126, 234, 0.18);
+    border: none;
+    cursor: pointer;
+    transition: box-shadow 0.2s, background 0.2s, transform 0.15s;
+    color: #fff;
+    font-size: 1.5rem;
+    outline: none;
+
+    /* Ẩn trên desktop */
+    @media (min-width: 769px) {
+        display: none;
+    }
+
+    /* Đẩy sang trái trên mobile để không đè sort */
+    @media (max-width: 640px) {
+        right: 20px;
+        bottom: 75px;
+    }
+
+    @media (max-width: 400px) {
+        right: 12px;
+        bottom: 68px;
+    }
+}
+
+.mobileFilterButton:active {
+    box-shadow: 0 2px 12px rgba(102, 126, 234, 0.12);
+    background: linear-gradient(135deg, #5a67d8 0%, #6d28d9 100%);
+    transform: scale(0.96);
+}
+
+.mobileFilterBadge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.10);
+    pointer-events: none;
+    line-height: 1;
+}
+
 .filterBadgeMobile {
     position: absolute;
     top: -4px;

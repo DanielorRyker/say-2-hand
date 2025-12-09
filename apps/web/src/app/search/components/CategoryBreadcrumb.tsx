@@ -16,10 +16,6 @@ interface CategoryBreadcrumbProps {
   onCategoryClick?: (categoryId: string) => void;
 }
 
-/**
- * Component hiển thị breadcrumb cho category hierarchy
- * Ví dụ: Điện tử > Điện thoại > iPhone
- */
 export default function CategoryBreadcrumb({
   categoryId,
   categories,

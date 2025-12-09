@@ -124,9 +124,6 @@
     }
 }
 
-/* ==========================================
-   DUAL RANGE SLIDER - MODERN DESIGN
-   ========================================== */
 .rangeSliderContainer {
     padding: 20px 0;
 }
@@ -217,9 +214,6 @@
     color: #6b7280;
 }
 
-/* ==========================================
-   PRICE DISPLAY BOXES
-   ========================================== */
 .priceDisplay {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
@@ -271,9 +265,6 @@
     font-weight: 300;
 }
 
-/* ==========================================
-   QUICK RANGES - PILL BUTTONS
-   ========================================== */
 .quickRangeGrid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -304,9 +295,6 @@
     }
 }
 
-/* ==========================================
-   FOOTER BUTTONS
-   ========================================== */
 .modalFooter {
     display: flex;
     gap: 12px;
