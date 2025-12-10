@@ -85,13 +85,13 @@ export class GeminiService {
       const childCategories = categories.filter((c) => c.parent_id);
 
       const parentList = parentCategories.map((c) => ({
-        _id: c._id.toString(),
+        _id: (c._id as string | number | { toString(): string }).toString(),
         name: c.name,
         icon: c.icon,
       }));
 
       const childList = childCategories.map((c) => ({
-        _id: c._id.toString(),
+        _id: (c._id as string | number | { toString(): string }).toString(),
         name: c.name,
         icon: c.icon,
         parent: {
@@ -346,13 +346,13 @@ Output:
       const childCategories = categories.filter((c) => c.parent_id);
 
       const parentList = parentCategories.map((c) => ({
-        _id: c._id.toString(),
+        _id: (c._id as string | number | { toString(): string }).toString(),
         name: c.name,
         icon: c.icon,
       }));
 
       const childList = childCategories.map((c) => ({
-        _id: c._id.toString(),
+        _id: (c._id as string | number | { toString(): string }).toString(),
         name: c.name,
         icon: c.icon,
         parent: {

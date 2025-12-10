@@ -488,29 +488,30 @@ export default function MapPicker({
 
   async function fetchNominatim(q: string) {
     try {
-      const key = `nominatim:${q}`;
+      const key = `photon:${q}`;
       const sess = loadSessionCache(key);
       if (sess) return sess;
       const params = new URLSearchParams({
         q,
-        format: "jsonv2",
-        addressdetails: "1",
         limit: "6",
-        countrycodes: "vn",
+        lang: "vi"
       });
-      const url = `https://nominatim.openstreetmap.org/search?${params.toString()}`;
-      const res = await fetch(url, { headers: { "Accept-Language": "vi,en" } });
+      const url = `https://photon.komoot.io/api/?${params.toString()}`;
+      const res = await fetch(url);
       if (!res.ok) return null;
-      const raw = (await res.json()) as any[];
-      // preserve address object from nominatim into Suggestion.addressObj
-      const data = (raw || []).map((d) => ({
-        ...d,
-        addressObj: d.address || undefined,
+      const raw = (await res.json()) as any;
+      // Photon trả về raw.features (GeoJSON)
+      const data = (raw.features || []).map((f: any) => ({
+        ...f,
+        addressObj: f.properties || undefined,
+        display_name: f.properties.name || f.properties.street || f.properties.city || f.properties.country || "",
+        lat: f.geometry.coordinates[1],
+        lon: f.geometry.coordinates[0]
       })) as Suggestion[];
       saveSessionCache(key, data || []);
       return data;
     } catch (error) {
-      console.error("nominatim fetch error", error);
+      console.error("photon fetch error", error);
       return null;
     }
   }
@@ -520,29 +521,31 @@ export default function MapPicker({
     cityLike: string
   ) {
     try {
-      const key = `nominatim_struct:${streetLike}|${cityLike}`;
+      const key = `photon_struct:${streetLike}|${cityLike}`;
       const sess = loadSessionCache(key);
       if (sess) return sess;
+      // Photon không hỗ trợ structured search như Nominatim, nên gộp lại thành chuỗi tìm kiếm
+      const q = `${streetLike} ${cityLike}`.trim();
       const params = new URLSearchParams({
-        street: streetLike,
-        city: cityLike,
-        format: "jsonv2",
-        addressdetails: "1",
+        q,
         limit: "6",
-        countrycodes: "vn",
+        lang: "vi"
       });
-      const url = `https://nominatim.openstreetmap.org/search?${params.toString()}`;
-      const res = await fetch(url, { headers: { "Accept-Language": "vi,en" } });
+      const url = `https://photon.komoot.io/api/?${params.toString()}`;
+      const res = await fetch(url);
       if (!res.ok) return null;
-      const raw = (await res.json()) as any[];
-      const data = (raw || []).map((d) => ({
-        ...d,
-        addressObj: d.address || undefined,
+      const raw = (await res.json()) as any;
+      const data = (raw.features || []).map((f: any) => ({
+        ...f,
+        addressObj: f.properties || undefined,
+        display_name: f.properties.name || f.properties.street || f.properties.city || f.properties.country || "",
+        lat: f.geometry.coordinates[1],
+        lon: f.geometry.coordinates[0]
       })) as Suggestion[];
       saveSessionCache(key, data || []);
       return data;
     } catch (error) {
-      console.error("nominatim structured error", error);
+      console.error("photon structured error", error);
       return null;
     }
   }
