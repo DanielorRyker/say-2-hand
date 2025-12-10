@@ -1,9 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, ObjectId, Schema as MongooseSchema } from 'mongoose';
+import { Document, Schema as MongooseSchema } from 'mongoose';
 
-export interface CategoryDocument extends Category, Document {
-  _id: ObjectId;
-}
+// Interface CategoryDocument kế thừa Category và Document, không cần khai báo lại _id
+export interface CategoryDocument extends Category, Document {}
 @Schema({
   timestamps: true,
   collection: 'categories',
