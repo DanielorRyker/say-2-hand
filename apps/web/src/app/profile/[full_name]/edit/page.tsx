@@ -124,6 +124,7 @@ const EditProfilePage = () => {
         const apiUrl = useApiV2
           ? "https://provinces.open-api.vn/api/v2/p/"
           : "https://provinces.open-api.vn/api/p/";
+        // Đảm bảo sử dụng HTTPS
 
         const response = await axios.get(apiUrl);
         setProvinces(response.data);
@@ -445,7 +446,7 @@ const EditProfilePage = () => {
     }
   };
 
-   const validatePersonName = (name: string): boolean => {
+  const validatePersonName = (name: string): boolean => {
     // Must have at least 2 words
     const words = name.trim().split(/\s+/);
     if (words.length < 2) {
@@ -460,8 +461,6 @@ const EditProfilePage = () => {
     return words.every((word) => namePattern.test(word));
   };
 
-  
-
   const handleSubmit = async () => {
     // Run client-side validation
     const errors: Record<string, string> = {};
@@ -470,11 +469,12 @@ const EditProfilePage = () => {
     } else if (form.full_name.trim().length < 2) {
       errors.full_name = "Họ và tên quá ngắn.";
     } else if (!validatePersonName(form.full_name.trim())) {
-      errors.full_name = "Họ tên phải có ít nhất 2 từ, mỗi từ viết hoa chữ cái đầu và chỉ chứa chữ cái";
+      errors.full_name =
+        "Họ tên phải có ít nhất 2 từ, mỗi từ viết hoa chữ cái đầu và chỉ chứa chữ cái";
     }
 
     // phone number optional but if present must be valid VN format
-    if(!form.phone_number){
+    if (!form.phone_number) {
       errors.phone_number = "Số điện thoại là bắt buộc.";
     }
     if (form.phone_number && form.phone_number.trim()) {
@@ -482,7 +482,7 @@ const EditProfilePage = () => {
       const vnPhone = /^(?:\+?84|0)(?:3|5|7|8|9)\d{8}$/;
       if (!vnPhone.test(phone)) {
         errors.phone_number = "Số điện thoại không hợp lệ.";
-      } 
+      }
     }
 
     // date_of_birth: not future and reasonable age (>= 13)
@@ -643,13 +643,9 @@ const EditProfilePage = () => {
       // Send profile update
       // include _id so backend can find the document
       if (form._id) payload._id = form._id;
-      const patchRes = await axios.patch(
-        `${API_BASE}/api/users/`,
-        payload,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const patchRes = await axios.patch(`${API_BASE}/api/users/`, payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       console.log("Patch response:", patchRes.status, patchRes.data);
 
       // Refresh user from server

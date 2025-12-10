@@ -141,7 +141,7 @@ const HeaderMobile = () => {
     const fetchProvinces = async () => {
       setProvincesLoading(true);
       try {
-        const res = await axios.get("http://provinces.open-api.vn/api/v2/");
+        const res = await axios.get("https://provinces.open-api.vn/api/v2/"); // Sử dụng HTTPS để tránh lỗi Mixed Content
         if (!mounted) return;
         const mapped = (res.data || []).map((p: any) => ({
           code: p.code,

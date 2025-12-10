@@ -62,7 +62,7 @@ export default function LocationModal({
         setLoading(true);
         const res = await axios.get<Province[]>(
           "https://provinces.open-api.vn/api/v2/p/"
-        );
+        ); // Đảm bảo sử dụng HTTPS
         if (!mounted) return;
         setProvinces(res.data || []);
 

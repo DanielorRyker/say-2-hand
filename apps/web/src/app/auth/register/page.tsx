@@ -69,6 +69,7 @@ const RegisterPage = () => {
         const apiUrl = useApiV2
           ? "https://provinces.open-api.vn/api/v2/p/"
           : "https://provinces.open-api.vn/api/p/";
+        // Đảm bảo sử dụng HTTPS
 
         const response = await axios.get(apiUrl);
         setProvinces(response.data);
