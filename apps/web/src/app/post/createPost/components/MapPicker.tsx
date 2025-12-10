@@ -494,7 +494,7 @@ export default function MapPicker({
       const params = new URLSearchParams({
         q,
         limit: "6",
-        lang: "vi"
+        lang: "vi",
       });
       const url = `https://photon.komoot.io/api/?${params.toString()}`;
       const res = await fetch(url);
@@ -504,9 +504,14 @@ export default function MapPicker({
       const data = (raw.features || []).map((f: any) => ({
         ...f,
         addressObj: f.properties || undefined,
-        display_name: f.properties.name || f.properties.street || f.properties.city || f.properties.country || "",
+        display_name:
+          f.properties.name ||
+          f.properties.street ||
+          f.properties.city ||
+          f.properties.country ||
+          "",
         lat: f.geometry.coordinates[1],
-        lon: f.geometry.coordinates[0]
+        lon: f.geometry.coordinates[0],
       })) as Suggestion[];
       saveSessionCache(key, data || []);
       return data;
@@ -529,7 +534,7 @@ export default function MapPicker({
       const params = new URLSearchParams({
         q,
         limit: "6",
-        lang: "vi"
+        lang: "vi",
       });
       const url = `https://photon.komoot.io/api/?${params.toString()}`;
       const res = await fetch(url);
@@ -538,9 +543,14 @@ export default function MapPicker({
       const data = (raw.features || []).map((f: any) => ({
         ...f,
         addressObj: f.properties || undefined,
-        display_name: f.properties.name || f.properties.street || f.properties.city || f.properties.country || "",
+        display_name:
+          f.properties.name ||
+          f.properties.street ||
+          f.properties.city ||
+          f.properties.country ||
+          "",
         lat: f.geometry.coordinates[1],
-        lon: f.geometry.coordinates[0]
+        lon: f.geometry.coordinates[0],
       })) as Suggestion[];
       saveSessionCache(key, data || []);
       return data;
