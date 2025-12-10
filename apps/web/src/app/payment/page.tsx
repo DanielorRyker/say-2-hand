@@ -1,11 +1,13 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "./payment.module.scss";
 import axios from "axios";
 import PaymentComponent from "./component";
+import { API_BASE } from "@/lib/constants";
 
-const PaymentPage: React.FC = () => {
+// Component nội dung sử dụng useSearchParams
+const PaymentPageContent: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const postId = searchParams.get("postId");
@@ -32,9 +34,7 @@ const PaymentPage: React.FC = () => {
 
         // Nếu không có cache, gọi API
         console.log("📡 No cache found, fetching from API...");
-        const res = await axios.get(
-          `http://localhost:8080/api/posts/${postId}`
-        );
+        const res = await axios.get(`${API_BASE}/api/posts/${postId}`);
         console.log("✅ Post data fetched successfully from API:", res.data);
         setPostData(res.data);
 
@@ -108,6 +108,15 @@ const PaymentPage: React.FC = () => {
         />
       </div>
     </div>
+  );
+};
+
+// Wrapper component với Suspense boundary
+const PaymentPage: React.FC = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PaymentPageContent />
+    </Suspense>
   );
 };
 

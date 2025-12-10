@@ -51,16 +51,15 @@ const MessageItem = ({ message, isOwn }: { message: any; isOwn: boolean }) => {
           <>
             <div className={styles.images}>
               {message.attachments.map((url: string, idx: number) => {
-                const videoUrl = url ? formatImageUrl(url) : "";
-                return (
+                const videoUrl = url ? formatImageUrl(url) : null;
+                return videoUrl ? (
                   <video
                     key={idx}
                     src={videoUrl}
                     controls
-                    className={styles.image}
-                    style={{ maxHeight: 220 }}
+                    className={`${styles.image} ${styles.videoMessage}`}
                   />
-                );
+                ) : null;
               })}
             </div>
             {message.text && <div className={styles.text}>{message.text}</div>}

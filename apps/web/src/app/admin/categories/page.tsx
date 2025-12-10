@@ -1,10 +1,11 @@
-﻿"use client";
+"use client";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Image from "next/image";
 import { Icon } from "@iconify/react";
 import { formatImageUrl } from "@/lib/constants";
 import styles from "./categories.module.scss";
+import { API_BASE } from "@/lib/constants";
 
 interface Category {
   _id: string;
@@ -56,7 +57,7 @@ export default function CategoriesManagement() {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      const response = await axios.get("http://localhost:8080/api/categories", {
+      const response = await axios.get(`${API_BASE}/api/categories`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setCategories(response.data);
@@ -82,7 +83,7 @@ export default function CategoriesManagement() {
       formData.append("bucket", "categories");
       const token = localStorage.getItem("token");
       const response = await axios.post(
-        "http://localhost:8080/api/upload/img",
+        `${API_BASE}/api/upload/img`,
         formData,
         {
           headers: {
@@ -103,7 +104,7 @@ export default function CategoriesManagement() {
       .toLowerCase()
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
-      .replace(/đ/g, "d")
+      .replace(/d/g, "d")
       .replace(/[^a-z0-9\s-]/g, "")
       .trim()
       .replace(/\s+/g, "-");
@@ -111,14 +112,14 @@ export default function CategoriesManagement() {
 
   const handleSuggestIcon = async () => {
     if (!categoryForm.name.trim()) {
-      alert("Vui lòng nhập tên danh mục trước!");
+      alert("Vui l�ng nh?p t�n danh m?c tru?c!");
       return;
     }
     try {
       setSuggestingIcon(true);
       const token = localStorage.getItem("token");
       const response = await axios.post(
-        "http://localhost:8080/api/categories/suggest-icon",
+        `${API_BASE}/api/categories/suggest-icon`,
         { name: categoryForm.name },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -126,12 +127,12 @@ export default function CategoriesManagement() {
       const suggestedIcon = response.data.icon;
       setCategoryForm({ ...categoryForm, icon: suggestedIcon });
 
-      // Hiển thị thông báo thân thiện
-      console.log(`✨ AI đã gợi ý icon: ${suggestedIcon}`);
+      // Hi?n th? th�ng b�o th�n thi?n
+      console.log(`? AI d� g?i � icon: ${suggestedIcon}`);
     } catch (error) {
       console.error("Error suggesting icon:", error);
 
-      // Xử lý lỗi một cách thân thiện
+      // X? l� l?i m?t c�ch th�n thi?n
       const errorMsg =
         (error as any).response?.data?.message ||
         (error as Error).message ||
@@ -142,11 +143,11 @@ export default function CategoriesManagement() {
         errorMsg.includes("RESOURCE_EXHAUSTED")
       ) {
         alert(
-          "⚠️ AI đang quá tải, hệ thống đã tự động chọn icon phù hợp!\nBạn có thể giữ nguyên hoặc thay đổi icon nếu muốn."
+          "?? AI dang qu� t?i, h? th?ng d� t? d?ng ch?n icon ph� h?p!\nB?n c� th? gi? nguy�n ho?c thay d?i icon n?u mu?n."
         );
       } else {
         alert(
-          "⚠️ Không thể kết nối AI, hệ thống đã tự động chọn icon phù hợp!"
+          "?? Kh�ng th? k?t n?i AI, h? th?ng d� t? d?ng ch?n icon ph� h?p!"
         );
       }
     } finally {
@@ -156,7 +157,7 @@ export default function CategoriesManagement() {
 
   const handleAddCategory = async () => {
     if (!categoryForm.name.trim()) {
-      alert("Vui lòng nhập tên danh mục!");
+      alert("Vui l�ng nh?p t�n danh m?c!");
       return;
     }
     try {
@@ -169,7 +170,7 @@ export default function CategoriesManagement() {
       const slug = categoryForm.slug || generateSlug(categoryForm.name);
       const token = localStorage.getItem("token");
       await axios.post(
-        "http://localhost:8080/api/categories",
+        `${API_BASE}/api/categories`,
         {
           name: categoryForm.name,
           slug,
@@ -184,10 +185,10 @@ export default function CategoriesManagement() {
       setCategoryForm({ name: "", slug: "", icon: "", parent_id: "" });
       setImageFile(null);
       setImagePreview("");
-      alert("Thêm danh mục thành công!");
+      alert("Th�m danh m?c th�nh c�ng!");
     } catch (error) {
       console.error("Error adding category:", error);
-      alert("Có lỗi khi thêm danh mục!");
+      alert("C� l?i khi th�m danh m?c!");
     } finally {
       setUploading(false);
     }
@@ -205,7 +206,7 @@ export default function CategoriesManagement() {
       const slug = categoryForm.slug || generateSlug(categoryForm.name);
       const token = localStorage.getItem("token");
       await axios.patch(
-        "http://localhost:8080/api/categories",
+        `${API_BASE}/api/categories`,
         {
           _id: selectedCategory._id,
           name: categoryForm.name,
@@ -222,30 +223,30 @@ export default function CategoriesManagement() {
       setCategoryForm({ name: "", slug: "", icon: "", parent_id: "" });
       setImageFile(null);
       setImagePreview("");
-      alert("Cập nhật danh mục thành công!");
+      alert("C?p nh?t danh m?c th�nh c�ng!");
     } catch (error) {
       console.error("Error updating category:", error);
-      alert("Có lỗi khi cập nhật danh mục!");
+      alert("C� l?i khi c?p nh?t danh m?c!");
     } finally {
       setUploading(false);
     }
   };
 
   const handleDeleteCategory = async (categoryId: string) => {
-    const confirmed = window.confirm("Bạn có chắc chắn muốn xóa danh mục này?");
+    const confirmed = window.confirm("B?n c� ch?c ch?n mu?n x�a danh m?c n�y?");
     if (!confirmed) return;
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:8080/api/categories/${categoryId}`, {
+      await axios.delete(`${API_BASE}/api/categories/${categoryId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       await fetchCategories();
       setSelectedParentId(null);
-      alert("Xóa danh mục thành công!");
+      alert("X�a danh m?c th�nh c�ng!");
     } catch (error: any) {
       console.error("Error deleting category:", error);
       const errorMsg =
-        error.response?.data?.message || "Có lỗi khi xóa danh mục!";
+        error.response?.data?.message || "C� l?i khi x�a danh m?c!";
       alert(errorMsg);
     }
   };
@@ -286,7 +287,7 @@ export default function CategoriesManagement() {
     return formatImageUrl(src) || "/image/category/default.svg";
   };
 
-  // Lọc danh mục cha và con
+  // L?c danh m?c cha v� con
   const parentCategories = categories.filter((cat) => !cat.parent_id);
   const childCategories = selectedParentId
     ? categories.filter((cat) => cat.parent_id?._id === selectedParentId)
@@ -305,11 +306,11 @@ export default function CategoriesManagement() {
       <div className={styles.header}>
         <div>
           <Icon icon="material-symbols:category" />
-          <h1>Quản lý danh mục</h1>
+          <h1>Qu?n l� danh m?c</h1>
         </div>
         <button className={styles.btnAdd} onClick={() => openAddModal()}>
           <Icon icon="mdi:plus" />
-          Thêm danh mục
+          Th�m danh m?c
         </button>
       </div>
 
@@ -317,21 +318,21 @@ export default function CategoriesManagement() {
         <Icon icon="mdi:magnify" />
         <input
           type="text"
-          placeholder="Tìm kiếm danh mục cha..."
+          placeholder="T�m ki?m danh m?c cha..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
       </div>
 
-      {/* Layout Master-Detail: Danh mục cha bên trái, Con bên phải */}
+      {/* Layout Master-Detail: Danh m?c cha b�n tr�i, Con b�n ph?i */}
       <div className={styles.masterDetailLayout}>
-        {/* Cột trái: Danh mục cha (Master) */}
+        {/* C?t tr�i: Danh m?c cha (Master) */}
         <div
           className={`${styles.masterColumn} ${selectedParentId ? styles.hasDetail : ""}`}
         >
           <div className={styles.columnHeader}>
             <Icon icon="mdi:folder" />
-            <h2>Danh mục cha</h2>
+            <h2>Danh m?c cha</h2>
             <span className={styles.badge}>
               {filteredParentCategories.length}
             </span>
@@ -340,7 +341,7 @@ export default function CategoriesManagement() {
           {loading ? (
             <div className={styles.loading}>
               <Icon icon="mdi:loading" className={styles.spin} />
-              <span>Đang tải...</span>
+              <span>�ang t?i...</span>
             </div>
           ) : (
             <div className={styles.categoryList}>
@@ -379,7 +380,7 @@ export default function CategoriesManagement() {
                       </span>
                       <span className={styles.categoryCount}>
                         <Icon icon="mdi:folder-outline" width={14} />
-                        {getChildCount(category._id)} danh mục con
+                        {getChildCount(category._id)} danh m?c con
                       </span>
                     </div>
                   </div>
@@ -390,7 +391,7 @@ export default function CategoriesManagement() {
                         e.stopPropagation();
                         openAddModal(category._id);
                       }}
-                      title="Thêm danh mục con"
+                      title="Th�m danh m?c con"
                     >
                       <Icon icon="mdi:plus-circle" />
                     </button>
@@ -400,7 +401,7 @@ export default function CategoriesManagement() {
                         e.stopPropagation();
                         openEditModal(category);
                       }}
-                      title="Chỉnh sửa"
+                      title="Ch?nh s?a"
                     >
                       <Icon icon="mdi:pencil" />
                     </button>
@@ -410,7 +411,7 @@ export default function CategoriesManagement() {
                         e.stopPropagation();
                         handleDeleteCategory(category._id);
                       }}
-                      title="Xóa"
+                      title="X�a"
                     >
                       <Icon icon="mdi:delete" />
                     </button>
@@ -421,7 +422,7 @@ export default function CategoriesManagement() {
           )}
         </div>
 
-        {/* Cột phải: Danh mục con (Detail) - Ẩn/hiện trong cùng khung */}
+        {/* C?t ph?i: Danh m?c con (Detail) - ?n/hi?n trong c�ng khung */}
         <div
           className={`${styles.detailColumn} ${selectedParentId ? styles.show : styles.hide}`}
         >
@@ -431,13 +432,13 @@ export default function CategoriesManagement() {
                 <button
                   className={styles.btnBack}
                   onClick={() => setSelectedParentId(null)}
-                  title="Đóng"
+                  title="��ng"
                 >
                   <Icon icon="mdi:close" />
                 </button>
                 <Icon icon="mdi:folder-outline" />
                 <h2>
-                  Danh mục con của &ldquo;
+                  Danh m?c con c?a &ldquo;
                   {
                     parentCategories.find((c) => c._id === selectedParentId)
                       ?.name
@@ -450,13 +451,13 @@ export default function CategoriesManagement() {
               {childCategories.length === 0 ? (
                 <div className={styles.emptyState}>
                   <Icon icon="mdi:folder-open-outline" width={48} />
-                  <p>Chưa có danh mục con</p>
+                  <p>Chua c� danh m?c con</p>
                   <button
                     className={styles.btnAddChild}
                     onClick={() => openAddModal(selectedParentId)}
                   >
                     <Icon icon="mdi:plus" />
-                    Thêm danh mục con
+                    Th�m danh m?c con
                   </button>
                 </div>
               ) : (
@@ -498,7 +499,7 @@ export default function CategoriesManagement() {
                           </span>
                           <span className={styles.categoryCount}>
                             <Icon icon="mdi:post-outline" width={14} />
-                            {category.posts_count || 0} bài đăng
+                            {category.posts_count || 0} b�i dang
                           </span>
                         </div>
                       </div>
@@ -509,7 +510,7 @@ export default function CategoriesManagement() {
                             e.stopPropagation();
                             openEditModal(category);
                           }}
-                          title="Chỉnh sửa"
+                          title="Ch?nh s?a"
                         >
                           <Icon icon="mdi:pencil" />
                         </button>
@@ -519,7 +520,7 @@ export default function CategoriesManagement() {
                             e.stopPropagation();
                             handleDeleteCategory(category._id);
                           }}
-                          title="Xóa"
+                          title="X�a"
                         >
                           <Icon icon="mdi:delete" />
                         </button>
@@ -543,8 +544,8 @@ export default function CategoriesManagement() {
             <div className={styles.modalHeader}>
               <h2>
                 {categoryForm.parent_id
-                  ? "Thêm danh mục con"
-                  : "Thêm danh mục cha"}
+                  ? "Th�m danh m?c con"
+                  : "Th�m danh m?c cha"}
               </h2>
               <button
                 className={styles.btnClose}
@@ -556,10 +557,10 @@ export default function CategoriesManagement() {
 
             <div className={styles.modalBody}>
               <div className={styles.formGroup}>
-                <label>Tên danh mục *</label>
+                <label>T�n danh m?c *</label>
                 <input
                   type="text"
-                  placeholder="Nhập tên danh mục"
+                  placeholder="Nh?p t�n danh m?c"
                   value={categoryForm.name}
                   onChange={(e) => {
                     const name = e.target.value;
@@ -573,7 +574,7 @@ export default function CategoriesManagement() {
               </div>
 
               <div className={styles.formGroup}>
-                <label>Slug (Tự động tạo)</label>
+                <label>Slug (T? d?ng t?o)</label>
                 <input
                   type="text"
                   placeholder="Slug"
@@ -598,9 +599,9 @@ export default function CategoriesManagement() {
                     className={styles.suggestButton}
                     onClick={handleSuggestIcon}
                     disabled={suggestingIcon || !categoryForm.name.trim()}
-                    title="AI gợi ý icon"
+                    title="AI g?i � icon"
                   >
-                    {suggestingIcon ? "⏳" : "✨"}
+                    {suggestingIcon ? "?" : "?"}
                   </button>
                   {categoryForm.icon && (
                     <div className={styles.iconPreview}>
@@ -609,7 +610,7 @@ export default function CategoriesManagement() {
                   )}
                 </div>
                 <small className={styles.helpText}>
-                  Tìm icon tại:{" "}
+                  T�m icon t?i:{" "}
                   <a
                     href="https://icon-sets.iconify.design/"
                     target="_blank"
@@ -622,9 +623,9 @@ export default function CategoriesManagement() {
 
               {!categoryForm.parent_id && (
                 <div className={styles.formGroup}>
-                  <label>Danh mục cha (Optional)</label>
+                  <label>Danh m?c cha (Optional)</label>
                   <select
-                    title="Chọn danh mục cha"
+                    title="Ch?n danh m?c cha"
                     value={categoryForm.parent_id || ""}
                     onChange={(e) =>
                       setCategoryForm({
@@ -633,7 +634,7 @@ export default function CategoriesManagement() {
                       })
                     }
                   >
-                    <option value="">-- Không có (Danh mục gốc) --</option>
+                    <option value="">-- Kh�ng c� (Danh m?c g?c) --</option>
                     {parentCategories.map((cat) => (
                       <option key={cat._id} value={cat._id}>
                         {cat.name}
@@ -644,7 +645,7 @@ export default function CategoriesManagement() {
               )}
 
               <div className={styles.formGroup}>
-                <label>Ảnh danh mục</label>
+                <label>?nh danh m?c</label>
                 <div className={styles.imageUpload}>
                   <input
                     type="file"
@@ -666,7 +667,7 @@ export default function CategoriesManagement() {
                     ) : (
                       <div className={styles.uploadPlaceholder}>
                         <Icon icon="mdi:camera-plus" />
-                        <span>Chọn ảnh</span>
+                        <span>Ch?n ?nh</span>
                       </div>
                     )}
                   </label>
@@ -679,14 +680,14 @@ export default function CategoriesManagement() {
                 className={styles.btnCancel}
                 onClick={() => setShowAddModal(false)}
               >
-                Hủy
+                H?y
               </button>
               <button
                 className={styles.btnSubmit}
                 onClick={handleAddCategory}
                 disabled={uploading}
               >
-                {uploading ? "Đang xử lý..." : "Thêm danh mục"}
+                {uploading ? "�ang x? l�..." : "Th�m danh m?c"}
               </button>
             </div>
           </div>
@@ -701,7 +702,7 @@ export default function CategoriesManagement() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className={styles.modalHeader}>
-              <h2>Chỉnh sửa danh mục</h2>
+              <h2>Ch?nh s?a danh m?c</h2>
               <button
                 className={styles.btnClose}
                 onClick={() => setShowEditModal(false)}
@@ -712,10 +713,10 @@ export default function CategoriesManagement() {
 
             <div className={styles.modalBody}>
               <div className={styles.formGroup}>
-                <label>Tên danh mục *</label>
+                <label>T�n danh m?c *</label>
                 <input
                   type="text"
-                  placeholder="Nhập tên danh mục"
+                  placeholder="Nh?p t�n danh m?c"
                   value={categoryForm.name}
                   onChange={(e) => {
                     const name = e.target.value;
@@ -756,9 +757,9 @@ export default function CategoriesManagement() {
                     className={styles.suggestButton}
                     onClick={handleSuggestIcon}
                     disabled={suggestingIcon || !categoryForm.name.trim()}
-                    title="AI gợi ý icon"
+                    title="AI g?i � icon"
                   >
-                    {suggestingIcon ? "⏳" : "✨"}
+                    {suggestingIcon ? "?" : "?"}
                   </button>
                   {categoryForm.icon && (
                     <div className={styles.iconPreview}>
@@ -767,7 +768,7 @@ export default function CategoriesManagement() {
                   )}
                 </div>
                 <small className={styles.helpText}>
-                  Tìm icon tại:{" "}
+                  T�m icon t?i:{" "}
                   <a
                     href="https://icon-sets.iconify.design/"
                     target="_blank"
@@ -779,9 +780,9 @@ export default function CategoriesManagement() {
               </div>
 
               <div className={styles.formGroup}>
-                <label>Danh mục cha</label>
+                <label>Danh m?c cha</label>
                 <select
-                  title="Chọn danh mục cha"
+                  title="Ch?n danh m?c cha"
                   value={categoryForm.parent_id || ""}
                   onChange={(e) =>
                     setCategoryForm({
@@ -790,7 +791,7 @@ export default function CategoriesManagement() {
                     })
                   }
                 >
-                  <option value="">-- Không có (Danh mục gốc) --</option>
+                  <option value="">-- Kh�ng c� (Danh m?c g?c) --</option>
                   {parentCategories
                     .filter((c) => c._id !== selectedCategory._id)
                     .map((cat) => (
@@ -802,7 +803,7 @@ export default function CategoriesManagement() {
               </div>
 
               <div className={styles.formGroup}>
-                <label>Ảnh danh mục</label>
+                <label>?nh danh m?c</label>
                 <div className={styles.imageUpload}>
                   <input
                     type="file"
@@ -824,7 +825,7 @@ export default function CategoriesManagement() {
                     ) : (
                       <div className={styles.uploadPlaceholder}>
                         <Icon icon="mdi:camera-plus" />
-                        <span>Chọn ảnh mới</span>
+                        <span>Ch?n ?nh m?i</span>
                       </div>
                     )}
                   </label>
@@ -837,14 +838,14 @@ export default function CategoriesManagement() {
                 className={styles.btnCancel}
                 onClick={() => setShowEditModal(false)}
               >
-                Hủy
+                H?y
               </button>
               <button
                 className={styles.btnSubmit}
                 onClick={handleEditCategory}
                 disabled={uploading}
               >
-                {uploading ? "Đang xử lý..." : "Cập nhật"}
+                {uploading ? "�ang x? l�..." : "C?p nh?t"}
               </button>
             </div>
           </div>
@@ -859,7 +860,7 @@ export default function CategoriesManagement() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className={styles.modalHeader}>
-              <h2>Chi tiết danh mục</h2>
+              <h2>Chi ti?t danh m?c</h2>
               <button
                 className={styles.btnClose}
                 onClick={() => setShowDetailModal(false)}
@@ -886,7 +887,7 @@ export default function CategoriesManagement() {
 
               <div className={styles.detailInfo}>
                 <div className={styles.infoRow}>
-                  <span className={styles.label}>Tên danh mục:</span>
+                  <span className={styles.label}>T�n danh m?c:</span>
                   <span className={styles.value}>{selectedCategory.name}</span>
                 </div>
                 <div className={styles.infoRow}>
@@ -910,21 +911,21 @@ export default function CategoriesManagement() {
                 )}
                 {selectedCategory.parent_id && (
                   <div className={styles.infoRow}>
-                    <span className={styles.label}>Danh mục cha:</span>
+                    <span className={styles.label}>Danh m?c cha:</span>
                     <span className={styles.value}>
                       {selectedCategory.parent_id.name}
                     </span>
                   </div>
                 )}
                 <div className={styles.infoRow}>
-                  <span className={styles.label}>Số bài đăng:</span>
+                  <span className={styles.label}>S? b�i dang:</span>
                   <span className={styles.value}>
                     {selectedCategory.posts_count || 0}
                   </span>
                 </div>
                 {selectedCategory.created_at && (
                   <div className={styles.infoRow}>
-                    <span className={styles.label}>Ngày tạo:</span>
+                    <span className={styles.label}>Ng�y t?o:</span>
                     <span className={styles.value}>
                       {new Date(selectedCategory.created_at).toLocaleDateString(
                         "vi-VN"
@@ -940,7 +941,7 @@ export default function CategoriesManagement() {
                 className={styles.btnCancel}
                 onClick={() => setShowDetailModal(false)}
               >
-                Đóng
+                ��ng
               </button>
               <button
                 className={styles.btnEdit}
@@ -950,7 +951,7 @@ export default function CategoriesManagement() {
                 }}
               >
                 <Icon icon="mdi:pencil" />
-                Chỉnh sửa
+                Ch?nh s?a
               </button>
             </div>
           </div>

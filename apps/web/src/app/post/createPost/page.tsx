@@ -12,6 +12,7 @@ import {
   FloatingMessage,
 } from "./components";
 import axios from "axios";
+import { API_BASE } from "@/lib/constants";
 import geminiStyles from "./components/GeminiSuggestion.module.scss";
 // ✅ Import parseAddress
 import { parseAddress } from "../../../lib/address";
@@ -53,7 +54,7 @@ function useGeminiSuggestion() {
     setError(null);
     try {
       const response = await axios.post(
-        "http://localhost:8080/api/gemini/analyze-image",
+        `${API_BASE}/api/gemini/analyze-image`,
         {
           base64,
           mimeType,
@@ -99,7 +100,7 @@ function useGeminiSuggestion() {
         "Performing new AI analysis (no cache found or force refresh)"
       );
       const response = await axios.post(
-        "http://localhost:8080/api/gemini/analyze-multiple-images",
+        `${API_BASE}/api/gemini/analyze-multiple-images`,
         {
           images,
           forceRefresh, // Pass forceRefresh to backend
@@ -387,31 +388,6 @@ export default function Page() {
               base64ToFile(base64, `image_${i + 1}.png`)
             );
             setSelectedFiles(files);
-            {
-              /* Gemini AI suggestions UI */
-            }
-            {
-              gemini.loading ? (
-                <div className={geminiStyles.loading}>Đang phân tích AI...</div>
-              ) : null;
-            }
-            {
-              gemini.error ? (
-                <div className={geminiStyles.error}>{gemini.error}</div>
-              ) : null;
-            }
-            {
-              gemini.suggestions.length > 0 ? (
-                <div className={geminiStyles.suggestionBox}>
-                  <h4>Gợi ý từ AI:</h4>
-                  <ul>
-                    {gemini.suggestions.map((s, i) => (
-                      <li key={i}>{s}</li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null;
-            }
             clearInterval(interval); // ✅ Dừng khi đã có ảnh
           }
         } catch (err) {
@@ -438,11 +414,9 @@ export default function Page() {
     formData.append("bucket", "posts/" + currentUser._id + "/" + title);
 
     try {
-      const res = await axios.post(
-        "http://localhost:8080/api/upload/imgs",
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
+      const res = await axios.post(`${API_BASE}/api/upload/imgs`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
       console.log("Upload response:", res.data);
       return res.data.filenames; // giả sử BE trả về { filenames: [...] }
@@ -547,7 +521,7 @@ export default function Page() {
       };
       console.log("📦 Dữ liệu gửi BE:", payload);
 
-      await axios.post("http://localhost:8080/api/posts", payload, {
+      await axios.post(`${API_BASE}/api/posts`, payload, {
         headers: { "Content-Type": "application/json" },
       });
       showMessage("Đăng tin thành công!");

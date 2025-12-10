@@ -5,6 +5,7 @@ import styles from "@/styles/pages/profile/edit-v2.module.scss";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { formatImageUrl, URL_GCS } from "@/lib/constants";
+import { API_BASE } from "@/lib/constants";
 
 interface Address {
   label: string;
@@ -601,7 +602,7 @@ const EditProfilePage = () => {
           fd.append("file", file);
           fd.append("userId", form._id);
           const uploadRes = await axios.post(
-            "http://localhost:8080/api/upload/avatar",
+            `${API_BASE}/api/upload/avatar`,
             fd,
             { headers: { "Content-Type": "multipart/form-data" } }
           );
@@ -643,7 +644,7 @@ const EditProfilePage = () => {
       // include _id so backend can find the document
       if (form._id) payload._id = form._id;
       const patchRes = await axios.patch(
-        `http://localhost:8080/api/users/`,
+        `${API_BASE}/api/users/`,
         payload,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -653,7 +654,7 @@ const EditProfilePage = () => {
 
       // Refresh user from server
       const userRes = await axios.get(
-        `http://localhost:8080/api/users/find/${form.email}`,
+        `${API_BASE}/api/users/find/${form.email}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }

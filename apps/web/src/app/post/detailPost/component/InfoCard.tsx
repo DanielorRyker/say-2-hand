@@ -19,7 +19,6 @@ const InfoCard: React.FC<InfoCardProps> = ({
   transactionType,
   status,
   condition,
-  views,
   updatedAt,
   getRelativeTime,
 }) => {

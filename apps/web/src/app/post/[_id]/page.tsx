@@ -5,6 +5,7 @@ import Image from "next/image";
 import { formatImageUrl } from "@/lib/constants";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { API_BASE } from "@/lib/constants";
 
 const Home = () => {
   const router = useRouter();
@@ -45,7 +46,6 @@ const Home = () => {
   }, []);
 
   const isSell = post?.transaction_type === "sell";
-  let priceHtml;
 
   const getRelativeTime = (isoString: string) => {
     const date = new Date(isoString);
@@ -83,7 +83,7 @@ const Home = () => {
     async function fetchUser() {
       try {
         const res = await axios.get(
-          `http://localhost:8080/api/users/${
+          `${API_BASE}/api/users/${
             typeof post?.author_id === "string"
               ? post.author_id
               : post?.author_id._id
@@ -118,10 +118,7 @@ const Home = () => {
         participants: [currentUser._id, user._id],
       };
 
-      const res = await axios.post(
-        "http://localhost:8080/api/conversations",
-        payload
-      );
+      const res = await axios.post(`${API_BASE}/api/conversations`, payload);
 
       // Chuẩn hóa dữ liệu conversation trước khi lưu localStorage
       const conversationToSave = {

@@ -20,21 +20,6 @@
   }
 }
 
-//background: var(--background-light);
-/* Design tokens */
-:root {
-  --bg: var(--background-light);
-  --surface: #ffffff;
-  --muted: #6b7280;
-  --text: #0f172a;
-  --accent: #06b6d4;
-  --bubble-me: #dcfce7;
-  --bubble-other: #ffffff;
-  --border: #e6edf3;
-  --shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
-  --radius: 12px;
-}
-
 /* Layout */
 .container {
   display: flex;
@@ -205,7 +190,8 @@
   box-shadow: var(--shadow);
   border: 1px solid var(--border);
   background: colors.$solid-bg-medium;
-  scrollbar-color: #888 #f1f1f1;
+  /* Scrollbar styles được định nghĩa trong globals.scss */
+  /* Sử dụng class: scrollbar-chat cho component này */
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 

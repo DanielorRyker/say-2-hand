@@ -8,7 +8,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User, UserDocument } from './schemas/users.schema';
 import { Model, Types } from 'mongoose';
-import { hashPasswordHelper } from 'src/common/helpers/util';
+import { hashPasswordHelper } from '../../common/helpers/util';
 
 @Injectable()
 export class UsersService {

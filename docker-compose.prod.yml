@@ -1,0 +1,84 @@
+services:
+  # MongoDB Atlas cloud - không cần container local
+  # mongodb:
+  #   image: mongo:7
+  #   ...
+
+  redis:
+    image: redis:7-alpine
+    container_name: say2hand-redis-prod
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_prod_data:/data
+    command: redis-server --requirepass ${REDIS_PASSWORD:-changeme123}
+    networks:
+      - say2hand-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    container_name: say2hand-backend-prod
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      - MONGODB_URI=mongodb+srv://${MONGO_USERNAME:-admin}:${MONGO_PASSWORD:-admin}@cluster0.thsybre.mongodb.net/say2hand?retryWrites=true&w=majority&appName=Cluster0
+      - REDIS_URL=redis://redis:6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-changeme123}
+      - JWT_SECRET=${JWT_SECRET:-production-jwt-secret-change-this}
+      - JWT_ACCESS_TOKEN_EXPIRE=1d
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
+      - MAIL_USER=${MAIL_USER}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - GOOGLE_CLOUD_PROJECT_ID=${GOOGLE_CLOUD_PROJECT_ID:-say2hand}
+      - GOOGLE_CLOUD_BUCKET_NAME=${GOOGLE_CLOUD_BUCKET_NAME:-say2hand}
+      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS:-config/gcs-key.json}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.5-flash}
+    depends_on:
+      - redis
+    networks:
+      - say2hand-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: say2hand-frontend-prod
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8080}
+      - NEXT_PUBLIC_URL_GCS=${NEXT_PUBLIC_URL_GCS}
+    depends_on:
+      - backend
+    networks:
+      - say2hand-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  # mongodb_prod_data: # Không cần vì dùng MongoDB Atlas
+  redis_prod_data:
+    driver: local
+
+networks:
+  say2hand-network:
+    driver: bridge

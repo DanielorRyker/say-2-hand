@@ -37,7 +37,6 @@ interface Ward {
 export default function LocationModal({
   isOpen,
   onClose,
-  selectedLocation,
   setSelectedLocation,
   distance,
   setDistance,

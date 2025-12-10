@@ -9,8 +9,8 @@ interface GalleryProps {
   onSetImage: (idx: number) => void;
   onOpenLightbox: (idx: number) => void;
   onNavigateImage: (dir: number) => void;
-  thumbsRef: React.RefObject<HTMLDivElement>;
-  formatImageUrl: (url: string) => string;
+  thumbsRef: React.RefObject<HTMLDivElement | null>;
+  formatImageUrl: (url: string | undefined | null) => string | null;
 }
 
 // Component gallery ảnh sản phẩm

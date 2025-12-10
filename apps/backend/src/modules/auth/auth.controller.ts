@@ -5,7 +5,7 @@ import { CreateAuthDto } from './dto/create-auth.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { VerifyResetPasswordDto } from './dto/verify-reset-password.dto';
 import { MailerService } from '@nestjs-modules/mailer';
-import { JwtAuthGuard } from 'src/common/jwt/jwt-auth.guard';
+import { JwtAuthGuard } from '../../common/jwt/jwt-auth.guard';
 
 @Controller('auth')
 @UseGuards(ThrottlerGuard)

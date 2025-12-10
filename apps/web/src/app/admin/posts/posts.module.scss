@@ -206,6 +206,22 @@
     color: white;
 }
 
+.statusactive {
+    background-color: #10b981;
+}
+
+.statuspendingapproval {
+    background-color: #f59e0b;
+}
+
+.statusrejected {
+    background-color: #ef4444;
+}
+
+.statuscompleted {
+    background-color: #6366f1;
+}
+
 .stats {
     display: flex;
     gap: 1rem;

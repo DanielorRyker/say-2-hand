@@ -9,7 +9,6 @@ import styles from "./posts.module.scss";
 import { API_BASE, formatImageUrl } from "@/lib/constants";
 import { io, Socket } from "socket.io-client";
 import { useRouter } from "next/navigation";
-import { send } from "process";
 
 interface Post {
   _id: string;
@@ -81,7 +80,7 @@ export default function AdminPostsPage() {
   const [socket, setSocket] = useState<Socket | null>(null);
   useEffect(() => {
     // Kết nối socket.io tới BE (NestJS WebSocketGateway)
-    const newSocket = io("http://localhost:8080", {
+    const newSocket = io(`${API_BASE}`, {
       transports: ["websocket"],
     });
 
@@ -119,7 +118,7 @@ export default function AdminPostsPage() {
       body = `Bài đăng ${post.title} của bạn đã bị xóa. Cảm ơn bạn đã sử dụng dịch vụ.`;
     }
     try {
-      await axios.post("http://localhost:8080/api/notifications", {
+      await axios.post(`${API_BASE}/api/notifications`, {
         receiver_id: post.author_id._id,
         sender_id: user._id,
         title: title,
@@ -283,21 +282,6 @@ export default function AdminPostsPage() {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "#10b981";
-      case "pending_approval":
-        return "#f59e0b";
-      case "rejected":
-        return "#ef4444";
-      case "completed":
-        return "#6366f1";
-      default:
-        return "#94a3b8";
-    }
-  };
-
   const getStatusLabel = (status: string) => {
     switch (status) {
       case "active":
@@ -383,8 +367,7 @@ export default function AdminPostsPage() {
       title: "Trạng thái",
       render: (status: string) => (
         <span
-          className={styles.status}
-          style={{ backgroundColor: getStatusColor(status) }}
+          className={`${styles.status} ${styles[`status${status.replace(/_/g, "")}` as keyof typeof styles]}`}
         >
           {getStatusLabel(status)}
         </span>
@@ -692,10 +675,7 @@ export default function AdminPostsPage() {
                   <div className={styles.detailItem}>
                     <label>Trạng thái:</label>
                     <span
-                      className={styles.status}
-                      style={{
-                        backgroundColor: getStatusColor(selectedPost.status),
-                      }}
+                      className={`${styles.status} ${styles[`status${selectedPost.status.replace(/_/g, "")}` as keyof typeof styles]}`}
                     >
                       {getStatusLabel(selectedPost.status)}
                     </span>

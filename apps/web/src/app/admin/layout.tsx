@@ -5,7 +5,6 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { Icon } from "@iconify/react";
 import styles from "./admin.module.scss";
-import { formatImageUrl } from "../../lib/constants";
 
 interface User {
   _id: string;

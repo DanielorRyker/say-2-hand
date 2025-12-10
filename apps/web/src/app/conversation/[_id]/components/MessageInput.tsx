@@ -6,9 +6,19 @@ import styles from "./MessageInput.module.scss";
 // Định nghĩa kiểu file preview
 type PreviewFile = File | { url: string; type: "image" | "video" };
 
+// Định nghĩa kiểu props cho component
+interface MessageInputProps {
+  onSend: (data: {
+    text: string;
+    images: File[];
+    videos: File[];
+  }) => Promise<void>;
+  loading?: boolean;
+}
+
 // Component nhập tin nhắn hiện đại, đồng bộ UI
 // Thêm xử lý loading, gửi nhiều ảnh, reset input, báo lỗi upload
-const MessageInput = ({ onSend, loading }) => {
+const MessageInput: React.FC<MessageInputProps> = ({ onSend, loading }) => {
   // State text và images
   const [text, setText] = useState("");
   const [images, setImages] = useState<File[]>([]); // Ảnh
@@ -90,13 +100,7 @@ const MessageInput = ({ onSend, loading }) => {
             const url = URL.createObjectURL(video);
             return (
               <div className={styles.previewImageBox} key={idx}>
-                <video
-                  src={url}
-                  controls
-                  width={56}
-                  height={56}
-                  style={{ objectFit: "cover", borderRadius: 12 }}
-                />
+                <video src={url} controls className={styles.previewVideo} />
                 <button
                   className={styles.removePreviewBtn}
                   onClick={() => handleRemoveVideo(idx)}
@@ -139,8 +143,9 @@ const MessageInput = ({ onSend, loading }) => {
           accept="image/*"
           multiple
           ref={fileInputRef}
-          style={{ display: "none" }}
+          className={styles.hiddenInput}
           onChange={handleImageChange}
+          aria-label="Tải lên ảnh"
         />
         {/* Nút đính kèm video */}
         <button
@@ -157,8 +162,9 @@ const MessageInput = ({ onSend, loading }) => {
           accept="video/*"
           multiple
           ref={videoInputRef}
-          style={{ display: "none" }}
+          className={styles.hiddenInput}
           onChange={handleVideoChange}
+          aria-label="Tải lên video"
         />
         {/* Nút gửi */}
         <button

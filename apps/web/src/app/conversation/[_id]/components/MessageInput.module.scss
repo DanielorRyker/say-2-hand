@@ -120,6 +120,17 @@
     border-radius: 12px;
 }
 
+.previewVideo {
+    width: 56px;
+    height: 56px;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.hiddenInput {
+    display: none;
+}
+
 .removePreviewBtn {
     position: absolute;
     top: 2px;

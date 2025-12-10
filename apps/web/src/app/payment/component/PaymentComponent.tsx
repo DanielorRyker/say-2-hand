@@ -12,6 +12,7 @@ import Link from "next/link";
 import styles from "../payment.module.scss";
 import { Icon } from "@iconify/react";
 import { io, Socket } from "socket.io-client";
+import { API_BASE } from "@/lib/constants";
 // import axios from "axios"; // TODO: Sẽ dùng khi backend có endpoint /api/payments
 
 interface PaymentMethod {
@@ -108,7 +109,6 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
   const [processing, setProcessing] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
   //QR
-  const [openQR, setOpenQR] = useState(false);
   const [qrURL, setQrURL] = useState<string | undefined>(undefined);
   const popupRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -116,7 +116,6 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
   // QR payment flow
   const [qrLoading, setQrLoading] = useState(false);
   const [qrModalOpen, setQrModalOpen] = useState(false);
-  const [qrData, setQrData] = useState<any>(null);
 
   //  Ẩn popup khi click ra ngoài
   useEffect(() => {
@@ -134,12 +133,6 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
     if (qrModalOpen) document.body.style.overflow = "hidden";
     else document.body.style.overflow = "auto";
   }, [qrModalOpen]);
-
-  useEffect(() => {
-    if(normalizedPost?.transaction_type== "give away" ){
-      setSelectedMethod('free')
-    }
-  }, []);
 
   //countdown
   const [countdown, setCountdown] = useState(60);
@@ -182,7 +175,7 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
   const [socket, setSocket] = useState<Socket | null>(null);
   useEffect(() => {
     // Kết nối socket.io tới BE (NestJS WebSocketGateway)
-    const newSocket = io("http://localhost:8080", {
+    const newSocket = io(`${API_BASE}`, {
       transports: ["websocket"],
     });
 
@@ -217,6 +210,13 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
     };
   }, [postData]);
 
+  // Set payment method to 'free' if transaction_type is "give away"
+  useEffect(() => {
+    if (normalizedPost?.transaction_type === "give away") {
+      setSelectedMethod("free");
+    }
+  }, [normalizedPost?.transaction_type]);
+
   // Extract user's saved addresses from currentUser
   const savedAddresses = useMemo(() => {
     if (!currentUser) return [];
@@ -243,11 +243,10 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
       });
       // Simulate payment processing (2s delay)
       await new Promise((resolve) => setTimeout(resolve, 2000));
-      await axios.patch(
-        `http://localhost:8080/api/posts/${normalizedPost._id}`,
-        { status: "shipping" }
-      );
-      const res = await axios.post("http://localhost:8080/api/transactions", {
+      await axios.patch(`${API_BASE}/api/posts/${normalizedPost._id}`, {
+        status: "shipping",
+      });
+      const res = await axios.post(`${API_BASE}/api/transactions`, {
         post_id: normalizedPost._id,
         seller_id: normalizedPost.author_id?._id || normalizedPost.author_id,
         buyer_id: currentUser._id,
@@ -281,15 +280,23 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
 
       let titleNotification = "";
       let bodyNotification = "";
-      if(selectedMethod=="free"){
+      if (selectedMethod == "free") {
         titleNotification = "Có người nhận món đồ của bạn";
-        bodyNotification = currentUser.full_name +" đã nhận món đồ "+normalizedPost.title+" của bạn. Vui lòng xác nhận.";
-      }else{
-         titleNotification = "Bạn có đơn hàng mới";
-         bodyNotification = currentUser.full_name + " đã nhận sản phẩm " + normalizedPost.title + " từ bạn.";
+        bodyNotification =
+          currentUser.full_name +
+          " đã nhận món đồ " +
+          normalizedPost.title +
+          " của bạn. Vui lòng xác nhận.";
+      } else {
+        titleNotification = "Bạn có đơn hàng mới";
+        bodyNotification =
+          currentUser.full_name +
+          " đã nhận sản phẩm " +
+          normalizedPost.title +
+          " từ bạn.";
       }
 
-      await axios.post("http://localhost:8080/api/notifications", {
+      await axios.post(`${API_BASE}/api/notifications`, {
         receiver_id: normalizedPost.author_id?._id || normalizedPost.author_id,
         sender_id: currentUser._id,
         title: titleNotification,
@@ -302,7 +309,7 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
         is_read: false,
       });
 
-      await axios.post("http://localhost:8080/api/notifications", {
+      await axios.post(`${API_BASE}/api/notifications`, {
         receiver_id: currentUser._id,
         sender_id: normalizedPost.author_id?._id || normalizedPost.author_id,
         title: "Mua hàng thành công",
@@ -336,7 +343,14 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
     } finally {
       setProcessing(false);
     }
-  }, [selectedMethod, agreeTerms, normalizedPost, processing]);
+  }, [
+    selectedMethod,
+    agreeTerms,
+    normalizedPost,
+    processing,
+    currentUser,
+    socket,
+  ]);
 
   // Save custom address into user's addresses via backend PATCH
   const patchSaveAddress = async (addressToSave: {
@@ -357,12 +371,12 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
       }
       updatedAddresses.push(addressToSave);
       const payload = { _id: parsed._id, addresses: updatedAddresses };
-      await axios.patch("http://localhost:8080/api/users/", payload, {
+      await axios.patch(`${API_BASE}/api/users/`, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
       // Refresh localStorage user from server
       const res = await axios.get(
-        `http://localhost:8080/api/users/find/${parsed.email}`,
+        `${API_BASE}/api/users/find/${parsed.email}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -375,35 +389,6 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
       console.error("Lưu địa chỉ thất bại:", error);
       return false;
     }
-  };
-
-  // QR flow: simulate create QR -> loading -> failure -> show modal with retry
-  const handleCreateQr = async () => {
-    setQrLoading(true);
-    setQrData(null);
-    try {
-      // Simulate network delay
-      await new Promise((res) => setTimeout(res, 1500));
-      // Simulate QR creation (fake data)
-      const data = {
-        qrId: `QR${Date.now()}`,
-        expiresAt: Date.now() + 5 * 60 * 1000,
-        payload: `qrcode://pay/${Math.random().toString(36).slice(2)}`,
-      };
-      setQrData(data);
-      // Simulate failure after a short delay
-      await new Promise((res) => setTimeout(res, 800));
-      setQrLoading(false);
-      setQrModalOpen(true);
-    } catch {
-      setQrLoading(false);
-      setQrModalOpen(true);
-    }
-  };
-
-  const handleRetryNewQr = async () => {
-    setQrModalOpen(true);
-    await handleCreateQr();
   };
 
   if (!postData || !normalizedPost) {
@@ -432,7 +417,7 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
         " vnd",
     }).toString();
 
-    const res = await fetch(`http://localhost:8080/api/qr?${query}`);
+    const res = await fetch(`${API_BASE}/api/qr?${query}`);
     if (!res.ok) {
       throw new Error("Failed to generate QR");
     }
@@ -504,49 +489,53 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
           </section>
 
           {/* Payment Method Selection */}
-          {normalizedPost.transaction_type== "sell" ?
-          <section className={styles["payment-method-section"]}>
-            <h2 className={styles["section-title"]}>
-              <Icon icon="mdi:credit-card" width={20} />
-              Chọn phương thức thanh toán
-            </h2>
-            <div className={styles["payment-methods"]}>
-              {PAYMENT_METHODS.map((method) => (
-                <button
-                  key={method.id}
-                  className={`${styles["method-card"]} ${
-                    selectedMethod === method.id ? styles["selected"] : ""
-                  }`}
-                  onClick={(e) => {
-                    createRipple(e);
-                    setSelectedMethod(method.id);
-                  }}
-                >
-                  <div className={styles["method-icon"]}>
-                    <Icon icon={method.icon} width={32} color={method.color} />
-                  </div>
-                  <div className={styles["method-info"]}>
-                    <h4 className={styles["method-name"]}>{method.name}</h4>
-                    <p className={styles["method-desc"]}>
-                      {method.description}
-                    </p>
-                  </div>
-                  <div className={styles["method-check"]}>
-                    {selectedMethod === method.id && (
+          {normalizedPost.transaction_type == "sell" ? (
+            <section className={styles["payment-method-section"]}>
+              <h2 className={styles["section-title"]}>
+                <Icon icon="mdi:credit-card" width={20} />
+                Chọn phương thức thanh toán
+              </h2>
+              <div className={styles["payment-methods"]}>
+                {PAYMENT_METHODS.map((method) => (
+                  <button
+                    key={method.id}
+                    className={`${styles["method-card"]} ${
+                      selectedMethod === method.id ? styles["selected"] : ""
+                    }`}
+                    onClick={(e) => {
+                      createRipple(e);
+                      setSelectedMethod(method.id);
+                    }}
+                  >
+                    <div className={styles["method-icon"]}>
                       <Icon
-                        icon="mdi:check-circle"
-                        width={24}
-                        color="#10b981"
+                        icon={method.icon}
+                        width={32}
+                        color={method.color}
                       />
-                    )}
-                  </div>
-                </button>
-              ))}
-            </div>
-          </section>
-          :
-           <div></div>
-        }
+                    </div>
+                    <div className={styles["method-info"]}>
+                      <h4 className={styles["method-name"]}>{method.name}</h4>
+                      <p className={styles["method-desc"]}>
+                        {method.description}
+                      </p>
+                    </div>
+                    <div className={styles["method-check"]}>
+                      {selectedMethod === method.id && (
+                        <Icon
+                          icon="mdi:check-circle"
+                          width={24}
+                          color="#10b981"
+                        />
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </section>
+          ) : (
+            <div></div>
+          )}
 
           {/* Shipping Address Selection */}
           <section className={styles["address-section"]}>
@@ -878,14 +867,13 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
                   }
                   handleQR();
                   // setQrModalOpen(true);
-                  if(normalizedPost.transaction_type== "sell" ){
-                   setQrModalOpen(true)
-                    }
-                    else if (normalizedPost.transaction_type == "give away"){
-                      handlePayment();
-                    }
-                      // handlePayment();
-                    }}
+                  if (normalizedPost.transaction_type == "sell") {
+                    setQrModalOpen(true);
+                  } else if (normalizedPost.transaction_type == "give away") {
+                    handlePayment();
+                  }
+                  // handlePayment();
+                }}
                 disabled={!selectedMethod || !agreeTerms || processing}
               >
                 {processing ? (

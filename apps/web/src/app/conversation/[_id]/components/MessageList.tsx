@@ -1,11 +1,28 @@
 "use client";
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import MessageItem from "./MessageItem";
 import styles from "./MessageList.module.scss";
 import { formatImageUrl } from "@/lib/constants";
 
+// Interface cho product trong SystemProductBlock
+interface Product {
+  _id: string;
+  image: string;
+  title: string;
+  price: number | string;
+  transaction_type?: string;
+  condition?: string;
+}
+
+// Interface cho props của SystemProductBlock
+interface SystemProductBlockProps {
+  product: Product;
+  isBuyer: boolean;
+  buyerName: string;
+}
+
 // Hàm format loại giao dịch
-function getTransactionType(type) {
+function getTransactionType(type: string): string {
   if (!type) return "";
   if (["sell", "bán", "ban"].includes(type.toLowerCase())) return "Bán";
   if (
@@ -17,74 +34,84 @@ function getTransactionType(type) {
   return type;
 }
 
-// Thêm prop: currentPost, sellerId
-
 // Hàm render block sản phẩm hệ thống
 // Block sản phẩm hệ thống, truyền ref để scroll tới
-const SystemProductBlock = React.forwardRef(
-  ({ product, isBuyer, buyerName }, ref) => {
-    return (
-      <div className={styles.productInfoBlock} ref={ref}>
-        <div className={styles.productInfoLabel}>
-          {isBuyer
-            ? "Bạn đang quan tâm đến sản phẩm này"
-            : `${buyerName} đang quan tâm đến sản phẩm này của bạn`}
-        </div>
-        <div className={styles.productInfoRow}>
-          <img
-            src={formatImageUrl(product.image)}
-            alt="product"
-            className={styles.productInfoImg}
-          />
-          <div>
-            <div className={styles.productInfoTitle}>{product.title}</div>
-            <div className={styles.productInfoPrice}>
-              {typeof product.price === "number"
-                ? product.price.toLocaleString("vi-VN", {
-                    style: "currency",
-                    currency: "VND",
-                  })
-                : product.price}
-            </div>
-            <div className={styles.productInfoMeta}>
-              {product.transaction_type && (
-                <span className={styles.productInfoMetaItem}>
-                  <span>Hình thức:</span>
-                  <b>{getTransactionType(product.transaction_type)}</b>
-                </span>
-              )}
-              {product.condition && (
-                <span className={styles.productInfoMetaItem}>
-                  <span>Tình trạng:</span>
-                  <b>{product.condition}</b>
-                </span>
-              )}
-            </div>
-            {isBuyer && (
-              <button
-                className={styles.productInfoDetailBtn}
-                onClick={() => {
-                  window.open(
-                    `/post/detailPost?postId=${product._id}`,
-                    "_blank"
-                  );
-                }}
-              >
-                Mua ngay
-              </button>
+const SystemProductBlock = React.forwardRef<
+  HTMLDivElement,
+  SystemProductBlockProps
+>(({ product, isBuyer, buyerName }, ref) => {
+  return (
+    <div className={styles.productInfoBlock} ref={ref}>
+      <div className={styles.productInfoLabel}>
+        {isBuyer
+          ? "Bạn đang quan tâm đến sản phẩm này"
+          : `${buyerName} đang quan tâm đến sản phẩm này của bạn`}
+      </div>
+      <div className={styles.productInfoRow}>
+        <img
+          src={formatImageUrl(product.image) || "/image/placeholder.png"}
+          alt="product"
+          className={styles.productInfoImg}
+        />
+        <div>
+          <div className={styles.productInfoTitle}>{product.title}</div>
+          <div className={styles.productInfoPrice}>
+            {typeof product.price === "number"
+              ? product.price.toLocaleString("vi-VN", {
+                  style: "currency",
+                  currency: "VND",
+                })
+              : product.price}
+          </div>
+          <div className={styles.productInfoMeta}>
+            {product.transaction_type && (
+              <span className={styles.productInfoMetaItem}>
+                <span>Hình thức:</span>
+                <b>{getTransactionType(product.transaction_type)}</b>
+              </span>
+            )}
+            {product.condition && (
+              <span className={styles.productInfoMetaItem}>
+                <span>Tình trạng:</span>
+                <b>{product.condition}</b>
+              </span>
             )}
           </div>
+          {isBuyer && (
+            <button
+              className={styles.productInfoDetailBtn}
+              onClick={() => {
+                window.open(`/post/detailPost?postId=${product._id}`, "_blank");
+              }}
+            >
+              Mua ngay
+            </button>
+          )}
         </div>
       </div>
-    );
-  }
-);
+    </div>
+  );
+});
 
-import { useRef, useEffect } from "react";
+// Add display name for the forwardRef component
+SystemProductBlock.displayName = "SystemProductBlock";
 
-const MessageList = ({ messages, currentUserId }) => {
+// Interface cho props của MessageList
+interface MessageListProps {
+  messages: any[];
+  currentUserId: string;
+  currentPost?: any;
+  sellerId?: string;
+}
+
+const MessageList: React.FC<MessageListProps> = ({
+  messages,
+  currentUserId,
+  currentPost,
+  sellerId,
+}) => {
   // Ref cho scroll tổng
-  const listRef = useRef(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
   // Scroll xuống cuối mỗi khi messages thay đổi
   useEffect(() => {

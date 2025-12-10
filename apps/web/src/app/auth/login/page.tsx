@@ -4,6 +4,7 @@ import Link from "next/link";
 import styleLogin from "@/styles/pages/auth/login-v2.module.scss";
 import axios from "axios";
 import { useState } from "react";
+import { API_BASE } from "@/lib/constants";
 import Image from "next/image";
 import { Icon } from "@iconify/react";
 
@@ -29,11 +30,9 @@ export default function Login() {
       setLoading(true);
       setError("");
 
-      const res = await axios.post(
-        "http://localhost:8080/api/auth/login",
-        form,
-        { withCredentials: true }
-      );
+      const res = await axios.post(`${API_BASE}/api/auth/login`, form, {
+        withCredentials: true,
+      });
 
       const data = res.data;
 
@@ -44,7 +43,7 @@ export default function Login() {
       // Fetch user info
       const token = localStorage.getItem("access_token");
       const userRes = await axios.get(
-        `http://localhost:8080/api/users/find/${form.email}`,
+        `${API_BASE}/api/users/find/${form.email}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

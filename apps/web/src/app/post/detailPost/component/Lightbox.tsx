@@ -9,7 +9,7 @@ interface LightboxProps {
   currentImageIndex: number;
   onClose: () => void;
   onNavigateImage: (dir: number) => void;
-  formatImageUrl: (url: string) => string;
+  formatImageUrl: (url: string | undefined | null) => string | null;
 }
 
 // Component lightbox xem ảnh lớn

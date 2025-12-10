@@ -39,7 +39,7 @@ const Header = () => {
     };
     loadUser();
 
-    const onUserUpdated = (e: Event) => {
+    const onUserUpdated = () => {
       // nếu dispatch CustomEvent với detail thì dùng (e as CustomEvent).detail
       loadUser();
     };
@@ -85,14 +85,12 @@ const Header = () => {
   const [provinces, setProvinces] = useState<{ code: number; name: string }[]>(
     []
   );
+  const [provincesLoading, setProvincesLoading] = useState(false);
+  const [provincesError, setProvincesError] = useState<string | null>(null);
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [provinceCounts, setProvinceCounts] = useState<Record<string, number>>(
     {}
   );
-  const [provincesLoading, setProvincesLoading] = useState(false);
-  const [provincesError, setProvincesError] = useState<string | null>(null);
-  // local filter for province search inside dropdown
-  const [provinceQuery, setProvinceQuery] = useState("");
-  const [isGettingLocation, setIsGettingLocation] = useState(false);
 
   // helper to select a province (chỉ select, không navigate)
   const handleSelectProvince = (p: { code: number; name: string }) => {
@@ -682,13 +680,23 @@ const Header = () => {
             className={headerStyles.logoButton}
             title="Về trang chủ"
           >
-            <Image
-              src="/image/header/Logo.svg"
+            {/* Logo desktop */}
+            <img
+              src="/image/header/Say2handT.svg"
               alt="Logo"
               width={200}
               height={45}
               className={headerStyles.logoImg}
-              style={{ width: "auto", height: "auto" }}
+              draggable={false}
+            />
+            {/* Logo mobile */}
+            <img
+              src="/image/header/Say2handT.svg"
+              alt="Logo Mobile"
+              width={140}
+              height={36}
+              className={headerStyles.logoMobile}
+              draggable={false}
             />
           </button>
         </div>

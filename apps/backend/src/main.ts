@@ -18,7 +18,7 @@ async function bootstrap() {
 
   // Bật CORS cho FE, dùng khi FE và BE khác port để tránh bị chặn
   const frontendOrigin =
-    configService.get<string>('FRONTEND_URL') || 'http://localhost:3002';
+    configService.get<string>('FRONTEND_URL') || 'http://localhost:3000';
   app.enableCors({
     origin: frontendOrigin,
     credentials: true,

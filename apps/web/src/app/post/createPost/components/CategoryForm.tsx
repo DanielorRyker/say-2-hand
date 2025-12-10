@@ -4,6 +4,7 @@ import styles from "./CategoryForm.module.scss";
 import stylesBasicForm from "./BasicInfoForm.module.scss";
 import dynamic from "next/dynamic";
 import axios from "axios";
+import { API_BASE } from "@/lib/constants";
 
 // import MapPicker động để tránh vấn đề SSR
 const MapPicker = dynamic(() => import("./MapPicker"), { ssr: false });
@@ -47,7 +48,7 @@ export default function CategoryForm({
 
   useEffect(() => {
     async function fetchCategories() {
-      const res = await axios.get("http://localhost:8080/api/categories/");
+      const res = await axios.get(`${API_BASE}/api/categories/`);
       setCategoriesData(res.data); // res.data là danh sách categories
     }
     fetchCategories();

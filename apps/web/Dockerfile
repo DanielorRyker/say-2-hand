@@ -3,14 +3,14 @@ FROM oven/bun:1 as base
 WORKDIR /app
 
 # Copy package files
-COPY package.json bun.lockb bunfig.toml ./
+COPY package.json bun.lock bunfig.toml ./
 COPY packages/types/package.json ./packages/types/package.json
 COPY packages/config/eslint/package.json ./packages/config/eslint/package.json
 COPY packages/config/typescript/package.json ./packages/config/typescript/package.json
 COPY apps/web/package.json ./apps/web/package.json
 
 # Install dependencies
-RUN bun install --frozen-lockfile
+RUN bun install
 
 # Copy packages
 COPY packages/ ./packages/
@@ -28,12 +28,12 @@ WORKDIR /app
 
 # Copy built application
 COPY --from=base /app/apps/web/.next/standalone ./
-COPY --from=base /app/apps/web/.next/static ./.next/static
-COPY --from=base /app/apps/web/public ./public
+COPY --from=base /app/apps/web/.next/static ./apps/web/.next/static
+COPY --from=base /app/apps/web/public ./apps/web/public
 
-# Create non-root user
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nextjs
+# Create non-root user (Alpine syntax)
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -u 1001 -S nextjs -G nodejs
 USER nextjs
 
 EXPOSE 3000
@@ -41,4 +41,4 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "server.js"]
+CMD ["node", "apps/web/server.js"]

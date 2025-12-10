@@ -16,6 +16,7 @@ import LocationBox from "./component/LocationBox";
 import Lightbox from "./component/Lightbox";
 import MobileFooter from "./component/MobileFooter";
 import Breadcrumb from "./component/Breadcrumb";
+import { API_BASE } from "@/lib/constants";
 
 const formatCurrency = (n: number) =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
@@ -23,11 +24,8 @@ const formatCurrency = (n: number) =>
   );
 
 // Helper tạo hiệu ứng ripple cho button
-
-export function createRipple(
-  e: React.MouseEvent | MouseEvent,
-  btn?: HTMLElement
-) {
+// Next.js App Router pages không được export functions ngoài default
+function createRipple(e: React.MouseEvent | MouseEvent, btn?: HTMLElement) {
   try {
     const ev = e as MouseEvent;
     let targetBtn: HTMLElement | null = null;
@@ -281,7 +279,7 @@ const DetailPostPage: React.FC = () => {
     const checkFavorite = async () => {
       if (!postData?.post?._id || !currentUser?._id) return;
       const res = await axios.get(
-        `http://localhost:8080/api/favorites/${currentUser._id}/${postData.post._id}`
+        `${API_BASE}/api/favorites/${currentUser._id}/${postData.post._id}`
       );
       setIsFavorite(res.data);
     };
@@ -299,7 +297,7 @@ const DetailPostPage: React.FC = () => {
       let isCurrentlyFavorited = false;
       try {
         const res = await axios.get(
-          `http://localhost:8080/api/favorites/${currentUser._id}/${postId}`
+          `${API_BASE}/api/favorites/${currentUser._id}/${postId}`
         );
         isCurrentlyFavorited = res.data === true;
       } catch {
@@ -309,17 +307,14 @@ const DetailPostPage: React.FC = () => {
       try {
         if (isCurrentlyFavorited) {
           //  Xóa khỏi favorites
-          await axios.delete(
-            `http://localhost:8080/api/favorites/post/${postId}`,
-            {
-              data: { user_id: currentUser._id },
-            }
-          );
+          await axios.delete(`${API_BASE}/api/favorites/post/${postId}`, {
+            data: { user_id: currentUser._id },
+          });
 
           setIsFavorite(false);
         } else {
           //  Thêm vào favorites
-          await axios.post(`http://localhost:8080/api/favorites`, {
+          await axios.post(`${API_BASE}/api/favorites`, {
             user_id: currentUser?._id,
             post_id: postId,
           });
@@ -447,10 +442,7 @@ const DetailPostPage: React.FC = () => {
       localStorage.setItem("chat_post_info", JSON.stringify(postInfo));
 
       // Tạo conversation
-      const res = await axios.post(
-        "http://localhost:8080/api/conversations",
-        payload
-      );
+      const res = await axios.post(`${API_BASE}/api/conversations`, payload);
 
       // Gửi system message chứa thông tin sản phẩm ngay sau khi tạo conversation
       try {
@@ -475,7 +467,7 @@ const DetailPostPage: React.FC = () => {
           created_at: new Date().toISOString(),
         };
         // Gửi message lên backend
-        await axios.post("http://localhost:8080/api/messages", systemMessage);
+        await axios.post(`${API_BASE}/api/messages`, systemMessage);
       } catch (err) {
         // Nếu gửi message lỗi thì vẫn cho user vào chat, chỉ log cảnh báo
         console.warn("Không thể gửi system message sản phẩm:", err);

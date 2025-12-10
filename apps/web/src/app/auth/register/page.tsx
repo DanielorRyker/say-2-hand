@@ -5,6 +5,7 @@ import styles from "@/styles/pages/auth/register-v2.module.scss";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Image from "next/image";
+import { API_BASE } from "@/lib/constants";
 
 interface Address {
   label: string;
@@ -367,11 +368,11 @@ const RegisterPage = () => {
         addresses: addressData,
       };
 
-      await axios.post("http://localhost:8080/api/users/", requestData, {
+      await axios.post(`${API_BASE}/api/users/`, requestData, {
         withCredentials: true,
       });
 
-      await axios.get(`http://localhost:8080/api/auth/mail`, {
+      await axios.get(`${API_BASE}/api/auth/mail`, {
         params: { email: form.email },
       });
 

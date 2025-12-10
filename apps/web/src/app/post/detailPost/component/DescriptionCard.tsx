@@ -8,7 +8,7 @@ interface DescriptionCardProps {
   setIsDescExpanded: (v: boolean) => void;
   needsTruncate: (text: string) => boolean;
   getShortDescription: (text: string) => string;
-  descRef: React.RefObject<HTMLParagraphElement>;
+  descRef: React.RefObject<HTMLParagraphElement | null>;
 }
 
 // Component hiển thị mô tả chi tiết sản phẩm

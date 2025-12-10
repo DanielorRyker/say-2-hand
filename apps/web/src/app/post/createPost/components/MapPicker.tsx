@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
-// @ts-expect-error - side-effect CSS import for leaflet
+import { API_BASE } from "@/lib/constants";
 import "leaflet/dist/leaflet.css";
 import styles from "./CategoryForm.module.scss";
 import {
@@ -588,14 +588,11 @@ export default function MapPicker({
   const normalizeAddressWithAI = async (rawAddress: string) => {
     try {
       setAiNormalizing(true);
-      const response = await fetch(
-        "http://localhost:8080/api/gemini/normalize-address",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ address: rawAddress }),
-        }
-      );
+      const response = await fetch(`${API_BASE}/api/gemini/normalize-address`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address: rawAddress }),
+      });
 
       if (!response.ok) {
         console.error("AI normalization failed:", response.status);

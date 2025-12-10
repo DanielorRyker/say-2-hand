@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import { Bell, CheckCircle } from "lucide-react";
 import axios from "axios";
 import styles from "./notification.module.scss";
 import headerStyles from "@/app/layouts/header.module.scss";
 import Image from "next/image";
 import { formatImageUrl } from "@/lib/constants";
 import { io, Socket } from "socket.io-client";
+import { API_BASE } from "@/lib/constants";
 
 type RelatedPost = {
   _id: string;
@@ -68,11 +68,11 @@ export default function NotificationPopup() {
   }, []);
 
   // 📥 Gọi API lấy thông báo
-  const fetchNotifications = async () => {
+  const fetchNotifications = React.useCallback(async () => {
     if (!currentUser?._id) return;
     try {
       const res = await axios.get(
-        `http://localhost:8080/api/notifications/user/${currentUser._id}`
+        `${API_BASE}/api/notifications/user/${currentUser._id}`
       );
       setNotifications(res.data);
 
@@ -83,13 +83,13 @@ export default function NotificationPopup() {
     } catch (error) {
       console.error("Lỗi khi tải thông báo:", error);
     }
-  };
+  }, [currentUser?._id]);
 
   useEffect(() => {
     if (currentUser?._id) {
       fetchNotifications();
     }
-  }, [currentUser?._id]);
+  }, [currentUser?._id, fetchNotifications]);
 
   // 🔔 Ẩn popup khi click ra ngoài
   useEffect(() => {
@@ -126,7 +126,7 @@ export default function NotificationPopup() {
   const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
-    const newSocket = io("http://localhost:8080", {
+    const newSocket = io(`${API_BASE}`, {
       transports: ["websocket"],
     });
     setSocket(newSocket);
@@ -179,30 +179,30 @@ export default function NotificationPopup() {
     return () => {
       socket.off("conversation_updated", handleUpdate);
     };
-  }, [socket, currentUser?._id]);
+  }, [socket, currentUser?._id, fetchNotifications]);
 
   //Filler
   const [filter, setFilter] = useState<string | null>(null);
 
-  const fillerNotification = async () => {
+  const fillerNotification = React.useCallback(async () => {
     if (!currentUser?._id) return;
     if (filter == null) {
       fetchNotifications();
     } else {
       try {
         const res = await axios.get(
-          `http://localhost:8080/api/notifications/${filter}/${currentUser._id}`
+          `${API_BASE}/api/notifications/${filter}/${currentUser._id}`
         );
         setNotifications(res.data);
       } catch (error) {
         console.error("Lỗi khi tải thông báo:", error);
       }
     }
-  };
+  }, [currentUser?._id, filter, fetchNotifications]);
 
   useEffect(() => {
     fillerNotification(); // tự động lọc lại mỗi khi filter thay đổi
-  }, [filter]);
+  }, [filter, fillerNotification]);
 
   const handleClick = (type: string) => {
     if (filter === type) {
@@ -223,7 +223,7 @@ export default function NotificationPopup() {
 
     try {
       await axios.patch(
-        `http://localhost:8080/api/notifications/read-all/${currentUser._id}`
+        `${API_BASE}/api/notifications/read-all/${currentUser._id}`
       );
       fetchNotifications();
     } catch (error) {

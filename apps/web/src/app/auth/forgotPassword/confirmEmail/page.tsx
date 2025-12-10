@@ -4,6 +4,7 @@ import Link from "next/link";
 import styles from "@/styles/pages/auth/forgotPassword-v2.module.scss";
 import axios from "axios";
 import { useState } from "react";
+import { API_BASE } from "@/lib/constants";
 
 export default function ForgotPassword() {
   const router = useRouter();
@@ -36,7 +37,7 @@ export default function ForgotPassword() {
     try {
       // Check if email exists
       const existRes = await axios.get(
-        `http://localhost:8080/api/users/exist/${email}`
+        `${API_BASE}/api/users/exist/${email}`
       );
 
       if (existRes.data !== true) {
@@ -46,7 +47,7 @@ export default function ForgotPassword() {
       }
 
       // Send OTP email
-      await axios.get(`http://localhost:8080/api/auth/mailResetPassword`, {
+      await axios.get(`${API_BASE}/api/auth/mailResetPassword`, {
         params: { email },
       });
 

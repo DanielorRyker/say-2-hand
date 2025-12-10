@@ -4,6 +4,7 @@ import styleVerification from "@/styles/pages/auth/verification-v2.module.scss";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { API_BASE } from "@/lib/constants";
 
 const Home = () => {
   const router = useRouter();
@@ -38,7 +39,7 @@ const Home = () => {
     }
 
     try {
-      await axios.get(`http://localhost:8080/api/auth/mail`, {
+      await axios.get(`${API_BASE}/api/auth/mail`, {
         params: { email: form.email },
       });
 
@@ -86,7 +87,7 @@ const Home = () => {
 
     try {
       setVerifying(true);
-      await axios.post("http://localhost:8080/api/auth/verify", form, {
+      await axios.post(`${API_BASE}/api/auth/verify`, form, {
         withCredentials: true,
       });
       alert("Xác thực thành công! Bạn có thể đăng nhập ngay.");

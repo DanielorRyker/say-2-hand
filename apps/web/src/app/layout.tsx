@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
-// @ts-expect-error: Allow side-effect import of global SCSS without type declarations
 import "@/styles/globals.scss";
-// @ts-expect-error: Allow side-effect import of bootstrap CSS without type declarations
 import "bootstrap/dist/css/bootstrap.min.css";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import ClientLayout from "@/app/ClientLayout";

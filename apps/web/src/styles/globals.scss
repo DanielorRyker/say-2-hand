@@ -10,6 +10,9 @@
 /* Import Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
+/* Import Leaflet custom styles (global selectors for map library) */
+@import './leaflet-custom.scss';
+
 /* CSS Custom Properties - Định nghĩa biến toàn cục */
 :root {
   /* Primary Colors */
@@ -73,7 +76,7 @@
   --spacing-2xl: 48px;
   --spacing-3xl: 64px;
 
-  /* Border Radius */
+  /* Borders Radius */
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
@@ -91,6 +94,25 @@
   --transition-fast: 150ms ease;
   --transition-base: 250ms ease;
   --transition-slow: 350ms ease;
+
+  /* Additional gradients for posts */
+  --primary-gradient: linear-gradient(90deg, #ef4444 0%, #b91c1c 100%);
+  --condition-new: #10b981;
+  --condition-like-new: #06b6d4;
+  --condition-used: #3b82f6;
+  --condition-minor-flaw: #f97316;
+  --condition-for-repair: #8b5cf6;
+  --condition-for-parts: #ef4444;
+
+  /* Form controls (from BasicInfoForm) */
+  --muted: #6b7280;
+  --text: #111827;
+  --muted-2: #9ca3af;
+  --border: #d1d5db;
+  --accent: #667eea;
+  --accent-2: #764ba2;
+  --danger: #b91c1c;
+  --control-radius: 0.5rem;
 }
 
 /* ==========================================
@@ -126,6 +148,19 @@ body {
 
 .dropdown-toggle::after {
   display: none !important;
+}
+
+/* ==========================================
+   FORM INPUT FOCUS STATES
+   ========================================== */
+
+/* Global focus styles for inputs, selects, textareas */
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.6), 0 0 0 4px #60a5fa;
+  border-color: #60a5fa;
 }
 
 /* ==========================================
@@ -366,6 +401,7 @@ button:disabled {
    SCROLLBAR STYLES
    ========================================== */
 
+/* Default scrollbar - WebKit browsers (Chrome, Safari, Edge) */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -382,6 +418,119 @@ button:disabled {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--border-dark);
+}
+
+/* Firefox scrollbar - sử dụng @supports để tránh cảnh báo */
+@supports (scrollbar-width: thin) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-medium) var(--bg-light);
+  }
+}
+
+/* Thin scrollbar utility class */
+.scrollbar-thin {
+
+  /* WebKit */
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(16, 24, 40, 0.12);
+    border-radius: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(16, 24, 40, 0.2);
+  }
+
+  /* Firefox - wrapped in @supports */
+  @supports (scrollbar-width: thin) {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(16, 24, 40, 0.12) transparent;
+  }
+}
+
+/* Hidden scrollbar utility class */
+.scrollbar-hidden {
+
+  /* WebKit */
+  &::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    background: transparent;
+  }
+
+  /* Firefox - wrapped in @supports */
+  @supports (scrollbar-width: none) {
+    scrollbar-width: none;
+  }
+
+  /* IE 10+ */
+  -ms-overflow-style: none;
+}
+
+/* Custom scrollbar for specific components */
+.scrollbar-custom-light {
+
+  /* WebKit */
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f3f4f6;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+  }
+
+  /* Firefox - wrapped in @supports */
+  @supports (scrollbar-width: thin) {
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db #f3f4f6;
+  }
+}
+
+/* Scrollbar for chat area */
+.scrollbar-chat {
+
+  /* WebKit */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+
+  /* Firefox - wrapped in @supports */
+  @supports (scrollbar-width: thin) {
+    scrollbar-width: thin;
+    scrollbar-color: #888 #f1f1f1;
+  }
 }
 
 /* ==========================================
@@ -434,6 +583,16 @@ button:disabled {
   }
 }
 
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* Animation utilities */
 .animate-fade-in {
   animation: fadeIn 0.3s ease;
@@ -449,6 +608,10 @@ button:disabled {
 
 .animate-scale-in {
   animation: scaleIn 0.3s ease;
+}
+
+.rotating {
+  animation: rotate 1s linear infinite;
 }
 
 /* ==========================================

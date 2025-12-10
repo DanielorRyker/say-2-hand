@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { API_BASE } from "@/lib/constants";
 import { Icon } from "@iconify/react";
 import styles from "./FilterModal.module.scss";
 import CategoryDropdown from "./CategoryDropdown";
@@ -99,7 +100,7 @@ export default function FilterModal({
     let mounted = true;
     const fetchCategories = async () => {
       try {
-        const res = await axios.get("http://localhost:8080/api/categories");
+        const res = await axios.get(`${API_BASE}/api/categories`);
         if (mounted) setCategories(res.data || []);
       } catch (err) {
         console.error("Failed to fetch categories", err);

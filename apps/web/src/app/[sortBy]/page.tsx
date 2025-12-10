@@ -8,6 +8,7 @@ import styles from "@/app/home/component/postList.module.scss";
 import { Icon } from "@iconify/react";
 import axios from "axios";
 import { formatImageUrl } from "@/lib/constants";
+import { API_BASE } from "@/lib/constants";
 
 // Local SVG icons (matching files in public/image/feed)
 const ICONS = {
@@ -32,7 +33,8 @@ const CONDITION_MAP: Record<string, { text: string; colorKey: string }> = {
   for_parts: { text: "Đã hư", colorKey: "for_parts" },
 };
 
-export const ListPost: React.FC = () => {
+// Next.js App Router pages phải export default, không được export named component
+const ListPost: React.FC = () => {
   const router = useRouter();
   //Lấy user hiện tại
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -105,7 +107,7 @@ export const ListPost: React.FC = () => {
     async function fetchFavorites() {
       try {
         const res = await axios.get(
-          `http://localhost:8080/api/favorites/user/${currentUser._id}`
+          `${API_BASE}/api/favorites/user/${currentUser._id}`
         );
         console.log("Favorite Data:", res.data);
         setFavoriteData(res.data);
@@ -129,19 +131,16 @@ export const ListPost: React.FC = () => {
           const postIds = favoriteData.map((fav) => fav.post_id);
           console.log("Favorite Post IDs:", postIds);
 
-          const res = await axios.post(
-            "http://localhost:8080/api/posts/by-ids",
-            {
-              ids: postIds,
-            }
-          );
+          const res = await axios.post(`${API_BASE}/api/posts/by-ids`, {
+            ids: postIds,
+          });
           console.log("Favorite Posts Data:", res.data);
           setPostsData(res.data);
         } else if (sortBy === "myPost") {
           if (!currentUser?._id) return;
 
           const res = await axios.get(
-            `http://localhost:8080/api/posts/user/${currentUser._id}`
+            `${API_BASE}/api/posts/user/${currentUser._id}`
           );
           console.log("My Posts Data:", res.data);
           setPostsData(res.data);
@@ -236,19 +235,16 @@ export const ListPost: React.FC = () => {
       try {
         if (isCurrentlyFavorited) {
           // XÓA khỏi favorites (DELETE request)
-          await axios.delete(
-            `http://localhost:8080/api/favorites/post/${postId}`,
-            {
-              data: { user_id: currentUser._id },
-            }
-          );
+          await axios.delete(`${API_BASE}/api/favorites/post/${postId}`, {
+            data: { user_id: currentUser._id },
+          });
           setFavoriteData((prev) =>
             prev.filter((fav) => fav.post_id !== postId)
           );
           console.log(`Đã xóa bài đăng ${postId} khỏi favorites.`);
         } else {
           // THÊM vào favorites (POST request)
-          await axios.post(`http://localhost:8080/api/favorites/`, {
+          await axios.post(`${API_BASE}/api/favorites/`, {
             user_id: currentUser._id,
             post_id: postId,
           });

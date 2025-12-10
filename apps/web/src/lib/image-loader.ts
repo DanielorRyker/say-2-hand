@@ -5,8 +5,8 @@
 
 export default function imageLoader({
   src,
-  width,
-  quality,
+  width: _width,
+  quality: _quality,
 }: {
   src: string;
   width: number;

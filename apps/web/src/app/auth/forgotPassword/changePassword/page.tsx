@@ -5,6 +5,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Icon } from "@iconify/react";
+import { API_BASE } from "@/lib/constants";
 
 const ChangePasswordPage = () => {
   const router = useRouter();
@@ -42,21 +43,6 @@ const ChangePasswordPage = () => {
     }
   }, [countdown]);
 
-  // Function to send OTP
-  const sendOTP = async (email: string) => {
-    try {
-      setLoading(true);
-      await axios.get(`http://localhost:8080/api/auth/mailResetPassword`, {
-        params: { email },
-      });
-      setCountdown(60); // Start 60s countdown
-    } catch (err) {
-      console.error(err);
-      setErrorMessage("Không thể gửi mã OTP, vui lòng thử lại");
-    } finally {
-      setLoading(false);
-    }
-  };
   // show password
   const [showPassword, setShowPassword] = useState(false);
   const [showRePassword, setShowRePassword] = useState(false);
@@ -90,11 +76,9 @@ const ChangePasswordPage = () => {
     try {
       setLoading(true);
       setErrorMessage("");
-      await axios.post(
-        "http://localhost:8080/api/auth/verifyResetPassword",
-        form,
-        { withCredentials: true }
-      );
+      await axios.post(`${API_BASE}/api/auth/verifyResetPassword`, form, {
+        withCredentials: true,
+      });
       setSuccessMessage(true);
       setTimeout(() => {
         router.push("/auth/login");
@@ -120,7 +104,7 @@ const ChangePasswordPage = () => {
       setLoading(true);
       setErrorMessage("");
       setResendSuccess(false);
-      await axios.get(`http://localhost:8080/api/auth/mailResetPassword`, {
+      await axios.get(`${API_BASE}/api/auth/mailResetPassword`, {
         params: { email: form.email },
       });
       setResendSuccess(true);

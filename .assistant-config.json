@@ -1,5 +1,0 @@
-{
-  "language": "vi",
-  "force": true,
-  "note": "The assistant must always reply in Vietnamese and the code comments must also be in Vietnamese. Users can change this file to change the behavior and not create .md file and test file every time."
-}

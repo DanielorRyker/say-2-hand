@@ -8,16 +8,7 @@
   max-width: 1100px;
 }
 
-:root {
-  --muted: #6b7280;
-  --text: #111827;
-  --muted-2: #9ca3af;
-  --border: #d1d5db;
-  --accent: #667eea;
-  --accent-2: #764ba2;
-  --danger: #b91c1c;
-  --control-radius: 0.5rem;
-}
+/* :root variables moved to globals.scss */
 
 .sectionTitle {
   font-size: 1.125rem;

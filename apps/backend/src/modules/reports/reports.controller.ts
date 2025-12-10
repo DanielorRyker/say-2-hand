@@ -12,7 +12,7 @@ import {
 import { ReportsService } from './reports.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
-import { JwtAuthGuard } from 'src/common/jwt/jwt-auth.guard';
+import { JwtAuthGuard } from '../../common/jwt/jwt-auth.guard';
 
 @Controller('reports')
 export class ReportsController {

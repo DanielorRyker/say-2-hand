@@ -8,6 +8,7 @@ import type { Transaction } from "@repo/types";
 import styles from "./orders.module.scss";
 import { useToast } from "@/components/ui/toast/ToastContext";
 import { io, Socket } from "socket.io-client";
+import { API_BASE } from "@/lib/constants";
 
 type TabType = "all" | "pending" | "shipping" | "completed" | "cancelled";
 
@@ -21,28 +22,28 @@ const OrdersPage = () => {
   const [loading, setLoading] = useState(true);
 
   //Socket
-    const [socket, setSocket] = useState<Socket | null>(null);
-    useEffect(() => {
-      // Kết nối socket.io tới BE (NestJS WebSocketGateway)
-      const newSocket = io("http://localhost:8080", {
-        transports: ["websocket"], 
-      });
-  
-      setSocket(newSocket);
-  
-      newSocket.on("connect", () => {
-        console.log("Connected to socket:", newSocket.id);
-      });
-  
-      newSocket.on("disconnect", () => {
-        console.log("Disconnected from socket");
-      });
-  
-      // cleanup khi unmount
-      return () => {
-        newSocket.disconnect();
-      };
-    }, []);
+  const [socket, setSocket] = useState<Socket | null>(null);
+  useEffect(() => {
+    // Kết nối socket.io tới BE (NestJS WebSocketGateway)
+    const newSocket = io(`${API_BASE}`, {
+      transports: ["websocket"],
+    });
+
+    setSocket(newSocket);
+
+    newSocket.on("connect", () => {
+      console.log("Connected to socket:", newSocket.id);
+    });
+
+    newSocket.on("disconnect", () => {
+      console.log("Disconnected from socket");
+    });
+
+    // cleanup khi unmount
+    return () => {
+      newSocket.disconnect();
+    };
+  }, []);
 
   // Load user từ localStorage
   useEffect(() => {
@@ -64,8 +65,8 @@ const OrdersPage = () => {
       try {
         const url =
           status && status !== "all"
-            ? `http://localhost:8080/api/transactions/seller/${user._id}?status=${status}`
-            : `http://localhost:8080/api/transactions/seller/${user._id}`;
+            ? `${API_BASE}/api/transactions/seller/${user._id}?status=${status}`
+            : `${API_BASE}/api/transactions/seller/${user._id}`;
 
         const response = await axios.get(url);
         setOrders(response.data.data || []);
@@ -87,21 +88,18 @@ const OrdersPage = () => {
   // Xử lý gửi hàng
   const handleShipOrder = async (order: Transaction) => {
     try {
-      await axios.post(
-        `http://localhost:8080/api/transactions/${order._id}/ship`
-      );
+      await axios.post(`${API_BASE}/api/transactions/${order._id}/ship`);
       addToast({
         type: "success",
-          message: "Đã xác nhận gửi hàng",
+        message: "Đã xác nhận gửi hàng",
       });
 
-      console.log('oder:',order)
+      console.log("oder:", order);
       await handleSendNotificationShip(order);
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      await new Promise((resolve) => setTimeout(resolve, 5000));
       await handlerSendNotificationComplete(order);
       // Backend sẽ tự hoàn tất sau 5s; chỉ refresh để hiển thị 'shipping' ngay
       fetchOrders(activeTab === "all" ? undefined : activeTab);
-
     } catch (error: any) {
       addToast({
         type: "error",
@@ -111,100 +109,102 @@ const OrdersPage = () => {
   };
 
   //Gửi thông báo
- const handleSendNotificationShip = async (order: Transaction) => {
-  if (!order || !order.post_id || !user?._id) {
-    console.warn("Thiếu dữ liệu khi gửi thông báo vận chuyển", order);
-    return;
-  }
-
-  try {
-    await axios.post("http://localhost:8080/api/notifications", {      
-      receiver_id: order.buyer_id._id, 
-      sender_id: user._id,
-      title: "Đơn hàng của bạn đang được vận chuyển",
-      body: `Đơn hàng ${order.post_id.title} sắp đến, vui lòng chuẩn bị nhận hàng.`,
-      type: "transaction",
-      related_id: order._id,
-      related_model: "Transaction",
-      deeplink: `/transactions/${order._id}`, 
-      channel: "in_app",
-      is_read: false,
-    });
-
-      // socket?.emit("join_user",  order.buyer_id._id, );
-        socket?.emit("send_message", {
-            receiverId: order.buyer_id._id, 
-            message:'Notification'
-        });
-
-    console.log("✅ Gửi thông báo thành công cho người bán");
-  } catch (error) {
-    console.error("❌ Gửi thông báo cho người bán thất bại:", error);
-    alert("Gửi thông báo cho người bán thất bại");
-  }
-};
-
-
-    const handlerSendNotificationComplete = async (order: Transaction)=>{
-       if (!order || !order.post_id || !user?._id) {
-        console.warn("Thiếu dữ liệu khi gửi thông báo vận chuyển", order);
-        return;
-      }
-      try {
-         await axios.post("http://localhost:8080/api/notifications", {      
-          receiver_id: order.buyer_id._id, 
-          sender_id: user._id,
-          title: "Đơn hàng đã hoàn tất",
-          body: `Đơn hàng ${order.post_id.title} đã được giao`,
-          type: "transaction",
-          related_id: order._id,
-          related_model:"Transaction",
-          deeplink: "",
-          channel: "in_app",
-          is_read: false
-        });
-
-          // socket?.emit("join_user",  order.buyer_id._id, );
-          socket?.emit("send_message", {
-              receiverId: order.buyer_id._id, 
-              message:'Notification'
-        });
-      } catch (error) {
-        alert('Gửi thông báo cho người mua thất bại')
-      }
+  const handleSendNotificationShip = async (order: Transaction) => {
+    if (!order || !order.post_id || !user?._id) {
+      console.warn("Thiếu dữ liệu khi gửi thông báo vận chuyển", order);
+      return;
     }
 
-    const handleSendNotificationCancel = async (order: Transaction, cancelReason: string) => {
-        if (!order || !order.post_id || !user?._id) {
-          console.warn("Thiếu dữ liệu khi gửi thông báo huỷ đơn", order);
-          return;
-        }
-        try {
-          await axios.post("http://localhost:8080/api/notifications", {      
-            receiver_id: order.buyer_id._id, 
-            sender_id: user._id,
-            title: "Đơn hàng của đã bị từ chối",
-            body: `Bạn được hoàn lại ${formatPrice(order.amount)} vào tài khoản.\nLý do: ${cancelReason}`,
-            type: "transaction",
-            related_id: order._id,
-            related_model: "Transaction",
-            deeplink: `/transactions/${order._id}`, 
-            channel: "in_app",
-            is_read: false,
-          });
+    try {
+      await axios.post(`${API_BASE}/api/notifications`, {
+        receiver_id: order.buyer_id._id,
+        sender_id: user._id,
+        title: "Đơn hàng của bạn đang được vận chuyển",
+        body: `Đơn hàng ${order.post_id.title} sắp đến, vui lòng chuẩn bị nhận hàng.`,
+        type: "transaction",
+        related_id: order._id,
+        related_model: "Transaction",
+        deeplink: `/transactions/${order._id}`,
+        channel: "in_app",
+        is_read: false,
+      });
 
-            // socket?.emit("join_user",  order.buyer_id._id, );
-              socket?.emit("send_message", {
-                  receiverId: order.buyer_id._id, 
-                  message:'Notification'
-              });
+      // socket?.emit("join_user",  order.buyer_id._id, );
+      socket?.emit("send_message", {
+        receiverId: order.buyer_id._id,
+        message: "Notification",
+      });
 
-          console.log("✅ Gửi thông báo thành công cho người bán");
-        } catch (error) {
-          console.error("❌ Gửi thông báo cho người bán thất bại:", error);
-          alert("Gửi thông báo cho người bán thất bại");
-        }
-      };
+      console.log("✅ Gửi thông báo thành công cho người bán");
+    } catch (error) {
+      console.error("❌ Gửi thông báo cho người bán thất bại:", error);
+      alert("Gửi thông báo cho người bán thất bại");
+    }
+  };
+
+  const handlerSendNotificationComplete = async (order: Transaction) => {
+    if (!order || !order.post_id || !user?._id) {
+      console.warn("Thiếu dữ liệu khi gửi thông báo vận chuyển", order);
+      return;
+    }
+    try {
+      await axios.post(`${API_BASE}/api/notifications`, {
+        receiver_id: order.buyer_id._id,
+        sender_id: user._id,
+        title: "Đơn hàng đã hoàn tất",
+        body: `Đơn hàng ${order.post_id.title} đã được giao`,
+        type: "transaction",
+        related_id: order._id,
+        related_model: "Transaction",
+        deeplink: "",
+        channel: "in_app",
+        is_read: false,
+      });
+
+      // socket?.emit("join_user",  order.buyer_id._id, );
+      socket?.emit("send_message", {
+        receiverId: order.buyer_id._id,
+        message: "Notification",
+      });
+    } catch {
+      alert("Gửi thông báo cho người mua thất bại");
+    }
+  };
+
+  const handleSendNotificationCancel = async (
+    order: Transaction,
+    cancelReason: string
+  ) => {
+    if (!order || !order.post_id || !user?._id) {
+      console.warn("Thiếu dữ liệu khi gửi thông báo huỷ đơn", order);
+      return;
+    }
+    try {
+      await axios.post(`${API_BASE}/api/notifications`, {
+        receiver_id: order.buyer_id._id,
+        sender_id: user._id,
+        title: "Đơn hàng của đã bị từ chối",
+        body: `Bạn được hoàn lại ${formatPrice(order.amount)} vào tài khoản.\nLý do: ${cancelReason}`,
+        type: "transaction",
+        related_id: order._id,
+        related_model: "Transaction",
+        deeplink: `/transactions/${order._id}`,
+        channel: "in_app",
+        is_read: false,
+      });
+
+      // socket?.emit("join_user",  order.buyer_id._id, );
+      socket?.emit("send_message", {
+        receiverId: order.buyer_id._id,
+        message: "Notification",
+      });
+
+      console.log("✅ Gửi thông báo thành công cho người bán");
+    } catch (error) {
+      console.error("❌ Gửi thông báo cho người bán thất bại:", error);
+      alert("Gửi thông báo cho người bán thất bại");
+    }
+  };
   // no client-side auto-complete timers; backend schedules completion
 
   // Xử lý huỷ đơn
@@ -213,21 +213,17 @@ const OrdersPage = () => {
     if (!cancelReason) return;
 
     try {
-      await axios.post(
-        `http://localhost:8080/api/transactions/${order._id}/cancel`,
-        {
-          cancelReason,
-        }
-      );
+      await axios.post(`${API_BASE}/api/transactions/${order._id}/cancel`, {
+        cancelReason,
+      });
 
       //Gửi thông báo
-      handleSendNotificationCancel(order,cancelReason);
+      handleSendNotificationCancel(order, cancelReason);
 
-      await axios.patch(
-        `http://localhost:8080/api/posts/${order.post_id._id}`,
-        { status: "active" }
-      );
-     
+      await axios.patch(`${API_BASE}/api/posts/${order.post_id._id}`, {
+        status: "active",
+      });
+
       addToast({ type: "success", message: "Đã huỷ đơn và hoàn tiền" });
       fetchOrders(activeTab === "all" ? undefined : activeTab);
     } catch (error: any) {

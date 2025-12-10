@@ -3,14 +3,14 @@ FROM oven/bun:1 as base
 WORKDIR /app
 
 # Copy package files
-COPY package.json bun.lockb bunfig.toml ./
+COPY package.json bun.lock bunfig.toml ./
 COPY packages/types/package.json ./packages/types/package.json
 COPY packages/config/eslint/package.json ./packages/config/eslint/package.json
 COPY packages/config/typescript/package.json ./packages/config/typescript/package.json
 COPY apps/backend/package.json ./apps/backend/package.json
 
 # Install dependencies
-RUN bun install --frozen-lockfile
+RUN bun install
 
 # Copy source code
 COPY . .
@@ -28,9 +28,9 @@ COPY --from=base /app/apps/backend/dist ./dist
 COPY --from=base /app/apps/backend/package.json ./
 COPY --from=base /app/node_modules ./node_modules
 
-# Create non-root user
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nestjs
+# Create non-root user (Debian/Ubuntu syntax)
+RUN groupadd --system --gid 1001 nodejs && \
+    useradd --system --uid 1001 --gid nodejs nestjs
 USER nestjs
 
 # Health check
@@ -39,4 +39,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 
 EXPOSE 8080
 
-CMD ["bun", "run", "start:prod"]
+CMD ["bun", "run", "dist/src/main.js"]

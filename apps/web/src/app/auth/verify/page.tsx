@@ -1,9 +1,10 @@
 "use client";
 import { useRouter } from "next/navigation";
-import styleLogin from "@/styles/pages/auth/login.module.scss";
-import styleVerification from "@/styles/pages/auth/verification.module.scss";
+import styleLogin from "@/styles/pages/auth/login-v2.module.scss";
+import styleVerification from "@/styles/pages/auth/verification-v2.module.scss";
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { API_BASE } from "@/lib/constants";
 
 const Home = () => {
   const router = useRouter();
@@ -28,7 +29,7 @@ const Home = () => {
   //Bấm nút gửi lại mã
   const handleClick = async () => {
     try {
-      await axios.get(`http://localhost:8080/api/auth/mail`, {
+      await axios.get(`${API_BASE}/api/auth/mail`, {
         params: { email: form.email },
       });
     } catch {}
@@ -64,9 +65,9 @@ const Home = () => {
     }
     try {
       await axios.post(
-        "http://localhost:8080/api/auth/verify", // API NestJS
+        `${API_BASE}/api/auth/verify`, // API NestJS
         form,
-        { withCredentials: true }, // nếu BE dùng cookie/session
+        { withCredentials: true } // nếu BE dùng cookie/session
       );
       alert("Xác thực thành công");
       router.push("/auth/login");

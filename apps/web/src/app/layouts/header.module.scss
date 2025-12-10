@@ -1,12 +1,32 @@
 @use '../../styles/abstracts/variables.scss'as vars;
 @use '../../styles/abstracts/colors.scss'as colors;
 
-/* ==========================================
-   SAY2HAND - HEADER STYLES
-   Modern gradient header với responsive design
-   ========================================== */
+// ==========================================
+// LOGO - Desktop & Mobile
+// ==========================================
+.logoImg {
+  display: block;
+  width: 180px;
+  object-fit: contain;
 
-/* Container chính của header */
+  @media (max-width: 640px) {
+    display: none;
+  }
+}
+
+.logoMobile {
+  display: none;
+  width: 110px;
+  height: 28px;
+  object-fit: contain;
+  margin: 0 auto;
+
+  @media (max-width: 640px) {
+    display: block;
+  }
+}
+
+
 .headerContainer {
   background: colors.$ui-header;
   width: 100%;
@@ -17,51 +37,58 @@
   top: 0;
   z-index: 999;
   box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  // Ẩn header desktop trên mobile (< 640px)
+  @media (max-width: 639px) {
+    display: none;
+  }
 
   @include vars.respond-to('lg') {
     min-height: vars.$header-height;
   }
 
-  /* Header compact khi scroll */
-  &.scrolled {
-    min-height: 70px;
-    box-shadow: 0 2px 12px rgba(59, 130, 246, 0.2);
+
+  @include vars.respond-to('lg') {
+    min-height: 80px;
+  }
+
+  .flexRow {
+    @include vars.respond-below('sm') {
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 6px 6px 6px;
+    }
+
+    padding: vars.$spacing-sm vars.$spacing-lg;
+  }
+
+  .logoImg {
+    width: 240px;
 
     @include vars.respond-to('lg') {
-      min-height: 80px;
-    }
-
-    .flexRow {
-      padding: vars.$spacing-sm vars.$spacing-lg;
-    }
-
-    .logoImg {
-      height: 35px;
-
-      @include vars.respond-to('lg') {
-        height: 40px;
-      }
-    }
-
-    .searchInputGroup {
-      height: 48px;
-    }
-
-    .searchButton {
       height: 40px;
-      padding: 0 vars.$spacing-md;
-    }
-
-    // Mobile: Compact hơn khi scroll
-    @include vars.respond-below('sm') {
-      min-height: 110px; // Giảm chiều cao khi scroll
-
-      .mobileSearchRow {
-        padding: 8px 12px;
-      }
     }
   }
+
+  .searchInputGroup {
+    height: 48px;
+  }
+
+  .searchButton {
+    height: 40px;
+    padding: 0 vars.$spacing-md;
+  }
+
+  // Mobile: Compact hơn khi scroll
+  @include vars.respond-below('sm') {
+    min-height: 110px; // Giảm chiều cao khi scroll
+
+    .mobileSearchRow {
+      padding: 8px 12px;
+    }
+  }
+
 }
 
 /* Top row - Logo, Search, Actions */
@@ -106,6 +133,12 @@
 
 /* Groups layout */
 .group1 {
+  @include vars.respond-below('sm') {
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+  }
+
   display: flex;
   align-items: center;
   gap: vars.$spacing-md;
@@ -113,6 +146,12 @@
 }
 
 .group2 {
+  @include vars.respond-below('sm') {
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+  }
+
   display: flex;
   align-items: center;
   gap: vars.$spacing-md;
@@ -375,11 +414,8 @@
     border-radius: 8px;
   }
 
-  /* Firefox scrollbar sizing */
-  .provinceList {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(16, 24, 40, 0.12) transparent;
-  }
+  /* Scrollbar styles được định nghĩa trong globals.scss */
+  /* Sử dụng class: scrollbar-thin cho component này */
 
 
 
@@ -497,7 +533,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 120px;
+  max-width: 160px;
   margin: 0;
 
   @include vars.respond-below('lg') {
@@ -690,9 +726,8 @@
     max-height: 520px;
     overflow-y: auto;
     background: white;
-    /* Ẩn thanh scroll trên mọi trình duyệt */
-    scrollbar-width: none;
-    /* Firefox */
+    /* Scrollbar styles được định nghĩa trong globals.scss */
+    /* Sử dụng class: scrollbar-hidden cho component này */
     -ms-overflow-style: none;
 
     /* IE 10+ */
@@ -806,6 +841,26 @@
 
 /* Login button */
 .btnLogin {
+  @include vars.respond-below('sm') {
+    min-width: 36px;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+
+    .headerBtnText {
+      display: none;
+    }
+
+    svg {
+      margin: 0 auto;
+    }
+  }
+
+  @include vars.respond-below('sm') {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
   min-width: 120px;
   height: 50px;
   border-radius: vars.$radius-full;
@@ -1141,7 +1196,8 @@
   }
 
   .logoImg {
-    height: 30px;
+    content: url('/images/Say2HandL.svg');
+    width: 100px;
   }
 
   .btnHeader,
@@ -1221,9 +1277,7 @@
   }
 }
 
-:global(.rotating) {
-  animation: rotate 1s linear infinite;
-}
+/* .rotating animation đã được định nghĩa trong globals.scss */
 
 @keyframes shake {
 

@@ -2,8 +2,10 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import Header from "@/app/layouts/Header";
+import HeaderMobile from "@/app/layouts/HeaderMobile";
 import Footer from "@/app/layouts/Footer";
 import { ToastProvider } from "@/components/ui/toast/ToastContext";
+import styles from "./clientLayout.module.scss";
 
 export default function ClientLayout({
   children,
@@ -51,8 +53,26 @@ export default function ClientLayout({
   const hideFooter = noFooterRoutes.some((route) => pathname.startsWith(route));
   return (
     <ToastProvider>
-      {!hideHeaderFooter && <Header />}
-      <main>{children}</main>
+      {!hideHeaderFooter && (
+        <>
+          {/* Desktop Header - Hiển thị từ 640px trở lên */}
+          <div className="hidden sm:block">
+            <Header />
+          </div>
+          {/* Mobile Header - Chỉ hiển thị dưới 640px */}
+          <div className="block sm:hidden">
+            <HeaderMobile />
+          </div>
+        </>
+      )}
+      {/* Main content với padding-top cho mobile header */}
+      <main
+        className={
+          !hideHeaderFooter ? styles.mainContent : styles.mainContentNoHeader
+        }
+      >
+        {children}
+      </main>
       {!hideHeaderFooter && !hideFooter && <Footer />}
     </ToastProvider>
   );
