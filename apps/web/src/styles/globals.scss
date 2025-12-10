@@ -2,7 +2,7 @@
 @use "common/common";
 @use "./abstracts/colors.scss"as colors;
 @use "./abstracts/variables.scss"as vars;
-
+@use "./leaflet-custom.scss";
 /* ==========================================
    SAY2HAND - GLOBAL STYLES
    ========================================== */
@@ -11,7 +11,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 /* Import Leaflet custom styles (global selectors for map library) */
-@import './leaflet-custom.scss';
 
 /* CSS Custom Properties - Định nghĩa biến toàn cục */
 :root {
