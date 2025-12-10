@@ -18,7 +18,8 @@ export class UploadService {
     };
 
     if (credentialsPath) {
-      storageConfig.keyFilename = path.join(process.cwd(), credentialsPath);
+      // Nếu là đường dẫn tuyệt đối, không nối thêm process.cwd()
+      storageConfig.keyFilename = credentialsPath;
     }
     // Nếu không cung cấp file credentials, Storage sẽ sử dụng xác thực mặc định
     // (như Application Default Credentials hoặc service account gắn với môi trường)
