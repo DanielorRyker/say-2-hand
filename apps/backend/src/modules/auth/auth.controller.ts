@@ -6,14 +6,22 @@ import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { VerifyResetPasswordDto } from './dto/verify-reset-password.dto';
 import { MailerService } from '@nestjs-modules/mailer';
 import { JwtAuthGuard } from '../../common/jwt/jwt-auth.guard';
+import { MailService } from '@sendgrid/mail';
 
 @Controller('auth')
 @UseGuards(ThrottlerGuard)
 export class AuthController {
+   private sgMail: MailService;
   constructor(
     private authService: AuthService,
     private readonly mailerService: MailerService,
-  ) {}
+  ) {
+    this.sgMail = new MailService();
+
+    console.log('🔑 SENDGRID_KEY LOADED =', process.env.SENDGRID_API_KEY);
+
+    this.sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
+  }
 
   // Đăng nhập: Giới hạn 5 lần/60s mỗi IP
   @Post('login')
@@ -87,14 +95,20 @@ export class AuthController {
   await this.authService.createHashOTPPassword(otp, email);
 
   try {
-    const result = await this.mailerService.sendMail({
-      to: email,
-      from: `"Say2hand" <${process.env.MAIL_USER}>`,
-      subject: 'Say2hand - Đặt lại mật khẩu',
-      text: 'Đây là mã đặt lại mật khẩu của bạn: ' + otp,
-      html: `<b>Đây là mã đặt lại mật khẩu của bạn: ${otp}</b>`,
-    });
-
+    // const result = await this.mailerService.sendMail({
+    //   to: email,
+    //   from: `"Say2hand" <${process.env.MAIL_USER}>`,
+    //   subject: 'Say2hand - Đặt lại mật khẩu',
+    //   text: 'Đây là mã đặt lại mật khẩu của bạn: ' + otp,
+    //   html: `<b>Đây là mã đặt lại mật khẩu của bạn: ${otp}</b>`,
+    // });
+    const result =  await this.sgMail.send({
+          to:  email,
+          from: process.env.SENDGRID_SENDER_EMAIL || 'thanhnhan16.2.2002@gmail.com', // phải là Single Sender Verified
+          subject: 'Say2hand - Đặt lại mật khẩu',
+          text: 'Đây là mã đặt lại mật khẩu của bạn: ' + otp,
+          html: `<b>Đây là mã đặt lại mật khẩu của bạn: ${otp}</b>`,
+        });
     console.log('📨 Email gửi thành công:', result);
     return { message: 'ok' };
   } catch (error) {
@@ -113,4 +127,22 @@ export class AuthController {
       dto.password,
     );
   }
+
+   @Get('test')
+    async testEmail() {
+      try {
+        await this.sgMail.send({
+          to: 'mycos162@gmail.com',
+          from: process.env.SENDGRID_SENDER_EMAIL || 'thanhnhan16.2.2002@gmail.com', // phải là Single Sender Verified
+          subject: 'Test SendGrid v8',
+          text: 'Hello from SendGrid v8!',
+          html: '<strong>Hello from SendGrid v8!</strong>',
+        });
+
+        return { success: true };
+      } catch (error) {
+        console.log(error.response?.body || error);
+        return { success: false, error };
+      }
+    }
 }

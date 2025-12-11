@@ -95,6 +95,7 @@
     "react-number-format": "^5.4.4",
     "react-qr-code": "^2.0.18",
     "reflect-metadata": "^0.2.2",
+    "resend": "^6.6.0",
     "rxjs": "^7.8.2",
     "sass": "^1.91.0",
     "socket.io": "^4.8.1",
