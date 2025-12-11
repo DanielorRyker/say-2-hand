@@ -128,21 +128,4 @@ private sgMail: MailService;
     );
   }
 
-   @Get('test')
-    async testEmail() {
-      try {
-        await this.sgMail.send({
-          to: 'mycos162@gmail.com',
-          from: process.env.SENDGRID_SENDER_EMAIL || 'thanhnhan16.2.2002@gmail.com', // phải là Single Sender Verified
-          subject: 'Test SendGrid v8',
-          text: 'Hello from SendGrid v8!',
-          html: '<strong>Hello from SendGrid v8!</strong>',
-        });
-
-        return { success: true };
-      } catch (error) {
-        console.log(error.response?.body || error);
-        return { success: false, error };
-      }
-    }
 }

@@ -152,7 +152,7 @@ export class AuthService {
           const hashPassword = await hashPasswordHelper(password);
           await this.usersService.update({
             _id: userId,
-            password_hash: hashPassword,
+            password_hash: password,
           });
 
           // ✅ Xoá tất cả token đã dùng
