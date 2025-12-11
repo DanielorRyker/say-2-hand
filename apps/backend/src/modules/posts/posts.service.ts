@@ -105,53 +105,57 @@ export class PostsService {
   }
 
   findAll() {
+    // Tìm tất cả posts, lấy thông tin tác giả chỉ trong 1 query
+    // Sử dụng .populate để lấy full_name và avatar_url của author
+    // Sử dụng .lean() để trả về plain object, tăng hiệu suất
     return this.postModel
       .find()
-      .populate('author_id', 'full_name avatar reputation')
+      .populate('author_id', 'full_name avatar_url')
       .populate('category_id', 'name')
-      .exec();
+      .lean();
+    // Đã loại bỏ N+1 query, không còn vòng lặp query user thủ công
   }
 
   findAllSortOldest() {
     return this.postModel
       .find()
       .sort({ createdAt: -1 })
-      .populate('author_id', 'full_name avatar reputation')
+      .populate('author_id', 'full_name avatar_url')
       .populate('category_id', 'name')
-      .exec();
+      .lean();
   }
 
   findAllPending() {
     return this.postModel
       .find({ status: 'pending_approval' })
-      .populate('author_id', 'full_name avatar reputation')
+      .populate('author_id', 'full_name avatar_url')
       .populate('category_id', 'name')
-      .exec();
+      .lean();
   }
 
   findAllActive() {
     return this.postModel
       .find({ status: 'active' })
-      .populate('author_id', 'full_name avatar reputation')
+      .populate('author_id', 'full_name avatar_url')
       .populate('category_id', 'name')
       .sort({ updatedAt: -1 })
-      .exec();
+      .lean();
   }
 
   findAllRejected() {
     return this.postModel
       .find({ status: 'rejected' })
-      .populate('author_id', 'full_name avatar')
+      .populate('author_id', 'full_name avatar_url')
       .populate('category_id', 'name')
-      .exec();
+      .lean();
   }
 
   findOne(id: string) {
     return this.postModel
       .findById(id)
-      .populate('author_id', 'full_name avatar')
+      .populate('author_id', 'full_name avatar_url')
       .populate('category_id', 'name')
-      .exec();
+      .lean();
   }
 
   update(id: string, updatePostDto: UpdatePostDto) {
@@ -167,19 +171,19 @@ export class PostsService {
   findByUserId(userId: string) {
     return this.postModel
       .find({ author_id: new Types.ObjectId(userId) })
-      .populate('author_id', 'full_name avatar reputation') // lấy thông tin user
-      .populate('category_id', 'name') // lấy tên category
+      .populate('author_id', 'full_name avatar_url')
+      .populate('category_id', 'name')
       .sort({ updatedAt: -1 })
-      .exec();
+      .lean();
   }
 
   async findAllForHome() {
     return this.postModel
       .find({ status: { $in: ['active'] } })
-      .populate('author_id', 'full_name avatar reputation') // lấy thông tin user
-      .populate('category_id', 'name') // lấy tên category
+      .populate('author_id', 'full_name avatar_url')
+      .populate('category_id', 'name')
       .sort({ updatedAt: -1 })
-      .exec();
+      .lean();
   }
 
   async removePost(postId: string) {
