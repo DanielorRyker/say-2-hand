@@ -44,7 +44,7 @@ private sgMail: MailService;
     this.mailerService
       .sendMail({
         to: email, // list of receivers
-        from: 'noreply@nestjs.com', // sender address
+         from: process.env.SENDGRID_SENDER_EMAIL || 'thanhnhan16.2.2002@gmail.com',
         subject: 'Say2hand', // Subject line
         text: 'Đây là mã xác nhận của bạn: ' + otp, // plaintext body
         html: '<b>Đây là mã xác nhận của bạn:' + otp + '</b>', // HTML body content
@@ -95,13 +95,6 @@ private sgMail: MailService;
   await this.authService.createHashOTPPassword(otp, email);
 
   try {
-    // const result = await this.mailerService.sendMail({
-    //   to: email,
-    //   from: `"Say2hand" <${process.env.MAIL_USER}>`,
-    //   subject: 'Say2hand - Đặt lại mật khẩu',
-    //   text: 'Đây là mã đặt lại mật khẩu của bạn: ' + otp,
-    //   html: `<b>Đây là mã đặt lại mật khẩu của bạn: ${otp}</b>`,
-    // });
     const result =  await this.sgMail.send({
           to:  email,
           from: process.env.SENDGRID_SENDER_EMAIL || 'thanhnhan16.2.2002@gmail.com', // phải là Single Sender Verified
