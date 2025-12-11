@@ -70,12 +70,9 @@
     "@nestjs/testing": "^11.1.6",
     "@nestjs/throttler": "^6.4.0",
     "@nestjs/websockets": "^11.1.6",
-<<<<<<< HEAD
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
-=======
     "@sendgrid/mail": "^8.1.6",
->>>>>>> ea44be2c287be6f5137a8de740014b348736ae2f
     "@types/nodemailer": "^7.0.1",
     "bcrypt": "^6.0.0",
     "bootstrap": "^5.3.7",
