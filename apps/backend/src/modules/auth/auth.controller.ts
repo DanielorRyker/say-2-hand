@@ -11,7 +11,7 @@ import { MailService } from '@sendgrid/mail';
 @Controller('auth')
 @UseGuards(ThrottlerGuard)
 export class AuthController {
-   private sgMail: MailService;
+private sgMail: MailService;
   constructor(
     private authService: AuthService,
     private readonly mailerService: MailerService,
