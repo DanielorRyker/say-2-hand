@@ -41,15 +41,18 @@ import { GeminiModule } from './modules/gemini/gemini.module';
       useFactory: (configService: ConfigService) => ({
         transport: {
           host: 'smtp.gmail.com',
-          port: 465, // ✅ cổng chính xác
-          secure: true, // true nếu dùng 465, false nếu dùng 587
+          port: 587, // ✅ cổng chính xác
+          secure: false, // true nếu dùng 465, false nếu dùng 587
           auth: {
             user: configService.get<string>('MAIL_USER'), // ví dụ: studies.mail.2024@gmail.com
             pass: configService.get<string>('MAIL_PASSWORD'), // App Password, KHÔNG phải mật khẩu Gmail thường
           },
+           tls: {
+            rejectUnauthorized: false, // ⚡ Fix lỗi TLS trên Render
+          },
         },
         defaults: {
-          from: '"No Reply" <no-reply@say2hand.com>', // sửa cho đẹp domain
+          from: `"Say2hand" <${configService.get<string>('MAIL_USER')}>`, // sửa cho đẹp domain
         },
       }),
       inject: [ConfigService],
