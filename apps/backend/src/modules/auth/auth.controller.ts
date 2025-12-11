@@ -57,27 +57,51 @@ export class AuthController {
   //Gửi mail để đổi mật khẩu
   // Removed @UseGuards(JwtAuthGuard) - user is not authenticated in forgot password flow
   // Gửi OTP quên mật khẩu: Giới hạn 5 lần/60s mỗi IP
+
+  // @Get('mailResetPassword/')
+  // @Throttle({ default: { limit: 5, ttl: 60 } })
+  // async sendMailResetPassword(@Query('email') email: string) {
+  //   const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+  //   //tạo OTP trên database
+  //   await this.authService.createHashOTPPassword(otp, email);
+
+  //   this.mailerService
+  //     .sendMail({
+  //       to: email, // list of receivers
+  //       from: 'noreply@nestjs.com', // sender address
+  //       subject: 'Say2hand', // Subject line
+  //       text: 'Đây là mã đặt lại mật khẩu của bạn: ' + otp, // plaintext body
+  //       html: '<b>Đây là mã đặt lại mật khẩu của bạn:' + otp + '</b>', // HTML body content
+  //     })
+  //     .then(() => {})
+  //     .catch(() => {});
+  // }
+
   @Get('mailResetPassword/')
   @Throttle({ default: { limit: 5, ttl: 60 } })
   async sendMailResetPassword(@Query('email') email: string) {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    //tạo OTP trên database
-    await this.authService.createHashOTPPassword(otp, email);
+  // Tạo OTP trên database
+  await this.authService.createHashOTPPassword(otp, email);
 
-    this.mailerService
-      .sendMail({
-        to: email, // list of receivers
-        from: 'noreply@nestjs.com', // sender address
-        subject: 'Say2hand', // Subject line
-        text: 'Đây là mã đặt lại mật khẩu của bạn: ' + otp, // plaintext body
-        html: '<b>Đây là mã đặt lại mật khẩu của bạn:' + otp + '</b>', // HTML body content
-      })
-      .then(() => {})
-      .catch(() => {});
+  try {
+    const result = await this.mailerService.sendMail({
+      to: email,
+      from: `"Say2hand" <${process.env.MAIL_USER}>`,
+      subject: 'Say2hand - Đặt lại mật khẩu',
+      text: 'Đây là mã đặt lại mật khẩu của bạn: ' + otp,
+      html: `<b>Đây là mã đặt lại mật khẩu của bạn: ${otp}</b>`,
+    });
 
-    // return 'ok';
+    console.log('📨 Email gửi thành công:', result);
+    return { message: 'ok' };
+  } catch (error) {
+    console.error('❌ Lỗi gửi email:', error);
+    return { message: 'send mail error', error };
   }
+}
 
   // Xác thực OTP quên mật khẩu: Giới hạn 5 lần/60s mỗi IP
   @Post('verifyResetPassword')
