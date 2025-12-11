@@ -284,14 +284,14 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
         titleNotification = "Có người nhận món đồ của bạn";
         bodyNotification =
           currentUser.full_name +
-          " đã nhận món đồ " +
+          " đã nhận sản phẩm " +
           normalizedPost.title +
           " của bạn. Vui lòng xác nhận.";
       } else {
         titleNotification = "Bạn có đơn hàng mới";
         bodyNotification =
           currentUser.full_name +
-          " đã nhận sản phẩm " +
+          " đã mua sản phẩm " +
           normalizedPost.title +
           " từ bạn.";
       }

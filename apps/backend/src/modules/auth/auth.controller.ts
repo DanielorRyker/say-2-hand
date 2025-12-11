@@ -76,7 +76,7 @@ export class AuthController {
       .then(() => {})
       .catch(() => {});
 
-    return 'ok';
+    // return 'ok';
   }
 
   // Xác thực OTP quên mật khẩu: Giới hạn 5 lần/60s mỗi IP
