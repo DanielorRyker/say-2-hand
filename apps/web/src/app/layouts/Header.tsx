@@ -578,103 +578,6 @@ const Header = () => {
     >
       <div className={headerStyles.flexRow}>
         <div className={headerStyles.group1}>
-          <NavDropdown
-            className={headerStyles.dropDownCar}
-            title={
-              <div className={headerStyles.menuButton}>
-                <Icon icon="mdi:menu" width={24} height={24} />
-              </div>
-            }
-            id="category-dropdown"
-          >
-            <NavDropdown.Header className={headerStyles.categoryHeader}>
-              <Icon icon="mdi:shape-outline" width={22} height={22} />
-              <h5>Danh mục sản phẩm</h5>
-            </NavDropdown.Header>
-            <NavDropdown.Divider />
-
-            {/* Loading state */}
-            {categoriesLoading && (
-              <NavDropdown.Item disabled>
-                <Icon
-                  icon="mdi:loading"
-                  width={20}
-                  height={20}
-                  className="rotating"
-                />
-                Đang tải danh mục...
-              </NavDropdown.Item>
-            )}
-
-            {/* Error state */}
-            {!categoriesLoading && categoriesError && (
-              <NavDropdown.Item disabled>
-                <Icon icon="mdi:alert-circle" width={20} height={20} />
-                Không thể tải danh mục
-              </NavDropdown.Item>
-            )}
-
-            {/* Empty state */}
-            {!categoriesLoading &&
-              !categoriesError &&
-              categories.length === 0 && (
-                <NavDropdown.Item disabled>
-                  <Icon icon="mdi:inbox" width={20} height={20} />
-                  Chưa có danh mục nào
-                </NavDropdown.Item>
-              )}
-
-            {/* Category list - only show parent categories (first level) */}
-            {!categoriesLoading &&
-              !categoriesError &&
-              categories
-                .filter((cat) => !cat.parent_id) // Chỉ hiển thị parent categories
-                .slice(0, 12)
-                .map((cate) => (
-                  <NavDropdown.Item
-                    key={cate._id}
-                    onClick={() => {
-                      // Navigate to search page với category filter
-                      router.push(`/search?category=${cate._id}`);
-                    }}
-                  >
-                    {cate.image ? (
-                      <Image
-                        src={
-                          formatImageUrl(cate.image) ||
-                          "/image/category/default.svg"
-                        }
-                        alt={cate.name || "Category"}
-                        width={20}
-                        height={20}
-                        style={{ objectFit: "cover", borderRadius: "4px" }}
-                        unoptimized
-                      />
-                    ) : (
-                      <Icon icon="mdi:shape" width={20} height={20} />
-                    )}
-                    {cate.name}
-                  </NavDropdown.Item>
-                ))}
-
-            {/* View all categories link */}
-            {!categoriesLoading && categories.length > 12 && (
-              <>
-                <NavDropdown.Divider />
-                <NavDropdown.Item
-                  onClick={() => router.push("/search")}
-                  style={{
-                    fontWeight: 600,
-                    color: "#3b82f6",
-                    textAlign: "center",
-                  }}
-                >
-                  <Icon icon="mdi:arrow-right-circle" width={20} height={20} />
-                  Xem tất cả danh mục
-                </NavDropdown.Item>
-              </>
-            )}
-          </NavDropdown>
           <button
             onClick={() => router.push("/home")}
             className={headerStyles.logoButton}
@@ -682,7 +585,7 @@ const Header = () => {
           >
             {/* Logo desktop */}
             <img
-              src="/image/header/Say2handT.svg"
+              src="/image/header/Say2hand.svg"
               alt="Logo"
               width={200}
               height={45}
@@ -691,7 +594,7 @@ const Header = () => {
             />
             {/* Logo mobile */}
             <img
-              src="/image/header/Say2handT.svg"
+              src="/image/header/Say2hand.svg"
               alt="Logo Mobile"
               width={140}
               height={36}
