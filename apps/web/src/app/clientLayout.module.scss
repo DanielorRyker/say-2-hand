@@ -1,14 +1,13 @@
+// Padding-top cho content để tránh bị header sticky che mất
 .mainContent {
-    /* Padding-top cho mobile header (104px) */
-    padding-top: 104px;
+    padding-top: 104px; // Mobile header cao hơn
     min-height: calc(100vh - 104px);
 }
 
-/* Desktop - không cần padding vì header không fixed */
 @media (min-width: 640px) {
     .mainContent {
-        padding-top: 0;
-        min-height: 100vh;
+        padding-top: 80px; // Desktop header height
+        min-height: calc(100vh - 80px);
     }
 }
 
