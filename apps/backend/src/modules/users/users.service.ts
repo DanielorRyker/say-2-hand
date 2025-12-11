@@ -58,10 +58,19 @@ export class UsersService {
   }
 
   async update(updateUserDto: UpdateUserDto) {
+    // Kiểm tra nếu có cập nhật password thì hash trước khi lưu
+    let updatePayload = { ...updateUserDto };
+    if (updateUserDto.password_hash) {
+      // Hash password mới
+      updatePayload.password_hash = await hashPasswordHelper(updateUserDto.password_hash);
+    }
+    // Cập nhật user với payload đã xử lý
     return this.userModel.updateOne(
       { _id: updateUserDto._id },
-      { ...updateUserDto },
+      updatePayload,
     );
+    // Nếu không có password mới, các trường khác giữ nguyên
+    // Comment: Đảm bảo password luôn được hash khi cập nhật
   }
 
   async remove(_id: string) {

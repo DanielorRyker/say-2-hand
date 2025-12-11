@@ -112,7 +112,7 @@ export default function CategoriesManagement() {
 
   const handleSuggestIcon = async () => {
     if (!categoryForm.name.trim()) {
-      alert("Vui l�ng nh?p t�n danh m?c tru?c!");
+      alert("Vui lòng nhập tên danh mục trước!");
       return;
     }
     try {
@@ -127,12 +127,12 @@ export default function CategoriesManagement() {
       const suggestedIcon = response.data.icon;
       setCategoryForm({ ...categoryForm, icon: suggestedIcon });
 
-      // Hi?n th? th�ng b�o th�n thi?n
-      console.log(`? AI d� g?i � icon: ${suggestedIcon}`);
+      // Hiển thị thông báo thân thiện
+      console.log(`🤖 AI đã gợi ý icon: ${suggestedIcon}`);
     } catch (error) {
       console.error("Error suggesting icon:", error);
 
-      // X? l� l?i m?t c�ch th�n thi?n
+      // Xử lý lỗi một cách thân thiện
       const errorMsg =
         (error as any).response?.data?.message ||
         (error as Error).message ||
@@ -143,11 +143,11 @@ export default function CategoriesManagement() {
         errorMsg.includes("RESOURCE_EXHAUSTED")
       ) {
         alert(
-          "?? AI dang qu� t?i, h? th?ng d� t? d?ng ch?n icon ph� h?p!\nB?n c� th? gi? nguy�n ho?c thay d?i icon n?u mu?n."
+          "🤖 AI đang quá tải, hệ thống đã tự động chọn icon phù hợp!\nBạn có thể giữ nguyên hoặc thay đổi icon nếu muốn."
         );
       } else {
         alert(
-          "?? Kh�ng th? k?t n?i AI, h? th?ng d� t? d?ng ch?n icon ph� h?p!"
+          "🤖 Không thể kết nối AI, hệ thống đã tự động chọn icon phù hợp!"
         );
       }
     } finally {
@@ -157,7 +157,7 @@ export default function CategoriesManagement() {
 
   const handleAddCategory = async () => {
     if (!categoryForm.name.trim()) {
-      alert("Vui l�ng nh?p t�n danh m?c!");
+      alert("Vui lòng nhập tên danh mục!");
       return;
     }
     try {
