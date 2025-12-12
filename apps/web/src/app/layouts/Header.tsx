@@ -493,6 +493,7 @@ const Header = () => {
     const val = localStorage.getItem("totalUnread");
     return val ? parseInt(val, 10) : 0;
   };
+  
   useEffect(() => {
     setTotalUnread(getTotalUnread());
     // Lắng nghe cả sự kiện storage (đa tab) và custom event (cùng tab)
@@ -510,8 +511,15 @@ const Header = () => {
     };
   }, []);
   // Khi conversationsData thay đổi (nếu có fetch lại), cũng cập nhật lại
-  useEffect(() => {
-    setTotalUnread(getTotalUnread());
+  // useEffect(() => {
+  //   setTotalUnread(getTotalUnread());
+  // }, [conversationsData]);
+    useEffect(() => {
+    const count = conversationsData.reduce(
+      (acc, conv) => acc + (conv.unreadCount ?? 0),
+      0
+    );
+    setTotalUnread(count);
   }, [conversationsData]);
 
   //Đăng xuất

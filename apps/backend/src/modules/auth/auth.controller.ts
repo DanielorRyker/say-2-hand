@@ -55,8 +55,8 @@ private sgMail: MailService;
           to:  email,
           from: process.env.SENDGRID_SENDER_EMAIL || 'thanhnhan16.2.2002@gmail.com', // phải là Single Sender Verified
           subject: 'Say2hand - Đặt lại mật khẩu',
-          text: 'Đây là mã đặt lại mật khẩu của bạn: ' + otp,
-          html: `<b>Đây là mã đặt lại mật khẩu của bạn: ${otp}</b>`,
+          text: 'Đây là mã xác nhận của bạn: ' + otp,
+          html: `<b>Đây là mã xác nhận của bạn: ${otp}</b>`,
         });
 
     return result;
