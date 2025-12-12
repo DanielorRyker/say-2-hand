@@ -225,7 +225,7 @@ export class PostsService {
 
     return this.postModel
       .find({ _id: { $in: objectIds } })
-      .populate('author_id', 'full_name avatar') // lấy thông tin user
+      .populate('author_id', 'full_name avatar reputation') // lấy thông tin user
       .populate('category_id', 'name') // lấy tên category
       .sort({ updatedAt: -1 })
       .exec();
