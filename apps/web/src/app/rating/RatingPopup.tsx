@@ -71,7 +71,7 @@ useEffect(() => {
   const fetchExistingRating = async () => {
     try {
       const res = await axios.get(
-        `${API_BASE}/api/ratings/find?rater_id=${user._id}&ratee_id=${transaction.seller_id._id}`
+        `${API_BASE}/api/ratings/find?rater_id=${user._id}&ratee_id=${transaction.seller_id._id}&transaction_id=${transaction._id}`
       );
       const data = res.data;
       if (data) {

@@ -102,7 +102,7 @@ async create(createRatingDto: CreateRatingDto) {
    
   }
 
-  async findOneByRaterAndRatee(rater_id: string, ratee_id: string): Promise<Rating> {
+  async findOneByRaterAndRatee(rater_id: string, ratee_id: string, transaction_id: string): Promise<Rating> {
   if (!Types.ObjectId.isValid(rater_id) || !Types.ObjectId.isValid(ratee_id)) {
     throw new BadRequestException('ID không hợp lệ');
   }
@@ -110,6 +110,7 @@ async create(createRatingDto: CreateRatingDto) {
   const rating = await this.ratingModel.findOne({
     rater_id: new Types.ObjectId(rater_id),
     ratee_id: new Types.ObjectId(ratee_id),
+    transaction_id: new Types.ObjectId(transaction_id),
   });
 
   if (!rating) {

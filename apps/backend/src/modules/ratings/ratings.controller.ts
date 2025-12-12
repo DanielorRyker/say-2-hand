@@ -21,8 +21,9 @@ export class RatingsController {
   async findOne(
     @Query('rater_id') rater_id: string,
     @Query('ratee_id') ratee_id: string,
+    @Query('transaction_id') transaction_id: string,
   ) {
-    return this.ratingsService.findOneByRaterAndRatee(rater_id, ratee_id);
+    return this.ratingsService.findOneByRaterAndRatee(rater_id, ratee_id, transaction_id);
 }
 
 
