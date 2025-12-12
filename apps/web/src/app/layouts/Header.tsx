@@ -514,13 +514,13 @@ const Header = () => {
   // useEffect(() => {
   //   setTotalUnread(getTotalUnread());
   // }, [conversationsData]);
-  //   useEffect(() => {
-  //   const count = conversationsData.reduce(
-  //     (acc, conv) => acc + (conv.unreadCount ?? 0),
-  //     0
-  //   );
-  //   setTotalUnread(count);
-  // }, [conversationsData]);
+    useEffect(() => {
+    const count = conversationsData.reduce(
+      (acc, conv) => acc + (conv.unreadCount ?? 0),
+      0
+    );
+    setTotalUnread(count);
+  }, [conversationsData]);
 
   //Đăng xuất
   const handleLogout = () => {

@@ -110,7 +110,7 @@ export class PostsService {
     // Sử dụng .lean() để trả về plain object, tăng hiệu suất
     return this.postModel
       .find()
-      .populate('author_id', 'full_name avatar_url')
+      .populate('author_id', 'full_name avatar reputation')
       .populate('category_id', 'name')
       .lean();
     // Đã loại bỏ N+1 query, không còn vòng lặp query user thủ công
@@ -120,7 +120,7 @@ export class PostsService {
     return this.postModel
       .find()
       .sort({ createdAt: -1 })
-      .populate('author_id', 'full_name avatar_url')
+      .populate('author_id', 'full_name avatar reputation')
       .populate('category_id', 'name')
       .lean();
   }
@@ -128,7 +128,7 @@ export class PostsService {
   findAllPending() {
     return this.postModel
       .find({ status: 'pending_approval' })
-      .populate('author_id', 'full_name avatar_url')
+      .populate('author_id', 'full_name avatar reputation')
       .populate('category_id', 'name')
       .lean();
   }
@@ -136,7 +136,7 @@ export class PostsService {
   findAllActive() {
     return this.postModel
       .find({ status: 'active' })
-      .populate('author_id', 'full_name avatar_url')
+      .populate('author_id', 'full_name avatar reputation')
       .populate('category_id', 'name')
       .sort({ updatedAt: -1 })
       .lean();
@@ -145,7 +145,7 @@ export class PostsService {
   findAllRejected() {
     return this.postModel
       .find({ status: 'rejected' })
-      .populate('author_id', 'full_name avatar_url')
+      .populate('author_id', 'full_name avatar reputation')
       .populate('category_id', 'name')
       .lean();
   }
@@ -153,7 +153,7 @@ export class PostsService {
   findOne(id: string) {
     return this.postModel
       .findById(id)
-      .populate('author_id', 'full_name avatar_url')
+      .populate('author_id', 'full_name avatar reputation')
       .populate('category_id', 'name')
       .lean();
   }
@@ -171,7 +171,7 @@ export class PostsService {
   findByUserId(userId: string) {
     return this.postModel
       .find({ author_id: new Types.ObjectId(userId) })
-      .populate('author_id', 'full_name avatar_url')
+      .populate('author_id', 'full_name avatar reputation')
       .populate('category_id', 'name')
       .sort({ updatedAt: -1 })
       .lean();
@@ -180,7 +180,7 @@ export class PostsService {
   async findAllForHome() {
     return this.postModel
       .find({ status: { $in: ['active'] } })
-      .populate('author_id', 'full_name avatar_url')
+      .populate('author_id', 'full_name avatar reputation')
       .populate('category_id', 'name')
       .sort({ updatedAt: -1 })
       .lean();
