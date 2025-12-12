@@ -81,6 +81,10 @@ const ListPost: React.FC = () => {
       _id: string;
       full_name: string;
       avatar: string;
+      reputation?: {
+      total_score: number;
+      total_ratings: number;
+    };
     };
     category_id?: {
       _id?: string;
@@ -178,6 +182,21 @@ const ListPost: React.FC = () => {
     if (months < 12) return `${months} tháng trước`;
     const years = Math.floor(months / 12);
     return `${years} năm trước`;
+  };
+
+  //Tính điểm đánh giá
+  const reputationScore = (data: Post) => {
+    if (
+      !data.author_id.reputation ||
+      data.author_id.reputation.total_ratings === 0
+    )
+      return 0;
+    return parseFloat(
+      (
+        data.author_id.reputation.total_score /
+        data.author_id.reputation.total_ratings
+      ).toFixed(1)
+    );
   };
 
   // Note: rely on CSS `.line-clamp-*` classes for truncation/overflow handling
@@ -514,8 +533,8 @@ const ListPost: React.FC = () => {
                         );
                       })()}
                     </span>
-                    <strong>5/5</strong>{" "}
-                    <span className={styles.reviews}>( đánh giá)</span>
+                    <strong>{reputationScore(data)}/5</strong>{" "}
+                    <span className={styles.reviews}>({data.author_id.reputation?.total_ratings} đánh giá)</span>
                   </div>
                 </div>
               </div>

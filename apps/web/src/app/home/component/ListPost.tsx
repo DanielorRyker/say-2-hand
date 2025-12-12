@@ -541,7 +541,7 @@ export const ListPost: React.FC<ListPostProps> = ({ posts }) => {
                       })()}
                     </span>
                     <strong>{reputationScore(data)}/5</strong>{" "}
-                    <span className={styles.reviews}>( đánh giá)</span>
+                    <span className={styles.reviews}>({data.author_id.reputation?.total_ratings} đánh giá)</span>
                   </div>
                 </div>
               </div>
