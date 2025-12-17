@@ -82,9 +82,9 @@ const ListPost: React.FC = () => {
       full_name: string;
       avatar: string;
       reputation?: {
-      total_score: number;
-      total_ratings: number;
-    };
+        total_score: number;
+        total_ratings: number;
+      };
     };
     category_id?: {
       _id?: string;

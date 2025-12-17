@@ -4,6 +4,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import styles from "./success.module.scss";
 import { Icon } from "@iconify/react";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 interface TransactionData {
   transactionId: string;
@@ -104,6 +106,41 @@ const PaymentSuccessContent: React.FC = () => {
     return methods[method] || method;
   };
 
+  /// Xuất file pdf
+
+const exportInvoicePDF = async () => {
+  const element = document.getElementById("invoice-print");
+  const header = document.getElementById("invoice-header");
+  if (!element || !header) return;
+
+  //  HIỆN LOGO TRƯỚC KHI CHỤP
+  header.classList.remove(styles["print-only"]);
+  header.classList.add(styles["show-for-pdf"]);
+  element.classList.add(styles["print-padding"]);
+
+  await new Promise((r) => setTimeout(r, 50)); // đợi DOM update
+
+  const canvas = await html2canvas(element, {
+    scale: 2,
+    useCORS: true,
+    backgroundColor: "#ffffff",
+  });
+
+  //  ẨN LẠI LOGO SAU KHI CHỤP
+  header.classList.remove(styles["show-for-pdf"]);
+  element.classList.remove(styles["print-padding"]);
+  header.classList.add(styles["print-only"]);
+
+  const imgData = canvas.toDataURL("image/png");
+
+  const pdf = new jsPDF("p", "mm", "a4");
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = (canvas.height * pageWidth) / canvas.width;
+
+  pdf.addImage(imgData, "PNG", 0, 0, pageWidth, pageHeight);
+  pdf.save("hoa-don-"+transaction?.transactionId+".pdf");
+};
+
   return (
     <div className={styles["success-page"]}>
       <div className={styles.container}>
@@ -127,6 +164,11 @@ const PaymentSuccessContent: React.FC = () => {
               </div>
             ) : transaction ? (
               <>
+              <div id="invoice-print">
+                 <div className={styles["print-only"]} id="invoice-header">
+                    <img src="/image/header/Logo.svg" alt="Logo" className={styles["invoice-logo"]}/>
+                    <h2>HÓA ĐƠN THANH TOÁN</h2>
+                </div>
                 <div className={styles["info-row"]}>
                   <span className={styles["info-label"]}>Mã giao dịch:</span>
                   <span className={styles["info-value"]}>
@@ -176,6 +218,14 @@ const PaymentSuccessContent: React.FC = () => {
                   <span className={styles["info-value"]}>
                     {new Date(transaction.timestamp).toLocaleString("vi-VN")}
                   </span>
+                </div>
+                <button
+                  className={styles["btn-secondary"]}
+                  onClick={exportInvoicePDF}
+                >
+                  <Icon icon="ri:bill-fill" width={20} />
+                  In hóa đơn
+                </button>
                 </div>
               </>
             ) : (

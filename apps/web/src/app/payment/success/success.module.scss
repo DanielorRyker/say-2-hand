@@ -340,3 +340,25 @@
         gap: 4px;
     }
 }
+/* Chỉ hiện khi in  */
+
+.print-only {
+  display: none;
+}
+
+/* Khi xuất PDF */
+.show-for-pdf {
+  display: block;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.invoice-logo {
+  display: block;
+  margin: 0 auto 8px auto;
+  width: 120px;
+}
+
+.print-padding {
+  padding: 32px;
+}
