@@ -257,21 +257,18 @@ const exportInvoicePDF = async () => {
           </div>
 
           <div className={styles.actions}>
-            <Link href="/home" className={styles["btn-primary"]}>
-              <Icon icon="mdi:home" width={20} />
-              Về trang chủ
-            </Link>
-            <Link href="/my-orders" className={styles["btn-secondary"]}>
-              <Icon icon="mdi:account" width={20} />
-              Xem đơn hàng
-            </Link>
-             <button
-                  className={styles["btn-secondary"]}
+            <button
+                  className={styles["btn-primary"]}
                   onClick={exportInvoicePDF}
                 >
                   <Icon icon="ri:bill-fill" width={20} />
                   In hóa đơn
-                </button>
+              </button>
+            <Link href="/my-orders" className={styles["btn-secondary"]}>
+              <Icon icon="mdi:account" width={20} />
+              Xem đơn hàng
+            </Link>
+             
           </div>
 
           <button
