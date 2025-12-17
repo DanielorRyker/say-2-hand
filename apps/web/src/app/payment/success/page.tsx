@@ -219,13 +219,7 @@ const exportInvoicePDF = async () => {
                     {new Date(transaction.timestamp).toLocaleString("vi-VN")}
                   </span>
                 </div>
-                <button
-                  className={styles["btn-secondary"]}
-                  onClick={exportInvoicePDF}
-                >
-                  <Icon icon="ri:bill-fill" width={20} />
-                  In hóa đơn
-                </button>
+               
                 </div>
               </>
             ) : (
@@ -271,6 +265,13 @@ const exportInvoicePDF = async () => {
               <Icon icon="mdi:account" width={20} />
               Xem đơn hàng
             </Link>
+             <button
+                  className={styles["btn-secondary"]}
+                  onClick={exportInvoicePDF}
+                >
+                  <Icon icon="ri:bill-fill" width={20} />
+                  In hóa đơn
+                </button>
           </div>
 
           <button
