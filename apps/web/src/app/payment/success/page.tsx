@@ -166,7 +166,7 @@ const exportInvoicePDF = async () => {
               <>
               <div id="invoice-print">
                  <div className={styles["print-only"]} id="invoice-header">
-                    <img src="/image/header/Logo.svg" alt="Logo" className={styles["invoice-logo"]}/>
+                    <img src="/image/header/Say2hand.svg" alt="Logo" className={styles["invoice-logo"]}/>
                     <h2>HÓA ĐƠN THANH TOÁN</h2>
                 </div>
                 <div className={styles["info-row"]}>
