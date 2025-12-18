@@ -270,7 +270,7 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({
         timestamp: new Date().toISOString(),
         seller: {
           id: normalizedPost.author_id?._id || normalizedPost.author_id,
-          name: normalizedPost.author_id?.username || "Người bán",
+          name: normalizedPost.author_id?.full_name || "Người bán",
         },
       };
       sessionStorage.setItem(
