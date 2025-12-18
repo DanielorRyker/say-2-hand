@@ -244,9 +244,13 @@ const Header = () => {
       setProvincesLoading(true);
       setProvincesError(null);
       try {
-        const res = await axios.get("https://provinces.open-api.vn/api/v2/");
+        // Đổi sang API mới lấy danh sách tỉnh/thành
+        // https://huynhminhvangit.github.io/vn-region-api/data/provinces.json
+        const res = await axios.get(
+          "https://huynhminhvangit.github.io/vn-region-api/data/provinces.json"
+        );
         if (!mounted) return;
-        // API returns array of {code, name, division_type, codename, phone_code}
+        // API mới trả về array: { code: "01", name: "Thành phố Hà Nội", type: "Thành phố Trung ương" }
         const mapped = (res.data || []).map((p: any) => ({
           code: p.code,
           name: p.name,
@@ -493,7 +497,7 @@ const Header = () => {
     const val = localStorage.getItem("totalUnread");
     return val ? parseInt(val, 10) : 0;
   };
-  
+
   useEffect(() => {
     setTotalUnread(getTotalUnread());
     // Lắng nghe cả sự kiện storage (đa tab) và custom event (cùng tab)
@@ -514,7 +518,7 @@ const Header = () => {
   // useEffect(() => {
   //   setTotalUnread(getTotalUnread());
   // }, [conversationsData]);
-    useEffect(() => {
+  useEffect(() => {
     const count = conversationsData.reduce(
       (acc, conv) => acc + (conv.unreadCount ?? 0),
       0

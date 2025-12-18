@@ -141,10 +141,15 @@ const HeaderMobile = () => {
     const fetchProvinces = async () => {
       setProvincesLoading(true);
       try {
-        const res = await axios.get("https://provinces.open-api.vn/api/v2/"); // Sử dụng HTTPS để tránh lỗi Mixed Content
+        // Sử dụng API mới lấy danh sách tỉnh/thành
+        const res = await fetch(
+          "https://huynhminhvangit.github.io/vn-region-api/data/provinces.json"
+        );
+        const data = await res.json();
         if (!mounted) return;
-        const mapped = (res.data || []).map((p: any) => ({
-          code: p.code,
+        // Dữ liệu trả về là mảng các object { code, name, type }
+        const mapped = (data || []).map((p: any) => ({
+          code: Number(p.code),
           name: p.name,
         }));
         setProvinces(mapped);
@@ -154,6 +159,7 @@ const HeaderMobile = () => {
           selectedItem !== "Đang xác định..." &&
           selectedItem !== "Việt Nam"
         ) {
+          // Hàm chuẩn hóa tên tỉnh để so khớp
           const normalizeForMatch = (text: string) =>
             text
               .normalize("NFD")
@@ -192,7 +198,7 @@ const HeaderMobile = () => {
           }
         }
 
-        // Fetch post counts
+        // Fetch post counts (giữ nguyên logic gọi API nội bộ)
         try {
           const countsRes = await axios.get(
             `${API_BASE}/api/posts/counts/province`
@@ -208,7 +214,7 @@ const HeaderMobile = () => {
           console.debug("Failed to fetch province counts", err);
         }
       } catch (err: any) {
-        console.error("Failed to fetch provinces", err);
+        console.error("Lỗi fetch provinces:", err);
       } finally {
         if (mounted) setProvincesLoading(false);
       }
