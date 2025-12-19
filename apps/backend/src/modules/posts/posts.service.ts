@@ -253,117 +253,128 @@ export class PostsService {
    * Full-text search với hỗ trợ tiếng Việt không dấu
    */
   async searchPosts(searchDto: SearchPostDto) {
-    const {
-      q,
-      category_id,
-      transaction_type,
-      condition,
-      min_price,
-      max_price,
-      tags,
-      province,
-      status = 'active',
-      page = 1,
-      limit = 20,
-      sort_by = 'createdAt',
-      sort_order = 'desc',
-    } = searchDto;
+    try {
+      const {
+        q,
+        category_id,
+        transaction_type,
+        condition,
+        min_price,
+        max_price,
+        tags,
+        province,
+        status = 'active',
+        page = 1,
+        limit = 20,
+        sort_by = 'createdAt',
+        sort_order = 'desc',
+      } = searchDto;
 
-    const query: any = {};
+      this.logger.log(`[searchPosts] searchDto: ${JSON.stringify(searchDto)}`);
 
-    // Filter theo status
-    if (status) {
-      query.status = status;
-    }
+      const query: any = {};
 
-    // Full-text search với hỗ trợ tiếng Việt không dấu
-    if (q && q.trim()) {
-      const normalizedQuery = removeVietnameseTones(q.trim());
-      const escapedQuery = normalizedQuery.replace(
-        /[.*+?^${}()|[\]\\]/g,
-        '\\$&',
-      );
-
-      query.$or = [
-        { title: { $regex: q, $options: 'i' } },
-        { description: { $regex: q, $options: 'i' } },
-        { title_normalized: { $regex: escapedQuery, $options: 'i' } },
-        { description_normalized: { $regex: escapedQuery, $options: 'i' } },
-        { tags: { $regex: escapedQuery, $options: 'i' } },
-      ];
-    }
-
-    // Filter theo category
-    if (category_id && Types.ObjectId.isValid(category_id)) {
-      query.category_id = new Types.ObjectId(category_id);
-    }
-
-    // Filter theo transaction_type
-    if (transaction_type) {
-      query.transaction_type = transaction_type;
-    }
-
-    // Filter theo condition
-    if (condition) {
-      query.condition = condition;
-    }
-
-    // Filter theo price range
-    if (min_price !== undefined || max_price !== undefined) {
-      query.price = {};
-      if (min_price !== undefined) {
-        query.price.$gte = min_price;
+      // Filter theo status
+      if (status) {
+        query.status = status;
       }
-      if (max_price !== undefined) {
-        query.price.$lte = max_price;
+
+      // Full-text search với hỗ trợ tiếng Việt không dấu
+      if (q && q.trim()) {
+        const normalizedQuery = removeVietnameseTones(q.trim());
+        const escapedQuery = normalizedQuery.replace(
+          /[.*+?^${}()|[\]\\]/g,
+          '\\$&',
+        );
+
+        query.$or = [
+          { title: { $regex: q, $options: 'i' } },
+          { description: { $regex: q, $options: 'i' } },
+          { title_normalized: { $regex: escapedQuery, $options: 'i' } },
+          { description_normalized: { $regex: escapedQuery, $options: 'i' } },
+          { tags: { $regex: escapedQuery, $options: 'i' } },
+        ];
       }
+
+      // Filter theo category
+      if (category_id && Types.ObjectId.isValid(category_id)) {
+        query.category_id = new Types.ObjectId(category_id);
+      }
+
+      // Filter theo transaction_type
+      if (transaction_type) {
+        query.transaction_type = transaction_type;
+      }
+
+      // Filter theo condition
+      if (condition) {
+        query.condition = condition;
+      }
+
+      // Filter theo price range
+      if (min_price !== undefined || max_price !== undefined) {
+        query.price = {};
+        if (min_price !== undefined) {
+          query.price.$gte = min_price;
+        }
+        if (max_price !== undefined) {
+          query.price.$lte = max_price;
+        }
+      }
+
+      // Filter theo tags
+      if (tags && tags.length > 0) {
+        query.tags = { $in: tags };
+      }
+
+      // Filter theo province
+      if (province) {
+        query['location.province'] = province;
+      }
+
+      // Xác định sort options
+      const sortOptions: any = {};
+      if (sort_by === 'price') {
+        sortOptions.price = sort_order === 'asc' ? 1 : -1;
+      } else if (sort_by === 'createdAt') {
+        sortOptions.createdAt = sort_order === 'asc' ? 1 : -1;
+      } else {
+        sortOptions.updatedAt = sort_order === 'asc' ? 1 : -1;
+      }
+
+      // Pagination
+      const skip = (page - 1) * limit;
+
+      this.logger.log(`[searchPosts] query: ${JSON.stringify(query)}, sort: ${JSON.stringify(sortOptions)}, skip: ${skip}, limit: ${limit}`);
+
+      // Execute query
+      const [results, total] = await Promise.all([
+        this.postModel
+          .find(query)
+          .populate('author_id', 'full_name avatar reputation')
+          .populate('category_id', 'name')
+          .sort(sortOptions)
+          .skip(skip)
+          .limit(limit)
+          .exec(),
+        this.postModel.countDocuments(query),
+      ]);
+
+      this.logger.log(`[searchPosts] results: ${results.length}, total: ${total}`);
+
+      return {
+        data: results,
+        pagination: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
+      };
+    } catch (err) {
+      this.logger.error(`[searchPosts] ERROR: ${err?.message}`, err?.stack);
+      throw err;
     }
-
-    // Filter theo tags
-    if (tags && tags.length > 0) {
-      query.tags = { $in: tags };
-    }
-
-    // Filter theo province
-    if (province) {
-      query['location.province'] = province;
-    }
-
-    // Xác định sort options
-    const sortOptions: any = {};
-    if (sort_by === 'price') {
-      sortOptions.price = sort_order === 'asc' ? 1 : -1;
-    } else if (sort_by === 'createdAt') {
-      sortOptions.createdAt = sort_order === 'asc' ? 1 : -1;
-    } else {
-      sortOptions.updatedAt = sort_order === 'asc' ? 1 : -1;
-    }
-
-    // Pagination
-    const skip = (page - 1) * limit;
-
-    // Execute query
-    const [results, total] = await Promise.all([
-      this.postModel
-        .find(query)
-        .populate('author_id', 'full_name avatar reputation')
-        .populate('category_id', 'name')
-        .sort(sortOptions)
-        .skip(skip)
-        .limit(limit)
-        .exec(),
-      this.postModel.countDocuments(query),
-    ]);
-
-    return {
-      data: results,
-      pagination: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
   }
 
   /**

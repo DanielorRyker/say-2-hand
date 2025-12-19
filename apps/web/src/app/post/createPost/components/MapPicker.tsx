@@ -3,7 +3,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { API_BASE } from "@/lib/constants";
-import "leaflet/dist/leaflet.css";
 import styles from "./CategoryForm.module.scss";
 import {
   MapContainer,

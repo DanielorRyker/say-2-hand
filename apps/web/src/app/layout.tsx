@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import "@/styles/globals.scss";
-import "bootstrap/dist/css/bootstrap.min.css";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import ClientLayout from "@/app/ClientLayout";
 

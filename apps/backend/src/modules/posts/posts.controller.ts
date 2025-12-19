@@ -7,6 +7,7 @@ import {
   Delete,
   Patch,
   Query,
+  Req,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -51,20 +52,8 @@ export class PostsController {
     return this.postsService.findAllRejected();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.postsService.findOne(id);
-  }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
-    return this.postsService.update(id, updatePostDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.postsService.removePost(id);
-  }
+  // ...existing code...
 
   @Get('user/:userId')
   findByUserId(@Param('userId') userId: string) {
@@ -82,8 +71,16 @@ export class PostsController {
   }
 
   @Get('search')
-  searchPosts(@Query() searchDto: SearchPostDto) {
-    return this.postsService.searchPosts(searchDto);
+  searchPosts(@Query() searchDto: SearchPostDto, @Req() req) {
+    // Log params thực tế nhận được
+    console.log('[GET /posts/search] Query params:', req.query);
+    try {
+      return this.postsService.searchPosts(searchDto);
+    } catch (err) {
+      // Log lỗi validate nếu có
+      console.error('[GET /posts/search] ERROR:', err?.message, err?.stack);
+      throw err;
+    }
   }
 
   @Get('search/nearby')
@@ -94,5 +91,21 @@ export class PostsController {
   @Post(':id/generate-tags')
   autoGenerateTags(@Param('id') id: string) {
     return this.postsService.autoGenerateTags(id);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
+    return this.postsService.update(id, updatePostDto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.postsService.removePost(id);
+  }
+
+  // Đặt @Get(':id') CUỐI CÙNG để tránh conflict với các route tĩnh
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.postsService.findOne(id);
   }
 }

@@ -59,7 +59,7 @@ export class UsersService {
 
   async update(updateUserDto: UpdateUserDto) {
     // Kiểm tra nếu có cập nhật password thì hash trước khi lưu
-    let updatePayload = { ...updateUserDto };
+    const updatePayload = { ...updateUserDto };
     if (updateUserDto.password_hash) {
       // Hash password mới
       updatePayload.password_hash = await hashPasswordHelper(updateUserDto.password_hash);

@@ -40,7 +40,7 @@ export class TransactionsService {
        ref=`FREE${Date.now()}${Math.floor(Math.random() * 1000)}`;
       }
       else{
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+         
         ref=`VNPAY${Date.now()}${Math.floor(Math.random() * 1000)}`;
       }
 
