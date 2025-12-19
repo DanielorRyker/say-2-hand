@@ -345,7 +345,9 @@ export class PostsService {
       // Pagination
       const skip = (page - 1) * limit;
 
-      this.logger.log(`[searchPosts] query: ${JSON.stringify(query)}, sort: ${JSON.stringify(sortOptions)}, skip: ${skip}, limit: ${limit}`);
+      this.logger.log(
+        `[searchPosts] query: ${JSON.stringify(query)}, sort: ${JSON.stringify(sortOptions)}, skip: ${skip}, limit: ${limit}`,
+      );
 
       // Execute query
       const [results, total] = await Promise.all([
@@ -360,7 +362,9 @@ export class PostsService {
         this.postModel.countDocuments(query),
       ]);
 
-      this.logger.log(`[searchPosts] results: ${results.length}, total: ${total}`);
+      this.logger.log(
+        `[searchPosts] results: ${results.length}, total: ${total}`,
+      );
 
       return {
         data: results,

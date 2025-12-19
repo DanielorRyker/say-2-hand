@@ -52,7 +52,6 @@ export class PostsController {
     return this.postsService.findAllRejected();
   }
 
-
   // ...existing code...
 
   @Get('user/:userId')
