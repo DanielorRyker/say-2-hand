@@ -19,6 +19,7 @@ const OrdersPage = () => {
   );
   const [activeTab, setActiveTab] = useState<TabType>("all");
   const [orders, setOrders] = useState<Transaction[]>([]);
+  const [allOrders, setAllOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   //Socket
@@ -70,6 +71,9 @@ const OrdersPage = () => {
 
         const response = await axios.get(url);
         setOrders(response.data.data || []);
+        if(!status || status ==='all'){
+          setAllOrders(response.data.data || []);
+        }
       } catch (error) {
         console.error("Error fetching orders:", error);
         setOrders([]);
@@ -84,6 +88,64 @@ const OrdersPage = () => {
   useEffect(() => {
     if (user) fetchOrders(activeTab === "all" ? undefined : activeTab);
   }, [user, activeTab, fetchOrders]);
+
+  //Thống kê
+  
+
+  const [stats, setStats] = useState({
+  amountCount: 0,
+  pendingCount: 0,
+  shippingCount: 0,
+  completedCount: 0,
+  cancelledCount: 0,
+});
+
+
+useEffect(() => {
+  if (!orders || orders.length === 0) {
+    setStats({
+      amountCount: 0,
+      pendingCount: 0,
+      shippingCount: 0,
+      completedCount: 0,
+      cancelledCount: 0,
+    });
+    return;
+  }
+
+  const result = orders.reduce(
+    (acc, order) => {
+      switch (order.status) {
+        case "pending":
+          acc.pendingCount += 1;
+          break;
+
+        case "shipping":
+          acc.shippingCount += 1;
+          break;
+
+        case "completed":
+          acc.completedCount += 1;
+          acc.amountCount += order.amount; 
+          break;
+
+        case "cancelled":
+          acc.cancelledCount += 1;
+          break;
+      }
+      return acc;
+    },
+    {
+      amountCount: 0,
+      pendingCount: 0,
+      shippingCount: 0,
+      completedCount: 0,
+      cancelledCount: 0,
+    }
+  );
+
+  setStats(result);
+}, [allOrders]);
 
   // Xử lý gửi hàng
   const handleShipOrder = async (order: Transaction) => {
@@ -296,6 +358,60 @@ const OrdersPage = () => {
           <p className={styles.subtitle}>
             Quản lý các đơn hàng bạn đã bán trên Say2Hand
           </p>
+        </div>
+
+        <div
+            className={`${styles.statisticsGrid} `}
+          >
+           <div className={styles.statCard}>
+              <div className={`${styles.statIcon} ${styles.statIconPrimary}`}>
+                <Icon icon="mdi:cash-multiple" width={32} height={32} />
+              </div>
+              <div className={styles.statContent}>
+                <div className={styles.statLabel}>Tổng doanh thu</div>
+                <div className={styles.statValue}>{formatPrice(stats.amountCount)}</div>
+              </div>
+            </div>
+
+             <div className={styles.statCard}>
+              <div className={`${styles.statIcon} ${styles.statIconPending}`}>
+                <Icon icon="mdi:clock-outline" width={32} height={32} />
+              </div>
+              <div className={styles.statContent}>
+                <div className={styles.statLabel}>Chờ xử lý</div>
+                <div className={styles.statValue}>{stats.pendingCount}</div>
+              </div>
+            </div>
+
+            <div className={styles.statCard}>
+              <div className={`${styles.statIcon} ${styles.statIconShipping}`}>
+                <Icon icon="mdi:truck-delivery" width={32} height={32} />
+              </div>
+              <div className={styles.statContent}>
+                <div className={styles.statLabel}>Đang giao</div>
+                <div className={styles.statValue}>{stats.shippingCount}</div>
+              </div>
+            </div>
+
+            <div className={styles.statCard}>
+              <div className={`${styles.statIcon} ${styles.statIconCompleted}`}>
+                <Icon icon="mdi:check-circle" width={32} height={32} />
+              </div>
+              <div className={styles.statContent}>
+                <div className={styles.statLabel}>Hoàn thành</div>
+                <div className={styles.statValue}>{stats.completedCount}</div>
+              </div>
+            </div>
+
+            <div className={styles.statCard}>
+              <div className={`${styles.statIcon} ${styles.statIconCancelled}`}>
+                <Icon icon="mdi:close-circle" width={32} height={32} />
+              </div>
+              <div className={styles.statContent}>
+                <div className={styles.statLabel}>Đã huỷ</div>
+                <div className={styles.statValue}>{stats.cancelledCount}</div>
+              </div>
+            </div>
         </div>
 
         {/* Tabs */}
